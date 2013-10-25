@@ -1,28 +1,41 @@
 #ifndef RESOURCE_MGR_HPP
 #define RESOURCE_MGR_HPP
 
+#include "npaiterator.hpp"
+
 #include <vector>
 #include <map>
-#include <cstdint>
-#include <string>
 #include <utility>
 
 typedef std::map<std::string, uint32_t> Registry;
 
 class NpaFile;
-class NsbFile;
+
+template <class T>
+struct CacheHolder
+{
+    static T* Read(const std::string& Path) { return Cache[Path]; }
+    static void Write(const std::string& Path, T* Data) { Cache[Path] = Data; }
+    static std::map<std::string, T*> Cache;
+};
+
+struct MapDeleter
+{
+    template <class T> void operator() (T Data) { delete Data.second; }
+};
 
 class ResourceMgr
 {
 public:
     ResourceMgr(const std::vector<std::string>& AchieveFileNames);
+    ~ResourceMgr();
 
     void ClearCache();
-    NsbFile* GetScript(const std::string& Path);
+    template <class T> T* GetResource(const std::string& Path);
 
 private:
-    std::map<std::string, char*> ResourceCache;
-    std::vector<std::pair<NpaFile*, Registry>> FileRegistry;
+    std::map<std::string, NpaIterator> FileRegistry;
+    std::vector<NpaFile*> Achieves;
 };
 
 #endif

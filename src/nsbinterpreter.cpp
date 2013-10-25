@@ -2,6 +2,7 @@
 #include "movie.hpp"
 #include "game.hpp"
 #include "resourcemgr.hpp"
+#include "nsbmagic.hpp"
 
 #include <iostream>
 #include <boost/lexical_cast.hpp>
@@ -10,7 +11,7 @@ NsbInterpreter::NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const std
 pGame(pGame),
 pResourceMgr(pResourceMgr)
 {
-    ScriptStack.push(pResourceMgr->GetScript(InitScript));
+    ScriptStack.push(pResourceMgr->GetResource<NsbFile>(InitScript));
 }
 
 NsbInterpreter::~NsbInterpreter()
