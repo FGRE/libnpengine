@@ -28,10 +28,14 @@ void ResourceMgr::ClearCache()
     // TODO
 }
 
-char* ResourceMgr::Read(const std::string& Path)
+char* ResourceMgr::Read(const std::string& Path, uint32_t* Size)
 {
     auto iter = FileRegistry.find(Path);
     if (iter != FileRegistry.end())
+    {
+        *Size = iter->second.GetFileSize();
         return iter->second.GetFileData();
+    }
+    *Size = 0;
     return nullptr;
 }

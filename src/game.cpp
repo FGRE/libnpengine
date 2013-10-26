@@ -2,6 +2,7 @@
 #include "resourcemgr.hpp"
 
 Game::Game(const std::vector<std::string>& AchieveFileNames, const std::string& InitScript) :
+sf::RenderWindow(sf::VideoMode(1024, 576), "steins-gate"),
 IsRunning(true)
 {
     pInterpreter = new NsbInterpreter(this, new ResourceMgr(AchieveFileNames), InitScript);

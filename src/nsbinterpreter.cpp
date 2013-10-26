@@ -9,7 +9,8 @@
 
 NsbInterpreter::NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const std::string& InitScript) :
 pGame(pGame),
-pResourceMgr(pResourceMgr)
+pResourceMgr(pResourceMgr),
+EndHack(false)
 {
     ScriptStack.push(pResourceMgr->GetResource<NsbFile>(InitScript));
 }
@@ -21,8 +22,13 @@ NsbInterpreter::~NsbInterpreter()
 
 void NsbInterpreter::Run()
 {
+    // This is... a hack.
+    if (EndHack)
+        return;
+
     NsbFile* pScript = ScriptStack.top();
     assert(pScript && "Interpreting null script");
+
     while (Line* pLine = pScript->GetNextLine())
     {
         switch (pLine->Magic)
@@ -34,11 +40,19 @@ void NsbInterpreter::Run()
                     pScript->SetSourceIter(FuncLine);
                 }
                 else
-                    std::cout << "Attempted to call unknown function: " << pLine->Params[0] << std::endl;
+                    std::cerr << "Attempted to call unknown function: " << pLine->Params[0] << std::endl;
                 break;
             case uint16_t(MAGIC_END):
                 pScript->SetSourceIter(ReturnLines.top());
                 ReturnLines.pop();
+                break;
+            case uint16_t(MAGIC_SET):
+                break;
+            case uint16_t(MAGIC_GET):
+                break;
+            case uint16_t(MAGIC_PARAM):
+                break;
+            case uint16_t(MAGIC_CONCAT):
                 break;
             case uint16_t(MAGIC_LOAD_MOVIE):
                 LoadMovie(pLine->Params[0],
@@ -47,14 +61,21 @@ void NsbInterpreter::Run()
                           boost::lexical_cast<int32_t>(pLine->Params[3]),
                           Boolify(pLine->Params[4]),
                           Boolify(pLine->Params[5]),
-                          Boolify(pLine->Params[6]),
-                          pLine->Params[7]);
+                          pLine->Params[6],
+                          Boolify(pLine->Params[7]));
                 break;
+            case uint16_t(MAGIC_UNK12):
+                EndHack = true;
+                return;
+            case uint16_t(MAGIC_UNK6):
+                // Guess...
+                return;
             default:
-                std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
+                //std::cerr << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
+                break;
         }
     }
-    std::cout << "Unexpected end of script!" << std::endl;
+    std::cerr << "Unexpected end of script at line: " << pScript->GetNextLineEntry() - 1 << std::endl;
 }
 
 template <class T> T* NsbInterpreter::GetVariable(const std::string& Identifier) const
@@ -71,17 +92,17 @@ bool NsbInterpreter::Boolify(const std::string& String)
         return true;
     else if (String == "false")
         return false;
-    assert("Invalid boolification of string: " && String.c_str() && false);
+    std::cerr << "Invalid boolification of string: " << String << std::endl;
+    assert(false);
 }
 
 void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
-                               int32_t y, bool Loop, bool unk0, bool unk1, const std::string& File)
+                               int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1)
 {
     if (Movie* pOld = GetVariable<Movie>(HandleName))
         delete pOld;
 
     Movie* pMovie = new Movie(x, y, Loop, File);
     Variables[HandleName] = boost::any(pMovie);
-
     pGame->AddDrawable({pMovie, Priority}); // Not sure about this...
 }
