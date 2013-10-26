@@ -46,7 +46,7 @@ public:
 
     void ClearCache();
 
-    char* Read(const std::string& Path);
+    char* Read(const std::string& Path, uint32_t* Size);
     template <class T> T* GetResource(const std::string& Path);
 
 private:
@@ -60,10 +60,12 @@ template <class T> T* ResourceMgr::GetResource(const std::string& Path)
     if (T* pCache = CacheHolder<T>::Read(Path))
         return pCache;
 
+    uint32_t Size;
+
     // Check achieves
-    if (char* Data = Read(Path))
+    if (char* Data = Read(Path, &Size))
     {
-        T* pScript = new T(Path, Data);
+        T* pScript = new T(Path, Data, Size);
         CacheHolder<T>::Write(Path, pScript);
         return pScript;
     }
