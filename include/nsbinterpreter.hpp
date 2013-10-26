@@ -22,6 +22,7 @@ public:
     ~NsbInterpreter();
 
     void Run();
+    void CallScript(const std::string& FileName);
 
 private:
     bool Boolify(const std::string& String);

@@ -1,6 +1,8 @@
 #include "game.hpp"
 #include "resourcemgr.hpp"
 
+#include <SFML/Window/Event.hpp>
+
 Game::Game(const std::vector<std::string>& AchieveFileNames, const std::string& InitScript) :
 sf::RenderWindow(sf::VideoMode(1024, 576), "steins-gate"),
 IsRunning(true)
@@ -15,9 +17,25 @@ Game::~Game()
 
 void Game::Run()
 {
+    sf::Event Event;
+
     while (IsRunning)
     {
         pInterpreter->Run();
+
+        while (pollEvent(Event))
+        {
+            switch (Event.type)
+            {
+                case sf::Event::KeyPressed:
+                    for (uint32_t i = 0; i < Callbacks.size(); ++i)
+                        if (Callbacks[i].Key == Event.key.code)
+                            pInterpreter->CallScript(Callbacks[i].Script);
+                default:
+                    break;
+            }
+        }
+
         clear();
         for (auto d : Drawables)
             draw(*d.pDrawable);
@@ -40,4 +58,9 @@ void Game::AddDrawable(Drawable Obj)
 void Game::RemoveDrawable(Drawable Obj)
 {
     Drawables.remove(Obj);
+}
+
+void Game::RegisterCallback(sf::Keyboard::Key Key, const std::string& Script)
+{
+    Callbacks.push_back({Key, Script});
 }

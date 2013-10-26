@@ -12,7 +12,7 @@ pGame(pGame),
 pResourceMgr(pResourceMgr),
 EndHack(false)
 {
-    ScriptStack.push(pResourceMgr->GetResource<NsbFile>(InitScript));
+    CallScript(InitScript);
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -33,6 +33,10 @@ void NsbInterpreter::Run()
     {
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_CALL_SCRIPT):
+                // TODO: extract entry function & convert nss to nsb
+                //CallScript(pLine->Params[0]);
+                return;
             case uint16_t(MAGIC_CALL):
                 if (uint32_t FuncLine = pScript->GetFunctionLine(pLine->Params[0].c_str()))
                 {
@@ -80,6 +84,9 @@ void NsbInterpreter::Run()
                 // Guess...
                 Params.clear();
                 return;
+            case uint16_t(MAGIC_CALLBACK):
+                pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
+                break;
             default:
                 //std::cerr << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
                 break;
@@ -128,4 +135,9 @@ void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, 
     Movie* pMovie = new Movie(x, y, Loop, File);
     Handles[HandleName] = pMovie;
     pGame->AddDrawable({pMovie, Priority}); // Not sure about this...
+}
+
+void NsbInterpreter::CallScript(const std::string& FileName)
+{
+    ScriptStack.push(pResourceMgr->GetResource<NsbFile>(FileName));
 }
