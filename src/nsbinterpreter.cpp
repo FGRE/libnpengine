@@ -47,12 +47,21 @@ void NsbInterpreter::Run()
                 ReturnLines.pop();
                 break;
             case uint16_t(MAGIC_SET):
+                SetVariable(pLine->Params[0], Params[0]);
                 break;
             case uint16_t(MAGIC_GET):
+                Params.push_back(Variables[pLine->Params[0]]);
                 break;
             case uint16_t(MAGIC_PARAM):
+                Params.push_back({pLine->Params[0], pLine->Params[1]});
                 break;
             case uint16_t(MAGIC_CONCAT):
+                assert(Params[0].Type == Params[1].Type);
+                if (Params[0].Type == "STRING")
+                    Params[0].Value += Params[1].Value;
+                else
+                    assert(false && "Please tell krofna where did you find this");
+                Params.resize(1);
                 break;
             case uint16_t(MAGIC_LOAD_MOVIE):
                 LoadMovie(pLine->Params[0],
@@ -61,7 +70,7 @@ void NsbInterpreter::Run()
                           boost::lexical_cast<int32_t>(pLine->Params[3]),
                           Boolify(pLine->Params[4]),
                           Boolify(pLine->Params[5]),
-                          pLine->Params[6],
+                          GetVariable<std::string>(pLine->Params[6]),
                           Boolify(pLine->Params[7]));
                 break;
             case uint16_t(MAGIC_UNK12):
@@ -69,6 +78,7 @@ void NsbInterpreter::Run()
                 return;
             case uint16_t(MAGIC_UNK6):
                 // Guess...
+                Params.clear();
                 return;
             default:
                 //std::cerr << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
@@ -78,12 +88,17 @@ void NsbInterpreter::Run()
     std::cerr << "Unexpected end of script at line: " << pScript->GetNextLineEntry() - 1 << std::endl;
 }
 
-template <class T> T* NsbInterpreter::GetVariable(const std::string& Identifier) const
+template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
 {
     auto iter = Variables.find(Identifier);
     if (iter == Variables.end())
         return nullptr;
-    return boost::any_cast<T*>(iter->second);
+    return boost::lexical_cast<T>(iter->second.Value);
+}
+
+void NsbInterpreter::SetVariable(const std::string& Identifier, const Variable& Var)
+{
+    Variables.insert(std::pair<std::string, Variable>(Identifier, Var));
 }
 
 bool NsbInterpreter::Boolify(const std::string& String)
@@ -96,13 +111,21 @@ bool NsbInterpreter::Boolify(const std::string& String)
     assert(false);
 }
 
+template <class T> T* NsbInterpreter::GetHandle(const std::string& Identifier)
+{
+    auto iter = Handles.find(Identifier);
+    if (iter == Handles.end())
+        return nullptr;
+    return static_cast<T*>(iter->second);
+}
+
 void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
                                int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1)
 {
-    if (Movie* pOld = GetVariable<Movie>(HandleName))
+    if (Movie* pOld = GetHandle<Movie>(HandleName))
         delete pOld;
 
     Movie* pMovie = new Movie(x, y, Loop, File);
-    Variables[HandleName] = boost::any(pMovie);
+    Handles[HandleName] = pMovie;
     pGame->AddDrawable({pMovie, Priority}); // Not sure about this...
 }
