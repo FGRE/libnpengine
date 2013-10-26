@@ -4,11 +4,16 @@
 #include <stack>
 #include <cstdint>
 #include <map>
-#include <boost/any.hpp>
 
 class NsbFile;
 class Game;
 class ResourceMgr;
+
+struct Variable
+{
+    std::string Type;
+    std::string Value;
+};
 
 class NsbInterpreter
 {
@@ -20,7 +25,10 @@ public:
 
 private:
     bool Boolify(const std::string& String);
-    template<class T> T* GetVariable(const std::string& Identifier) const;
+
+    template <class T> T* GetHandle(const std::string& Identifier);
+    template <class T> T GetVariable(const std::string& Identifier);
+    void SetVariable(const std::string& Identifier, const Variable& Var);
 
     void LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
                    int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1);
@@ -30,8 +38,9 @@ private:
     bool EndHack;
     std::stack<uint32_t> ReturnLines;
     std::stack<NsbFile*> ScriptStack;
-    std::map<std::string, boost::any> Variables;
-    std::vector<std::string> Params;
+    std::map<std::string, Variable> Variables;
+    std::map<std::string, void*> Handles;
+    std::vector<Variable> Params;
 };
 
 #endif
