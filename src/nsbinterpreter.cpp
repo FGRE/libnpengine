@@ -70,8 +70,7 @@ bool NsbInterpreter::Boolify(const std::string& String)
         return true;
     else if (String == "false")
         return false;
-    std::cout << "Invalid boolification of string: " << String << std::endl;
-    return false;
+    assert("Invalid boolification of string: " && String.c_str() && false);
 }
 
 void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
