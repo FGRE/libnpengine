@@ -28,19 +28,10 @@ void ResourceMgr::ClearCache()
     // TODO
 }
 
-template <class T> T* ResourceMgr::GetResource(const std::string& Path)
+char* ResourceMgr::Read(const std::string& Path)
 {
-    // Check cache
-    if (T* pCache = CacheHolder<T>::Read(Path))
-        return pCache;
-
-    // Check achieves
-    if (char* Data = FileRegistry[Path].GetFileData())
-    {
-        T* pScript = new T(Path, Data);
-        CacheHolder<T>::Write(Path, pScript);
-        return pScript;
-    }
-
+    auto iter = FileRegistry.find(Path);
+    if (iter != FileRegistry.end())
+        return iter->second.GetFileData();
     return nullptr;
 }
