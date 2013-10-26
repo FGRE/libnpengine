@@ -30,6 +30,9 @@ struct CacheHolder
     static std::map<std::string, T*> Cache;
 };
 
+template <class T>
+std::map<std::string, T*> CacheHolder<T>::Cache;
+
 struct MapDeleter
 {
     template <class T> void operator() (T Data) { delete Data.second; }

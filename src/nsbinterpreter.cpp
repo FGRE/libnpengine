@@ -22,6 +22,7 @@ NsbInterpreter::~NsbInterpreter()
 void NsbInterpreter::Run()
 {
     NsbFile* pScript = ScriptStack.top();
+    assert(pScript && "Interpreting null script");
     while (Line* pLine = pScript->GetNextLine())
     {
         switch (pLine->Magic)
