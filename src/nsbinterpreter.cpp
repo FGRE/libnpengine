@@ -46,6 +46,9 @@ void NsbInterpreter::Run()
                 else
                     std::cerr << "Attempted to call unknown function: " << pLine->Params[0] << std::endl;
                 break;
+            case uint16_t(MAGIC_UNK5):
+                Params[0] = { "STRING", std::string() }; // Hack
+                break;
             case uint16_t(MAGIC_END):
                 pScript->SetSourceIter(ReturnLines.top());
                 ReturnLines.pop();
@@ -60,13 +63,16 @@ void NsbInterpreter::Run()
                 Params.push_back({pLine->Params[0], pLine->Params[1]});
                 break;
             case uint16_t(MAGIC_CONCAT):
-                assert(Params[0].Type == Params[1].Type);
-                if (Params[0].Type == "STRING")
-                    Params[0].Value += Params[1].Value;
+            {
+                uint32_t First = Params.size() - 2, Second = Params.size() - 1;
+                assert(Params[First].Type == Params[Second].Type && "Concating params of different types");
+                if (Params[First].Type == "STRING")
+                    Params[First].Value += Params[Second].Value;
                 else
                     assert(false && "Please tell krofna where did you find this");
-                Params.resize(1);
+                Params.resize(Second);
                 break;
+            }
             case uint16_t(MAGIC_LOAD_MOVIE):
                 LoadMovie(pLine->Params[0],
                           boost::lexical_cast<int32_t>(pLine->Params[1]),
