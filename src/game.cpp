@@ -4,7 +4,7 @@
 #include <SFML/Window/Event.hpp>
 
 Game::Game(const std::vector<std::string>& AchieveFileNames, const std::string& InitScript) :
-sf::RenderWindow(sf::VideoMode(1024, 576), "steins-gate"),
+sf::RenderWindow(sf::VideoMode(1024, 576), "steins-gate", sf::Style::Close),
 IsRunning(true)
 {
     pInterpreter = new NsbInterpreter(this, new ResourceMgr(AchieveFileNames), InitScript);
