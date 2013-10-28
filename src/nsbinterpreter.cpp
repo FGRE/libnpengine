@@ -13,6 +13,9 @@ pResourceMgr(pResourceMgr),
 EndHack(false)
 {
     CallScript(InitScript);
+
+    // TODO: from .map file
+    LoadScript("nss/function_steinsgate.nsb");
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -38,20 +41,25 @@ void NsbInterpreter::Run()
                 //CallScript(pLine->Params[0]);
                 return;
             case uint16_t(MAGIC_CALL):
-                if (uint32_t FuncLine = pScript->GetFunctionLine(pLine->Params[0].c_str()))
-                {
-                    ReturnLines.push(pScript->GetNextLineEntry());
-                    pScript->SetSourceIter(FuncLine);
-                }
-                else
-                    std::cerr << "Attempted to call unknown function: " << pLine->Params[0] << std::endl;
+            {
+                const char* FuncName = pLine->Params[0].c_str();
+                if (CallFunction(pScript, FuncName))
+                    return;
+
+                for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
+                    if (CallFunction(LoadedScripts[i], FuncName))
+                        return;
+                std::cerr << "Attempted to call unknown function: " << FuncName << std::endl;
                 break;
+            }
             case uint16_t(MAGIC_UNK5):
                 Params[0] = { "STRING", std::string() }; // Hack
                 break;
             case uint16_t(MAGIC_END):
-                pScript->SetSourceIter(ReturnLines.top());
-                ReturnLines.pop();
+                ScriptStack.pop();
+                pScript = Returns.top().pScript;
+                pScript->SetSourceIter(Returns.top().SourceLine);
+                Returns.pop();
                 break;
             case uint16_t(MAGIC_SET):
                 SetVariable(pLine->Params[0], Params[0]);
@@ -143,7 +151,24 @@ void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, 
     pGame->AddDrawable({pMovie, Priority}); // Not sure about this...
 }
 
+void NsbInterpreter::LoadScript(const std::string& FileName)
+{
+    LoadedScripts.push_back(pResourceMgr->GetResource<NsbFile>(FileName));
+}
+
 void NsbInterpreter::CallScript(const std::string& FileName)
 {
     ScriptStack.push(pResourceMgr->GetResource<NsbFile>(FileName));
+}
+
+bool NsbInterpreter::CallFunction(NsbFile* pScript, const char* FuncName)
+{
+    if (uint32_t FuncLine = pScript->GetFunctionLine(FuncName))
+    {
+        Returns.push({ScriptStack.top(), ScriptStack.top()->GetNextLineEntry()});
+        ScriptStack.push(pScript);
+        pScript->SetSourceIter(FuncLine);
+        return true;
+    }
+    return false;
 }
