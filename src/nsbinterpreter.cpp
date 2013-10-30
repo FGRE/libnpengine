@@ -42,18 +42,26 @@ void NsbInterpreter::Run()
                 return;
             case uint16_t(MAGIC_CALL):
             {
+                // Find function locally
                 const char* FuncName = pLine->Params[0].c_str();
                 if (CallFunction(pScript, FuncName))
                     return;
 
+                // Find function globally
                 for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
                     if (CallFunction(LoadedScripts[i], FuncName))
                         return;
+
                 std::cerr << "Attempted to call unknown function: " << FuncName << std::endl;
                 break;
             }
             case uint16_t(MAGIC_UNK5):
                 Params[0] = { "STRING", std::string() }; // Hack
+                break;
+            case uint16_t(MAGIC_BEGIN):
+                // Turn params into variables
+                for (uint32_t i = 1; i < pLine->Params.size(); ++i)
+                    SetVariable(pLine->Params[i], Params[i - 1]);
                 break;
             case uint16_t(MAGIC_END):
                 ScriptStack.pop();
@@ -167,7 +175,7 @@ bool NsbInterpreter::CallFunction(NsbFile* pScript, const char* FuncName)
     {
         Returns.push({ScriptStack.top(), ScriptStack.top()->GetNextLineEntry()});
         ScriptStack.push(pScript);
-        pScript->SetSourceIter(FuncLine);
+        pScript->SetSourceIter(FuncLine - 1);
         return true;
     }
     return false;
