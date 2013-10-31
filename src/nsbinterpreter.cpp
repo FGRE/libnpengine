@@ -14,6 +14,9 @@ EndHack(false)
 {
     CallScript(InitScript);
 
+    // Global variable (hack)
+    SetVariable("OutRight", {"INT", "0"});
+
     // TODO: from .map file
     LoadScript("nss/function_steinsgate.nsb");
 }
@@ -90,18 +93,21 @@ void NsbInterpreter::Run()
                 break;
             }
             case uint16_t(MAGIC_LOAD_MOVIE):
-                LoadMovie(pLine->Params[0],
-                          boost::lexical_cast<int32_t>(pLine->Params[1]),
-                          boost::lexical_cast<int32_t>(pLine->Params[2]),
-                          boost::lexical_cast<int32_t>(pLine->Params[3]),
+            {
+                LoadMovie(GetVariable<std::string>(pLine->Params[0]),
+                          GetVariable<int32_t>(pLine->Params[1]),
+                          GetVariable<int32_t>(pLine->Params[2]),
+                          GetVariable<int32_t>(pLine->Params[3]),
                           Boolify(pLine->Params[4]),
                           Boolify(pLine->Params[5]),
                           GetVariable<std::string>(pLine->Params[6]),
                           Boolify(pLine->Params[7]));
-                break;
-            case uint16_t(MAGIC_UNK12):
                 EndHack = true;
+                break;
+            }
+            case uint16_t(MAGIC_UNK12):
                 return;
+            case uint16_t(MAGIC_UNK3):
             case uint16_t(MAGIC_UNK6):
                 // Guess...
                 Params.clear();
@@ -121,7 +127,7 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
 {
     auto iter = Variables.find(Identifier);
     if (iter == Variables.end())
-        return nullptr;
+        return boost::lexical_cast<T>(Identifier);
     return boost::lexical_cast<T>(iter->second.Value);
 }
 
@@ -137,7 +143,8 @@ bool NsbInterpreter::Boolify(const std::string& String)
     else if (String == "false")
         return false;
     std::cerr << "Invalid boolification of string: " << String << std::endl;
-    assert(false);
+    //assert(false);
+    return false;
 }
 
 template <class T> T* NsbInterpreter::GetHandle(const std::string& Identifier)
