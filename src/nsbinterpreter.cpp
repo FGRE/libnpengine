@@ -19,6 +19,10 @@ EndHack(false)
 
     // TODO: from .map file
     LoadScript("nss/function_steinsgate.nsb");
+    LoadScript("nss/function.nsb");
+    LoadScript("nss/extra_achievements.nsb");
+    LoadScript("nss/function_select.nsb");
+    LoadScript("nss/function_stand.nsb");
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -32,8 +36,7 @@ void NsbInterpreter::Run()
     if (EndHack)
         return;
 
-    NsbFile* pScript = ScriptStack.top();
-    assert(pScript && "Interpreting null script");
+    NsbAssert(pScript, "Interpreting null script");
 
     while (Line* pLine = pScript->GetNextLine())
     {
@@ -45,8 +48,10 @@ void NsbInterpreter::Run()
                 return;
             case uint16_t(MAGIC_CALL):
             {
-                // Find function locally
                 const char* FuncName = pLine->Params[0].c_str();
+                std::cout << "Calling function " << FuncName << " in " << pScript->GetName() << " at " << pScript->GetNextLineEntry() << std::endl;
+
+                // Find function locally
                 if (CallFunction(pScript, FuncName))
                     return;
 
@@ -55,11 +60,11 @@ void NsbInterpreter::Run()
                     if (CallFunction(LoadedScripts[i], FuncName))
                         return;
 
-                std::cerr << "Attempted to call unknown function: " << FuncName << std::endl;
+                std::cerr << "Failed to lookup function symbol " << FuncName << std::endl;
                 break;
             }
             case uint16_t(MAGIC_UNK5):
-                Params[0] = { "STRING", std::string() }; // Hack
+                Params[0] = {"STRING", std::string()}; // Hack
                 break;
             case uint16_t(MAGIC_BEGIN):
                 // Turn params into variables
@@ -67,7 +72,7 @@ void NsbInterpreter::Run()
                     SetVariable(pLine->Params[i], Params[i - 1]);
                 break;
             case uint16_t(MAGIC_END):
-                ScriptStack.pop();
+                NsbAssert(!Returns.empty(), "Empty return stack");
                 pScript = Returns.top().pScript;
                 pScript->SetSourceIter(Returns.top().SourceLine);
                 Returns.pop();
@@ -84,11 +89,17 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_CONCAT):
             {
                 uint32_t First = Params.size() - 2, Second = Params.size() - 1;
-                assert(Params[First].Type == Params[Second].Type && "Concating params of different types");
-                if (Params[First].Type == "STRING")
-                    Params[First].Value += Params[Second].Value;
-                else
-                    assert(false && "Please tell krofna where did you find this");
+                NsbAssert(Params[First].Type == Params[Second].Type,
+                          "Concating params of different types (% and %) in % at %",
+                          Params[First].Type,
+                          Params[Second].Type,
+                          pScript->GetName(),
+                          pScript->GetNextLineEntry());
+                NsbAssert(Params[First].Type == "STRING",
+                          "Concating non-STRING params in % at %",
+                          pScript->GetName(),
+                          pScript->GetNextLineEntry());
+                Params[First].Value += Params[Second].Value;
                 Params.resize(Second);
                 break;
             }
@@ -98,11 +109,10 @@ void NsbInterpreter::Run()
                           GetVariable<int32_t>(pLine->Params[1]),
                           GetVariable<int32_t>(pLine->Params[2]),
                           GetVariable<int32_t>(pLine->Params[3]),
-                          Boolify(pLine->Params[4]),
-                          Boolify(pLine->Params[5]),
+                          Boolify(GetVariable<std::string>(pLine->Params[4])),
+                          Boolify(GetVariable<std::string>(pLine->Params[5])),
                           GetVariable<std::string>(pLine->Params[6]),
-                          Boolify(pLine->Params[7]));
-                EndHack = true;
+                          Boolify(GetVariable<std::string>(pLine->Params[7])));
                 break;
             }
             case uint16_t(MAGIC_UNK12):
@@ -133,7 +143,7 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
 
 void NsbInterpreter::SetVariable(const std::string& Identifier, const Variable& Var)
 {
-    Variables.insert(std::pair<std::string, Variable>(Identifier, Var));
+    Variables[Identifier] = Var;
 }
 
 bool NsbInterpreter::Boolify(const std::string& String)
@@ -142,9 +152,8 @@ bool NsbInterpreter::Boolify(const std::string& String)
         return true;
     else if (String == "false")
         return false;
-    std::cerr << "Invalid boolification of string: " << String << std::endl;
-    //assert(false);
-    return false;
+    NsbAssert(false, "Invalid boolification of string: ", String.c_str());
+    return false; // Silence gcc
 }
 
 template <class T> T* NsbInterpreter::GetHandle(const std::string& Identifier)
@@ -161,9 +170,9 @@ void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, 
     if (Movie* pOld = GetHandle<Movie>(HandleName))
         delete pOld;
 
-    Movie* pMovie = new Movie(x, y, Loop, File);
+    Movie* pMovie = new Movie(x, y, Loop, File, Priority, true);
     Handles[HandleName] = pMovie;
-    pGame->AddDrawable({pMovie, Priority}); // Not sure about this...
+    pGame->AddDrawable(pMovie);
 }
 
 void NsbInterpreter::LoadScript(const std::string& FileName)
@@ -173,17 +182,56 @@ void NsbInterpreter::LoadScript(const std::string& FileName)
 
 void NsbInterpreter::CallScript(const std::string& FileName)
 {
-    ScriptStack.push(pResourceMgr->GetResource<NsbFile>(FileName));
+    pScript = pResourceMgr->GetResource<NsbFile>(FileName);
 }
 
-bool NsbInterpreter::CallFunction(NsbFile* pScript, const char* FuncName)
+bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
 {
-    if (uint32_t FuncLine = pScript->GetFunctionLine(FuncName))
+    if (uint32_t FuncLine = pDestScript->GetFunctionLine(FuncName))
     {
-        Returns.push({ScriptStack.top(), ScriptStack.top()->GetNextLineEntry()});
-        ScriptStack.push(pScript);
+        Returns.push({pScript, pScript->GetNextLineEntry()});
+        pScript = pDestScript;
         pScript->SetSourceIter(FuncLine - 1);
         return true;
     }
     return false;
+}
+
+void NsbInterpreter::NsbAssert(const char* fmt)
+{
+    std::cout << fmt << std::endl;
+}
+
+template<typename T, typename... A>
+void NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
+{
+    if (expr)
+        return;
+
+    while (*fmt)
+    {
+        if (*fmt == '%')
+        {
+            if (*(fmt + 1) == '%')
+                ++fmt;
+            else
+            {
+                std::cout << value << std::flush;
+                NsbAssert(false, fmt + 1, args...); // call even when *s == 0 to detect extra arguments
+                abort();
+            }
+        }
+        std::cout << *fmt++;
+    }
+
+    abort();
+}
+
+void NsbInterpreter::NsbAssert(bool expr, const char* fmt)
+{
+    if (!expr)
+    {
+        NsbAssert(fmt);
+        abort();
+    }
 }

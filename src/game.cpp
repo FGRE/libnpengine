@@ -1,5 +1,6 @@
 #include "game.hpp"
 #include "resourcemgr.hpp"
+#include "movie.hpp"
 
 #include <SFML/Window/Event.hpp>
 
@@ -22,10 +23,12 @@ Game::~Game()
 void Game::Run()
 {
     sf::Event Event;
+    bool RunInterpreter = true;
 
     while (IsRunning)
     {
-        pInterpreter->Run();
+        if (RunInterpreter)
+            pInterpreter->Run();
 
         while (pollEvent(Event))
         {
@@ -40,28 +43,41 @@ void Game::Run()
             }
         }
 
+        RunInterpreter = true;
+
         clear();
-        for (auto d : Drawables)
-            draw(*d.pDrawable);
+        auto d = Movies.begin();
+        while (d != Movies.end())
+        {
+            if ((*d)->ShouldRemove())
+                d = Movies.erase(d);
+            else
+            {
+                if ((*d)->IsBlocking())
+                    RunInterpreter = false;
+                draw(**d);
+            }
+            ++d;
+        }
         display();
     }
 }
 
-void Game::AddDrawable(Drawable Obj)
+void Game::AddDrawable(Movie* pMovie)
 {
-    auto Spot = Drawables.begin();
-    while (Spot != Drawables.end())
+    auto Spot = Movies.begin();
+    while (Spot != Movies.end())
     {
-        if (Spot->Priority >= Obj.Priority)
+        if ((*Spot)->GetPriority() >= pMovie->GetPriority())
             break;
         ++Spot;
     }
-    Drawables.insert(Spot, Obj);
+    Movies.insert(Spot, pMovie);
 }
 
-void Game::RemoveDrawable(Drawable Obj)
+void Game::RemoveDrawable(Movie* pMovie)
 {
-    Drawables.remove(Obj);
+    Movies.remove(pMovie);
 }
 
 void Game::RegisterCallback(sf::Keyboard::Key Key, const std::string& Script)

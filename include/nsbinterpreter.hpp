@@ -11,6 +11,9 @@ class ResourceMgr;
 
 struct Variable
 {
+    Variable() : Type("STRING") {}
+    Variable(const std::string& Type, const std::string& Value) : Type(Type), Value(Value) {}
+
     std::string Type;
     std::string Value;
 };
@@ -37,17 +40,21 @@ private:
     template <class T> T* GetHandle(const std::string& Identifier);
     template <class T> T GetVariable(const std::string& Identifier);
     void SetVariable(const std::string& Identifier, const Variable& Var);
-    bool CallFunction(NsbFile* pScript, const char* FuncName);
+    bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
 
     void LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
                    int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1);
 
+    void NsbAssert(bool expr, const char* fmt);
+    void NsbAssert(const char* fmt);
+    template<typename T, typename... A> void NsbAssert(bool expr, const char* fmt, T value, A... args);
+
     Game* pGame;
     ResourceMgr* pResourceMgr;
+    NsbFile* pScript;
     bool EndHack;
 
     std::stack<FuncReturn> Returns;
-    std::stack<NsbFile*> ScriptStack; // TODO: Obsolete
     std::vector<NsbFile*> LoadedScripts;
     std::map<std::string, Variable> Variables;
     std::map<std::string, void*> Handles;
