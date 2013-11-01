@@ -4,7 +4,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <list>
-#include "drawable.hpp"
+#include "movie.hpp"
 #include "nsbinterpreter.hpp"
 
 struct Callback
@@ -23,12 +23,12 @@ public:
     void Run();
 
 private:
-    void AddDrawable(Drawable Obj);
-    void RemoveDrawable(Drawable Obj);
+    void AddDrawable(Movie* pMovie);
+    void RemoveDrawable(Movie* pMovie);
     void RegisterCallback(sf::Keyboard::Key Key, const std::string& Script);
 
     std::vector<Callback> Callbacks;
-    std::list<Drawable> Drawables;
+    std::list<Movie*> Movies;
     bool IsRunning;
     NsbInterpreter* pInterpreter;
 };
