@@ -136,7 +136,7 @@ void NsbInterpreter::Run()
                 LoadTexture(GetVariable<std::string>(pLine->Params[0]),
                             GetVariable<int32_t>(pLine->Params[1]),
                             GetVariable<int32_t>(pLine->Params[2]),
-                            GetVariable<int32_t>(pLine->Params[3]),
+                            GetVariable<int32_t>(pLine->Params[3]), // TODO: sometimes STRING?
                             GetVariable<std::string>(pLine->Params[4]));
                 break;
             case uint16_t(MAGIC_DISPLAY):
