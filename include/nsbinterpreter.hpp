@@ -1,3 +1,20 @@
+/* 
+ * libnpengine: Nitroplus script interpreter
+ * Copyright (C) 2013 Mislav Blažević <krofnica996@gmail.com>
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * */
 #ifndef NSB_INTERPRETER_HPP
 #define NSB_INTERPRETER_HPP
 
@@ -44,6 +61,8 @@ private:
 
     void LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
                    int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1);
+    void LoadTexture(const std::string& HandleName, int32_t unk0, int32_t unk1,
+                     int32_t unk2, const std::string& File);
 
     void NsbAssert(bool expr, const char* fmt);
     void NsbAssert(const char* fmt);

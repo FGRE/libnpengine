@@ -1,6 +1,22 @@
+/* 
+ * libnpengine: Nitroplus script interpreter
+ * Copyright (C) 2013 Mislav Blažević <krofnica996@gmail.com>
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * */
 #include "game.hpp"
 #include "resourcemgr.hpp"
-#include "movie.hpp"
 
 #include <SFML/Window/Event.hpp>
 
@@ -46,16 +62,16 @@ void Game::Run()
         RunInterpreter = true;
 
         clear();
-        auto d = Movies.begin();
-        while (d != Movies.end())
+        auto d = Drawables.begin();
+        while (d != Drawables.end())
         {
-            if ((*d)->ShouldRemove())
-                d = Movies.erase(d);
+            if (d->ShouldRemove())
+                d = Drawables.erase(d);
             else
             {
-                if ((*d)->IsBlocking())
+                if (d->IsBlocking())
                     RunInterpreter = false;
-                draw(**d);
+                draw(*d->Get());
             }
             ++d;
         }
@@ -63,21 +79,21 @@ void Game::Run()
     }
 }
 
-void Game::AddDrawable(Movie* pMovie)
+void Game::AddDrawable(Drawable Obj)
 {
-    auto Spot = Movies.begin();
-    while (Spot != Movies.end())
+    auto Spot = Drawables.begin();
+    while (Spot != Drawables.end())
     {
-        if ((*Spot)->GetPriority() >= pMovie->GetPriority())
+        if (Spot->GetPriority() >= Obj.GetPriority())
             break;
         ++Spot;
     }
-    Movies.insert(Spot, pMovie);
+    Drawables.insert(Spot, Obj);
 }
 
-void Game::RemoveDrawable(Movie* pMovie)
+void Game::RemoveDrawable(sf::Drawable* pDrawable)
 {
-    Movies.remove(pMovie);
+    Drawables.remove(Drawable(pDrawable, 0, false, 0));
 }
 
 void Game::RegisterCallback(sf::Keyboard::Key Key, const std::string& Script)

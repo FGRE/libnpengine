@@ -1,11 +1,28 @@
+/* 
+ * libnpengine: Nitroplus script interpreter
+ * Copyright (C) 2013 Mislav Blažević <krofnica996@gmail.com>
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * */
 #include "nsbfile.hpp"
-#include "movie.hpp"
 #include "game.hpp"
 #include "resourcemgr.hpp"
 #include "nsbmagic.hpp"
 
 #include <iostream>
 #include <boost/lexical_cast.hpp>
+#include <sfeMovie/Movie.hpp>
 
 NsbInterpreter::NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const std::string& InitScript) :
 pGame(pGame),
@@ -115,6 +132,15 @@ void NsbInterpreter::Run()
                           Boolify(GetVariable<std::string>(pLine->Params[7])));
                 break;
             }
+            case uint16_t(MAGIC_LOAD_TEXTURE): break; // Disabled for now
+                LoadTexture(GetVariable<std::string>(pLine->Params[0]),
+                            GetVariable<int32_t>(pLine->Params[1]),
+                            GetVariable<int32_t>(pLine->Params[2]),
+                            GetVariable<int32_t>(pLine->Params[3]),
+                            GetVariable<std::string>(pLine->Params[4]));
+                break;
+            case uint16_t(MAGIC_DISPLAY):
+                break;
             case uint16_t(MAGIC_UNK12):
                 return;
             case uint16_t(MAGIC_UNK3):
@@ -167,12 +193,27 @@ template <class T> T* NsbInterpreter::GetHandle(const std::string& Identifier)
 void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
                                int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1)
 {
-    if (Movie* pOld = GetHandle<Movie>(HandleName))
+    if (sfe::Movie* pOld = GetHandle<sfe::Movie>(HandleName))
         delete pOld;
 
-    Movie* pMovie = new Movie(x, y, Loop, File, Priority, true);
+    sfe::Movie* pMovie = new sfe::Movie;
+    pMovie->openFromFile(File);
+    pMovie->setPosition(x, y);
+    // pMovie->setLoop(Loop);
+
     Handles[HandleName] = pMovie;
-    pGame->AddDrawable(pMovie);
+
+    // Not sure about this (MAGIC_DISPLAY?)
+    pGame->AddDrawable(Drawable(pMovie, Priority, true, DRAWABLE_MOVIE));
+    pMovie->play();
+}
+
+void NsbInterpreter::LoadTexture(const std::string& HandleName, int32_t unk0, int32_t unk1,
+                                 int32_t unk2, const std::string& File)
+{
+    sf::Texture* pTexture = new sf::Texture;
+    pTexture->loadFromFile(File);
+    Handles[HandleName] = pTexture;
 }
 
 void NsbInterpreter::LoadScript(const std::string& FileName)
