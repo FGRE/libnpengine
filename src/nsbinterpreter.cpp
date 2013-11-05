@@ -23,6 +23,7 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <sfeMovie/Movie.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 
 NsbInterpreter::NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const std::string& InitScript) :
 pGame(pGame),
@@ -39,7 +40,7 @@ EndHack(false)
     LoadScript("nss/function.nsb");
     LoadScript("nss/extra_achievements.nsb");
     LoadScript("nss/function_select.nsb");
-    LoadScript("nss/function_stand.nsb");
+    //LoadScript("nss/function_stand.nsb");
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -132,14 +133,31 @@ void NsbInterpreter::Run()
                           Boolify(GetVariable<std::string>(pLine->Params[7])));
                 break;
             }
-            case uint16_t(MAGIC_LOAD_TEXTURE): break; // Disabled for now
+            case uint16_t(MAGIC_LOAD_TEXTURE):
+            {
+                int32_t unk1, unk2;
+                if (Params[2].Type == "STRING")
+                    unk1 = 0;
+                else
+                    unk1 = GetVariable<int32_t>(pLine->Params[2]);
+                if (Params[3].Type == "STRING")
+                    unk2 = 0;
+                else
+                    unk2 = GetVariable<int32_t>(pLine->Params[3]);
+
                 LoadTexture(GetVariable<std::string>(pLine->Params[0]),
                             GetVariable<int32_t>(pLine->Params[1]),
-                            GetVariable<int32_t>(pLine->Params[2]),
-                            GetVariable<int32_t>(pLine->Params[3]), // TODO: sometimes STRING?
+                            unk1,
+                            unk2,
                             GetVariable<std::string>(pLine->Params[4]));
                 break;
-            case uint16_t(MAGIC_DISPLAY):
+            }
+            case uint16_t(MAGIC_DISPLAY): break; // Doesn't seem right....
+                Display(GetVariable<std::string>(pLine->Params[0]),
+                        GetVariable<int32_t>(pLine->Params[1]),
+                        GetVariable<int32_t>(pLine->Params[2]),
+                        GetVariable<std::string>(pLine->Params[3]),
+                        GetVariable<std::string>(pLine->Params[4]));
                 break;
             case uint16_t(MAGIC_UNK12):
                 return;
@@ -182,38 +200,51 @@ bool NsbInterpreter::Boolify(const std::string& String)
     return false; // Silence gcc
 }
 
-template <class T> T* NsbInterpreter::GetHandle(const std::string& Identifier)
+void NsbInterpreter::Display(const std::string& HandleName, int32_t unk0, int32_t unk1,
+                             const std::string& unk2, const std::string& unk3)
 {
-    auto iter = Handles.find(Identifier);
-    if (iter == Handles.end())
-        return nullptr;
-    return static_cast<T*>(iter->second);
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+        pGame->AddDrawable(pDrawable);
 }
 
 void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
                                int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1)
 {
-    if (sfe::Movie* pOld = GetHandle<sfe::Movie>(HandleName))
-        delete pOld;
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    {
+        pGame->RemoveDrawable(pDrawable);
+        delete pDrawable;
+    }
 
     sfe::Movie* pMovie = new sfe::Movie;
     pMovie->openFromFile(File);
     pMovie->setPosition(x, y);
     // pMovie->setLoop(Loop);
 
-    Handles[HandleName] = pMovie;
-
-    // Not sure about this (MAGIC_DISPLAY?)
-    pGame->AddDrawable(Drawable(pMovie, Priority, true, DRAWABLE_MOVIE));
-    pMovie->play();
+    // Abuse CacheHolder as HandleHolder :)
+    CacheHolder<Drawable>::Write(HandleName, new Drawable(pMovie, Priority, true, DRAWABLE_MOVIE));
 }
 
 void NsbInterpreter::LoadTexture(const std::string& HandleName, int32_t unk0, int32_t unk1,
                                  int32_t unk2, const std::string& File)
 {
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    {
+        pGame->RemoveDrawable(pDrawable);
+        delete pDrawable;
+    }
+
     sf::Texture* pTexture = new sf::Texture;
-    pTexture->loadFromFile(File);
-    Handles[HandleName] = pTexture;
+    uint32_t Size;
+    char* pTexData = pResourceMgr->Read(File, &Size);
+    if (!pTexData)
+    {
+        std::cout << "Failed to read texture " << File << std::endl;
+        return;
+    }
+    NsbAssert(pTexture->loadFromMemory(pTexData, Size), "Failed to load texture %!", File);
+    CacheHolder<Drawable>::Write(HandleName, new Drawable(new sf::Sprite(*pTexture), 0, false, DRAWABLE_TEXTURE));
+    Display(HandleName, 0, 0, "", ""); // Hack
 }
 
 void NsbInterpreter::LoadScript(const std::string& FileName)

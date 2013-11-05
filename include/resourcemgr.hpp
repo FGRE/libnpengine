@@ -63,7 +63,7 @@ public:
 
     void ClearCache();
 
-    char* Read(const std::string& Path, uint32_t* Size);
+    char* Read(std::string Path, uint32_t* Size);
     template <class T> T* GetResource(const std::string& Path);
 
 private:

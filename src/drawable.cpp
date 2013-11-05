@@ -27,6 +27,11 @@ Type(Type)
 {
 }
 
+Drawable::~Drawable()
+{
+    delete pDrawable;
+}
+
 bool Drawable::operator==(const Drawable& Other) const
 {
     return this->pDrawable == Other.pDrawable;

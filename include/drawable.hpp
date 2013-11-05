@@ -35,6 +35,7 @@ class Drawable
 {
 public:
     Drawable(sf::Drawable* pDrawable, int32_t Priority, bool Blocking, uint8_t Type);
+    ~Drawable();
 
     bool operator==(const Drawable& Other) const;
     bool IsBlocking() const;

@@ -45,8 +45,9 @@ void ResourceMgr::ClearCache()
     // TODO
 }
 
-char* ResourceMgr::Read(const std::string& Path, uint32_t* Size)
+char* ResourceMgr::Read(std::string Path, uint32_t* Size)
 {
+    std::transform(Path.begin(), Path.end(), Path.begin(), ::tolower);
     auto iter = FileRegistry.find(Path);
     if (iter != FileRegistry.end())
     {
