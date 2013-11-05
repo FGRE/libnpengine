@@ -21,6 +21,7 @@
 #include <stack>
 #include <cstdint>
 #include <map>
+#include <thread>
 
 class NsbFile;
 class Game;
@@ -54,7 +55,6 @@ public:
 private:
     bool Boolify(const std::string& String);
 
-    template <class T> T* GetHandle(const std::string& Identifier);
     template <class T> T GetVariable(const std::string& Identifier);
     void SetVariable(const std::string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
@@ -63,7 +63,10 @@ private:
                    int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1);
     void LoadTexture(const std::string& HandleName, int32_t unk0, int32_t unk1,
                      int32_t unk2, const std::string& File);
+    void Display(const std::string& HandleName, int32_t unk0, int32_t unk1,
+                 const std::string& unk2, const std::string& unk3);
 
+    // TODO: Print call stack, dump variables, params etc
     void NsbAssert(bool expr, const char* fmt);
     void NsbAssert(const char* fmt);
     template<typename T, typename... A> void NsbAssert(bool expr, const char* fmt, T value, A... args);
@@ -76,8 +79,8 @@ private:
     std::stack<FuncReturn> Returns;
     std::vector<NsbFile*> LoadedScripts;
     std::map<std::string, Variable> Variables;
-    std::map<std::string, void*> Handles;
     std::vector<Variable> Params;
+    std::thread ScriptThread;
 };
 
 #endif

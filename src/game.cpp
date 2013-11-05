@@ -19,6 +19,7 @@
 #include "resourcemgr.hpp"
 
 #include <SFML/Window/Event.hpp>
+#include <sfeMovie/Movie.hpp>
 
 Game::Game(const std::vector<std::string>& AchieveFileNames, const std::string& InitScript) :
 sf::RenderWindow(sf::VideoMode(1024, 576), "steins-gate", sf::Style::Close),
@@ -65,13 +66,13 @@ void Game::Run()
         auto d = Drawables.begin();
         while (d != Drawables.end())
         {
-            if (d->ShouldRemove())
+            if ((*d)->ShouldRemove())
                 d = Drawables.erase(d);
             else
             {
-                if (d->IsBlocking())
+                if ((*d)->IsBlocking())
                     RunInterpreter = false;
-                draw(*d->Get());
+                draw(*(*d)->Get());
             }
             ++d;
         }
@@ -79,21 +80,24 @@ void Game::Run()
     }
 }
 
-void Game::AddDrawable(Drawable Obj)
+void Game::AddDrawable(Drawable* pDrawable)
 {
+    if (sfe::Movie* pMovie = dynamic_cast<sfe::Movie*>(pDrawable->Get()))
+        pMovie->play();
+
     auto Spot = Drawables.begin();
     while (Spot != Drawables.end())
     {
-        if (Spot->GetPriority() >= Obj.GetPriority())
+        if ((*Spot)->GetPriority() >= pDrawable->GetPriority())
             break;
         ++Spot;
     }
-    Drawables.insert(Spot, Obj);
+    Drawables.insert(Spot, pDrawable);
 }
 
-void Game::RemoveDrawable(sf::Drawable* pDrawable)
+void Game::RemoveDrawable(Drawable* pDrawable)
 {
-    Drawables.remove(Drawable(pDrawable, 0, false, 0));
+    Drawables.remove(pDrawable);
 }
 
 void Game::RegisterCallback(sf::Keyboard::Key Key, const std::string& Script)

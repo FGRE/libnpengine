@@ -40,12 +40,12 @@ public:
     void Run();
 
 private:
-    void AddDrawable(Drawable Obj);
-    void RemoveDrawable(sf::Drawable* pDrawable);
+    void AddDrawable(Drawable* pDrawable);
+    void RemoveDrawable(Drawable* pDrawable);
     void RegisterCallback(sf::Keyboard::Key Key, const std::string& Script);
 
     std::vector<Callback> Callbacks;
-    std::list<Drawable> Drawables;
+    std::list<Drawable*> Drawables;
     bool IsRunning;
     NsbInterpreter* pInterpreter;
 };
