@@ -21,6 +21,7 @@
 #include <stack>
 #include <cstdint>
 #include <map>
+#include <vector>
 #include <thread>
 
 class NsbFile;
@@ -48,13 +49,18 @@ public:
     NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const std::string& InitScript);
     ~NsbInterpreter();
 
-    void Run();
+    void Stop();
+    void Pause();
+    void Start();
+
     void CallScript(const std::string& FileName);
     void LoadScript(const std::string& FileName);
 
 private:
-    bool Boolify(const std::string& String);
+    void ThreadMain();
+    void Run();
 
+    bool Boolify(const std::string& String);
     template <class T> T GetVariable(const std::string& Identifier);
     void SetVariable(const std::string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
@@ -64,7 +70,9 @@ private:
     void LoadTexture(const std::string& HandleName, int32_t unk0, int32_t unk1,
                      int32_t unk2, const std::string& File);
     void Display(const std::string& HandleName, int32_t unk0, int32_t unk1,
-                 const std::string& unk2, const std::string& unk3);
+                 const std::string& unk2, bool unk3);
+    void SetDisplayState(const std::string& HandleName, const std::string& State);
+    void GetMovieTime(const std::string& HandleName);
 
     // TODO: Print call stack, dump variables, params etc
     void NsbAssert(bool expr, const char* fmt);
@@ -74,7 +82,8 @@ private:
     Game* pGame;
     ResourceMgr* pResourceMgr;
     NsbFile* pScript;
-    bool EndHack;
+    volatile bool RunInterpreter;
+    volatile bool StopInterpreter;
 
     std::stack<FuncReturn> Returns;
     std::vector<NsbFile*> LoadedScripts;

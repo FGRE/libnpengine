@@ -19,10 +19,9 @@
 
 #include <sfeMovie/Movie.hpp>
 
-Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, bool Blocking, uint8_t Type) :
+Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
-Blocking(Blocking),
 Type(Type)
 {
 }
@@ -30,16 +29,6 @@ Type(Type)
 Drawable::~Drawable()
 {
     delete pDrawable;
-}
-
-bool Drawable::operator==(const Drawable& Other) const
-{
-    return this->pDrawable == Other.pDrawable;
-}
-
-bool Drawable::IsBlocking() const
-{
-    return Blocking;
 }
 
 int32_t Drawable::GetPriority() const
