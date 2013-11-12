@@ -90,8 +90,7 @@ void NsbInterpreter::Run()
                 //SetVariable(pLine->Params[0], {"STRING", GetVariable<std::string>(pLine->Params[1])});
                 break;
             case uint16_t(MAGIC_SLEEP):
-                std::cout << "Sleeping for " << GetVariable<int32_t>(Params[0].Value) << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(GetVariable<int32_t>(Params[0].Value)));
+                Sleep(GetVariable<int32_t>(Params[0].Value));
                 break;
             case uint16_t(MAGIC_GET_MOVIE_TIME):
                 GetMovieTime(GetVariable<std::string>(pLine->Params[0]));
@@ -104,6 +103,16 @@ void NsbInterpreter::Run()
             {
                 const char* FuncName = pLine->Params[0].c_str();
                 //std::cout << "Calling function " << FuncName << " in " << pScript->GetName() << " at " << pScript->GetNextLineEntry() << std::endl;
+
+                // Find function override
+                if (std::strcmp(FuncName, "MovieWaitSG") == 0)
+                {
+                    GetMovieTime("ムービー");
+                    Sleep(GetVariable<int32_t>(Params[0].Value));
+                    pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
+                                      CacheHolder<Drawable>::Read("ムービー")));
+                    break;
+                }
 
                 // Find function locally
                 if (CallFunction(pScript, FuncName))
@@ -224,6 +233,12 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
     if (iter == Variables.end())
         return boost::lexical_cast<T>(Identifier);
     return boost::lexical_cast<T>(iter->second.Value);
+}
+
+void NsbInterpreter::Sleep(int32_t ms)
+{
+    std::cout << "Sleeping for " << ms << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 void NsbInterpreter::SetVariable(const std::string& Identifier, const Variable& Var)

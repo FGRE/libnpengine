@@ -65,6 +65,7 @@ private:
     void SetVariable(const std::string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
 
+    void Sleep(int32_t ms);
     void LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
                    int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1);
     void LoadTexture(const std::string& HandleName, int32_t unk0, int32_t unk1,

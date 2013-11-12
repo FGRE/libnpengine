@@ -62,10 +62,7 @@ void Game::Run()
         auto d = Drawables.begin();
         while (d != Drawables.end())
         {
-            if ((*d)->ShouldRemove())
-                d = Drawables.erase(d);
-            else
-                draw(*(*d)->Get());
+            draw(*(*d)->Get());
             ++d;
         }
         display();

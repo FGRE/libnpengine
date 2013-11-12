@@ -40,10 +40,3 @@ sf::Drawable* Drawable::Get() const
 {
     return pDrawable;
 }
-
-bool Drawable::ShouldRemove() const
-{
-    if (Type == DRAWABLE_MOVIE)
-        return static_cast<sfe::Movie*>(pDrawable)->getStatus() != sfe::Movie::Playing;
-    return false;
-}
