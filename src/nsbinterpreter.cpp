@@ -108,7 +108,7 @@ void NsbInterpreter::Run()
                 if (std::strcmp(FuncName, "MovieWaitSG") == 0)
                 {
                     GetMovieTime("ムービー");
-                    Sleep(GetVariable<int32_t>(Params[0].Value));
+                    //Sleep(GetVariable<int32_t>(Params[0].Value));
                     pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                                       CacheHolder<Drawable>::Read("ムービー")));
                     break;
@@ -360,6 +360,19 @@ bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
     return false;
 }
 
+void NsbInterpreter::DumpTrace()
+{
+    std::cout << "**STACK TRACE BEGIN**" << std::endl;
+    std::stack<FuncReturn> Stack = Returns;
+    while (!Stack.empty())
+    {
+        std::cout << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
+        Stack.pop();
+    }
+    std::cout << "STACK TRACE END**" << std::endl;
+}
+
+// Rename/eliminate pls?
 void NsbInterpreter::NsbAssert(const char* fmt)
 {
     std::cout << fmt << std::endl;
@@ -381,20 +394,20 @@ void NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
             {
                 std::cout << value << std::flush;
                 NsbAssert(false, fmt + 1, args...); // call even when *s == 0 to detect extra arguments
+                DumpTrace();
                 abort();
             }
         }
         std::cout << *fmt++;
     }
-
-    abort();
 }
 
 void NsbInterpreter::NsbAssert(bool expr, const char* fmt)
 {
-    if (!expr)
-    {
-        NsbAssert(fmt);
-        abort();
-    }
+    if (expr)
+        return;
+
+    NsbAssert(fmt);
+    DumpTrace();
+    abort();
 }
