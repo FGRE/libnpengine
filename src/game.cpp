@@ -40,13 +40,11 @@ Game::~Game()
 void Game::Run()
 {
     sf::Event Event;
-    bool RunInterpreter = true;
+
+    pInterpreter->Start();
 
     while (IsRunning)
     {
-        if (RunInterpreter)
-            pInterpreter->Run();
-
         while (pollEvent(Event))
         {
             switch (Event.type)
@@ -60,8 +58,6 @@ void Game::Run()
             }
         }
 
-        RunInterpreter = true;
-
         clear();
         auto d = Drawables.begin();
         while (d != Drawables.end())
@@ -69,22 +65,33 @@ void Game::Run()
             if ((*d)->ShouldRemove())
                 d = Drawables.erase(d);
             else
-            {
-                if ((*d)->IsBlocking())
-                    RunInterpreter = false;
                 draw(*(*d)->Get());
-            }
             ++d;
         }
         display();
+
+        GLMutex.lock();
+        while (!GLCallbacks.empty())
+        {
+            GLCallbacks.front()();
+            GLCallbacks.pop();
+        }
+        GLMutex.unlock();
+
+        pInterpreter->Start();
     }
+}
+
+void Game::GLCallback(const std::function<void()>& Func)
+{
+    pInterpreter->Pause();
+    GLMutex.lock();
+    GLCallbacks.push(Func);
+    GLMutex.unlock();
 }
 
 void Game::AddDrawable(Drawable* pDrawable)
 {
-    if (sfe::Movie* pMovie = dynamic_cast<sfe::Movie*>(pDrawable->Get()))
-        pMovie->play();
-
     auto Spot = Drawables.begin();
     while (Spot != Drawables.end())
     {

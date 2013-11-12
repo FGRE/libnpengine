@@ -18,11 +18,14 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
+#include "drawable.hpp"
+#include "nsbinterpreter.hpp"
+
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <list>
-#include "drawable.hpp"
-#include "nsbinterpreter.hpp"
+#include <mutex>
+#include <queue>
 
 struct Callback
 {
@@ -43,7 +46,10 @@ private:
     void AddDrawable(Drawable* pDrawable);
     void RemoveDrawable(Drawable* pDrawable);
     void RegisterCallback(sf::Keyboard::Key Key, const std::string& Script);
+    void GLCallback(const std::function<void()>& Func);
 
+    std::mutex GLMutex;
+    std::queue<std::function<void()>> GLCallbacks;
     std::vector<Callback> Callbacks;
     std::list<Drawable*> Drawables;
     bool IsRunning;

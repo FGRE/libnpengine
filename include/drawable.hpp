@@ -34,11 +34,9 @@ namespace sf
 class Drawable
 {
 public:
-    Drawable(sf::Drawable* pDrawable, int32_t Priority, bool Blocking, uint8_t Type);
+    Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type);
     ~Drawable();
 
-    bool operator==(const Drawable& Other) const;
-    bool IsBlocking() const;
     int32_t GetPriority() const;
     sf::Drawable* Get() const;
     bool ShouldRemove() const;
@@ -46,7 +44,7 @@ public:
 private:
     sf::Drawable* pDrawable;
     int32_t Priority;
-    bool Blocking;
+public: // hack
     uint8_t Type;
 };
 
