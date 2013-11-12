@@ -25,6 +25,7 @@
 #include <boost/lexical_cast.hpp>
 #include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Audio/Music.hpp>
 
 NsbInterpreter::NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const std::string& InitScript) :
 pGame(pGame),
@@ -85,6 +86,19 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_LOAD_AUDIO):
+                LoadAudio(GetVariable<std::string>(pLine->Params[0]),
+                          GetVariable<std::string>(pLine->Params[1]),
+                          GetVariable<std::string>(pLine->Params[2]) + ".ogg");
+                break;
+            case uint16_t(MAGIC_START_ANIMATION):
+                StartAnimation(GetVariable<std::string>(pLine->Params[0]),
+                               GetVariable<int32_t>(pLine->Params[1]),
+                               GetVariable<int32_t>(pLine->Params[2]),
+                               GetVariable<int32_t>(pLine->Params[3]),
+                               GetVariable<std::string>(pLine->Params[4]),
+                               Boolify(GetVariable<std::string>(pLine->Params[5])));
+                break;
             case uint16_t(MAGIC_UNK29):
                 // This is (mistakenly) done by MAGIC_PARAM
                 //SetVariable(pLine->Params[0], {"STRING", GetVariable<std::string>(pLine->Params[1])});
@@ -234,10 +248,51 @@ void NsbInterpreter::Run()
 
 template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
 {
+    // NULL object
+    if (Identifier == "@")
+        return T();
+
     auto iter = Variables.find(Identifier);
-    if (iter == Variables.end())
-        return boost::lexical_cast<T>(Identifier);
-    return boost::lexical_cast<T>(iter->second.Value);
+
+    try
+    {
+        if (iter == Variables.end())
+            return boost::lexical_cast<T>(Identifier);
+        return boost::lexical_cast<T>(iter->second.Value);
+    }
+    catch (...)
+    {
+        std::cout << "Failed to cast " << Identifier << " to correct type." << std::endl;
+        return T();
+    }
+}
+
+void NsbInterpreter::LoadAudio(const std::string& HandleName, const std::string& Type, const std::string& File)
+{
+    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+    {
+        pMusic->stop();
+        delete pMusic;
+    }
+
+    sf::Music* pMusic = new sf::Music;
+    uint32_t Size;
+    char* pMusicData = pResourceMgr->Read(File, &Size);
+    if (!pMusicData)
+    {
+        std::cout << "Failed to read music " << File << std::endl;
+        DumpTrace();
+        CacheHolder<sf::Music>::Write(HandleName, nullptr);
+        return;
+    }
+    NsbAssert(pMusic->openFromMemory(pMusicData, Size), "Failed to load music %!", File);
+    CacheHolder<sf::Music>::Write(HandleName, pMusic);
+}
+
+void NsbInterpreter::StartAnimation(const std::string& HandleName, int32_t TimeRequired,
+                                    int32_t x, int32_t y, const std::string& Tempo, bool Wait)
+{
+    ;
 }
 
 void NsbInterpreter::ParseText(const std::string& unk0, const std::string& unk1, const std::string& Text)
@@ -324,7 +379,6 @@ void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, 
 
     // Abuse CacheHolder as HandleHolder :)
     CacheHolder<Drawable>::Write(HandleName, new Drawable(pMovie, Priority, DRAWABLE_MOVIE));
-    std::cout << "Wrote movie " << HandleName << std::endl;
 }
 
 void NsbInterpreter::LoadTexture(const std::string& HandleName, int32_t unk0, int32_t unk1,

@@ -65,6 +65,9 @@ private:
     void SetVariable(const std::string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
 
+    void LoadAudio(const std::string& HandleName, const std::string& Type, const std::string& File);
+    void StartAnimation(const std::string& HandleName, int32_t TimeRequired,
+                        int32_t x, int32_t y, const std::string& Tempo, bool Wait);
     void Sleep(int32_t ms);
     void ParseText(const std::string& unk0, const std::string& unk1, const std::string& Text);
     void LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
