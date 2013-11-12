@@ -39,7 +39,6 @@ public:
 
     int32_t GetPriority() const;
     sf::Drawable* Get() const;
-    bool ShouldRemove() const;
 
 private:
     sf::Drawable* pDrawable;
