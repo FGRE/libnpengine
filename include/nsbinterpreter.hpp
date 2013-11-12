@@ -75,7 +75,7 @@ private:
     void SetDisplayState(const std::string& HandleName, const std::string& State);
     void GetMovieTime(const std::string& HandleName);
 
-    // TODO: Print call stack, dump variables, params etc
+    void DumpTrace();
     void NsbAssert(bool expr, const char* fmt);
     void NsbAssert(const char* fmt);
     template<typename T, typename... A> void NsbAssert(bool expr, const char* fmt, T value, A... args);
