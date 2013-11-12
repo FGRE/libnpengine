@@ -129,6 +129,11 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_UNK5):
                 Params[0] = {"STRING", std::string()}; // Hack
                 break;
+            case uint16_t(MAGIC_TEXT):
+                ParseText(GetVariable<std::string>(pLine->Params[0]),
+                          GetVariable<std::string>(pLine->Params[1]),
+                          GetVariable<std::string>(pLine->Params[2]));
+                break;
             case uint16_t(MAGIC_BEGIN):
                 // Turn params into variables
                 for (uint32_t i = 1; i < pLine->Params.size(); ++i)
@@ -235,6 +240,12 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
     return boost::lexical_cast<T>(iter->second.Value);
 }
 
+void NsbInterpreter::ParseText(const std::string& unk0, const std::string& unk1, const std::string& Text)
+{
+    std::cout << unk0 << " " << unk1 << " " << Text << std::endl;
+    std::cin.get();
+}
+
 void NsbInterpreter::Sleep(int32_t ms)
 {
     std::cout << "Sleeping for " << ms << std::endl;
@@ -303,7 +314,7 @@ void NsbInterpreter::LoadMovie(const std::string& HandleName, int32_t Priority, 
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
         pGame->RemoveDrawable(pDrawable);
-        //delete pDrawable;
+        delete pDrawable;
     }
 
     sfe::Movie* pMovie = new sfe::Movie;
@@ -322,7 +333,6 @@ void NsbInterpreter::LoadTexture(const std::string& HandleName, int32_t unk0, in
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
         pGame->RemoveDrawable(pDrawable);
-        //delete static_cast<sf::Sprite*>(pDrawable->Get())->getTexture();
         delete pDrawable;
     }
 
@@ -332,6 +342,7 @@ void NsbInterpreter::LoadTexture(const std::string& HandleName, int32_t unk0, in
     if (!pTexData)
     {
         std::cout << "Failed to read texture " << File << std::endl;
+        CacheHolder<Drawable>::Write(HandleName, nullptr);
         return;
     }
     NsbAssert(pTexture->loadFromMemory(pTexData, Size), "Failed to load texture %!", File);

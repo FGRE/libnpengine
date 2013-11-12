@@ -18,6 +18,7 @@
 #include "drawable.hpp"
 
 #include <sfeMovie/Movie.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 
 Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
@@ -28,6 +29,10 @@ Type(Type)
 
 Drawable::~Drawable()
 {
+    if (Type == DRAWABLE_MOVIE)
+        static_cast<sfe::Movie*>(pDrawable)->stop();
+    else
+        delete static_cast<sf::Sprite*>(pDrawable)->getTexture();
     delete pDrawable;
 }
 
