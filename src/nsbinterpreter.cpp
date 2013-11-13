@@ -86,6 +86,11 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_SET_AUDIO_RANGE): break; // SFML bug #203
+                SetAudioRange(GetVariable<std::string>(pLine->Params[0]),
+                              GetVariable<int32_t>(pLine->Params[1]),
+                              GetVariable<int32_t>(pLine->Params[2]));
+                break;
             case uint16_t(MAGIC_LOAD_AUDIO):
                 LoadAudio(GetVariable<std::string>(pLine->Params[0]),
                           GetVariable<std::string>(pLine->Params[1]),
@@ -287,6 +292,12 @@ void NsbInterpreter::LoadAudio(const std::string& HandleName, const std::string&
     }
     NsbAssert(pMusic->openFromMemory(pMusicData, Size), "Failed to load music %!", File);
     CacheHolder<sf::Music>::Write(HandleName, pMusic);
+}
+
+void NsbInterpreter::SetAudioRange(const std::string& HandleName, int32_t begin, int32_t end)
+{
+    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+        pMusic->setPlayingOffset(sf::milliseconds(begin));
 }
 
 void NsbInterpreter::StartAnimation(const std::string& HandleName, int32_t TimeRequired,
