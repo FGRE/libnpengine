@@ -86,6 +86,10 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_DESTROY):
+                pGame->GLCallback(std::bind(&NsbInterpreter::Destroy, this,
+                                  GetVariable<std::string>(pLine->Params[0])));
+                break;
             case uint16_t(MAGIC_SET_AUDIO_RANGE): break; // SFML bug #203
                 SetAudioRange(GetVariable<std::string>(pLine->Params[0]),
                               GetVariable<int32_t>(pLine->Params[1]),
@@ -108,7 +112,7 @@ void NsbInterpreter::Run()
                 // This is (mistakenly) done by MAGIC_PARAM
                 //SetVariable(pLine->Params[0], {"STRING", GetVariable<std::string>(pLine->Params[1])});
                 break;
-            case uint16_t(MAGIC_SLEEP):
+            case uint16_t(MAGIC_SLEEP_MS):
                 Sleep(GetVariable<int32_t>(Params[0].Value));
                 break;
             case uint16_t(MAGIC_GET_MOVIE_TIME):
@@ -269,6 +273,20 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
     {
         std::cout << "Failed to cast " << Identifier << " to correct type." << std::endl;
         return T();
+    }
+}
+
+void NsbInterpreter::Destroy(std::string& HandleName)
+{
+    // Handle wildcard
+    if (HandleName[HandleName.size() - 1] == '*')
+        HandleName.pop_back();
+
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    {
+        CacheHolder<Drawable>::Write(HandleName, nullptr);
+        pGame->RemoveDrawable(pDrawable);
+        delete pDrawable;
     }
 }
 
