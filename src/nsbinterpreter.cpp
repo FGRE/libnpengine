@@ -363,6 +363,9 @@ void NsbInterpreter::SetDisplayState(const std::string& HandleName, const std::s
         }
 
     }
+    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+        if (State == "Play")
+            pMusic->play();
 }
 
 void NsbInterpreter::Display(const std::string& HandleName, int32_t unk0, int32_t unk1,
