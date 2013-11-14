@@ -89,6 +89,12 @@ void NsbInterpreter::Run()
                 pGame->GLCallback(std::bind(&NsbInterpreter::Destroy, this,
                                   GetVariable<std::string>(pLine->Params[0])));
                 break;
+            case uint16_t(MAGIC_SET_AUDIO_STATE):
+                SetAudioState(GetVariable<std::string>(pLine->Params[0]),
+                              GetVariable<int32_t>(pLine->Params[1]),
+                              GetVariable<int32_t>(pLine->Params[2]),
+                              GetVariable<std::string>(pLine->Params[3]));
+                break;
             case uint16_t(MAGIC_SET_AUDIO_LOOP):
                 SetAudioLoop(GetVariable<std::string>(pLine->Params[0]),
                              Boolify(GetVariable<std::string>(pLine->Params[1])));
@@ -277,6 +283,11 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
         std::cout << "Failed to cast " << Identifier << " to correct type." << std::endl;
         return T();
     }
+}
+
+void NsbInterpreter::SetAudioState(const std::string& HandleName, int32_t NumSeconds,
+                                   int32_t Volume, const std::string& Tempo)
+{
 }
 
 void NsbInterpreter::SetAudioLoop(const std::string& HandleName, bool Loop)
