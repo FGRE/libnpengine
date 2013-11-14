@@ -85,6 +85,14 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_SET_FONT_ATTRIBUTES):
+                SetFontAttributes(GetVariable<std::string>(pLine->Params[0]),
+                                  GetVariable<int32_t>(pLine->Params[1]),
+                                  GetVariable<std::string>(pLine->Params[2]),
+                                  GetVariable<std::string>(pLine->Params[3]),
+                                  GetVariable<int32_t>(pLine->Params[4]),
+                                  GetVariable<std::string>(pLine->Params[5]));
+                break;
             case uint16_t(MAGIC_DESTROY):
                 pGame->GLCallback(std::bind(&NsbInterpreter::Destroy, this,
                                   GetVariable<std::string>(pLine->Params[0])));
@@ -284,6 +292,12 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
         std::cout << "Failed to cast " << Identifier << " to correct type." << std::endl;
         return T();
     }
+}
+
+void NsbInterpreter::SetFontAttributes(const std::string& Font, int32_t size,
+                                       const std::string& Color1, const std::string& Color2,
+                                       int32_t unk0, const std::string& unk1)
+{
 }
 
 void NsbInterpreter::SetAudioState(const std::string& HandleName, int32_t NumSeconds,
