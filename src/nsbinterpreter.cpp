@@ -85,6 +85,16 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_CREATE_COLOR):
+                pGame->GLCallback(std::bind(&NsbInterpreter::CreateColor, this,
+                                  GetVariable<std::string>(pLine->Params[0]),
+                                  GetVariable<int32_t>(pLine->Params[1]),
+                                  GetVariable<int32_t>(pLine->Params[2]),
+                                  GetVariable<int32_t>(pLine->Params[3]),
+                                  GetVariable<int32_t>(pLine->Params[4]),
+                                  GetVariable<int32_t>(pLine->Params[5]),
+                                  GetVariable<std::string>(pLine->Params[6])));
+                break;
             case uint16_t(MAGIC_SET_TEXTBOX_ATTRIBUTES):
                 SetTextboxAttributes(GetVariable<std::string>(pLine->Params[0]),
                                      GetVariable<int32_t>(pLine->Params[1]),
@@ -304,6 +314,12 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
     }
 }
 
+void NsbInterpreter::CreateColor(const std::string& Handle, int32_t Priority, int32_t unk0, int32_t unk1,
+                                 int32_t Width, int32_t Height, const std::string& Color)
+{
+}
+
+
 void NsbInterpreter::SetTextboxAttributes(const std::string& Handle, int32_t unk0,
                                           const std::string& Font, int32_t unk1,
                                           const std::string& Color1, const std::string& Color2,
@@ -438,6 +454,7 @@ void NsbInterpreter::SetDisplayState(const std::string& HandleName, const std::s
             pMusic->play();
 }
 
+// Display($ColorNut, 処理時間, 1000, テンポ, 待ち);
 void NsbInterpreter::Display(const std::string& HandleName, int32_t unk0, int32_t unk1,
                              const std::string& unk2, bool unk3)
 {
