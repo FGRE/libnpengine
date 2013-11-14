@@ -36,13 +36,6 @@ ScriptThread(&NsbInterpreter::ThreadMain, this)
 {
     // Global variable (hack)
     SetVariable("OutRight", {"INT", "0"});
-
-    // TODO: from .map file
-    LoadScript("nss/function_steinsgate.nsb");
-    LoadScript("nss/function.nsb");
-    LoadScript("nss/extra_achievements.nsb");
-    LoadScript("nss/function_select.nsb");
-    //LoadScript("nss/function_stand.nsb");
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -52,6 +45,13 @@ NsbInterpreter::~NsbInterpreter()
 
 void NsbInterpreter::ThreadMain()
 {
+    // TODO: from .map file
+    LoadScript("nss/function_steinsgate.nsb");
+    LoadScript("nss/function.nsb");
+    LoadScript("nss/extra_achievements.nsb");
+    LoadScript("nss/function_select.nsb");
+    //LoadScript("nss/function_stand.nsb");
+
     do
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -153,9 +153,10 @@ void NsbInterpreter::Run()
                 // Find function globally
                 for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
                     if (CallFunction(LoadedScripts[i], FuncName))
-                        break;
+                        goto found;
 
-                //std::cerr << "Failed to lookup function symbol " << FuncName << std::endl;
+                std::cerr << "Failed to lookup function symbol " << FuncName << std::endl;
+                found:
                 break;
             }
             case uint16_t(MAGIC_UNK5):
