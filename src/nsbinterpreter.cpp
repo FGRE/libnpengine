@@ -85,6 +85,16 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_SET_TEXTBOX_ATTRIBUTES):
+                SetTextboxAttributes(GetVariable<std::string>(pLine->Params[0]),
+                                     GetVariable<int32_t>(pLine->Params[1]),
+                                     GetVariable<std::string>(pLine->Params[2]),
+                                     GetVariable<int32_t>(pLine->Params[3]),
+                                     GetVariable<std::string>(pLine->Params[4]),
+                                     GetVariable<std::string>(pLine->Params[5]),
+                                     GetVariable<int32_t>(pLine->Params[6]),
+                                     GetVariable<std::string>(pLine->Params[7]));
+                break;
             case uint16_t(MAGIC_SET_FONT_ATTRIBUTES):
                 SetFontAttributes(GetVariable<std::string>(pLine->Params[0]),
                                   GetVariable<int32_t>(pLine->Params[1]),
@@ -292,6 +302,13 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
         std::cout << "Failed to cast " << Identifier << " to correct type." << std::endl;
         return T();
     }
+}
+
+void NsbInterpreter::SetTextboxAttributes(const std::string& Handle, int32_t unk0,
+                                          const std::string& Font, int32_t unk1,
+                                          const std::string& Color1, const std::string& Color2,
+                                          int32_t unk2, const std::string& unk3)
+{
 }
 
 void NsbInterpreter::SetFontAttributes(const std::string& Font, int32_t size,

@@ -65,6 +65,10 @@ private:
     void SetVariable(const std::string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
 
+    void SetTextboxAttributes(const std::string& Handle, int32_t unk0,
+                              const std::string& Font, int32_t unk1,
+                              const std::string& Color1, const std::string& Color2,
+                              int32_t unk2, const std::string& unk3);
     void SetFontAttributes(const std::string& Font, int32_t size,
                            const std::string& Color1, const std::string& Color2,
                            int32_t unk0, const std::string& unk1);
