@@ -30,11 +30,10 @@
 NsbInterpreter::NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const std::string& InitScript) :
 pGame(pGame),
 pResourceMgr(pResourceMgr),
+pScript(pResourceMgr->GetResource<NsbFile>(InitScript)),
 StopInterpreter(false),
 ScriptThread(&NsbInterpreter::ThreadMain, this)
 {
-    CallScript(InitScript);
-
     // Global variable (hack)
     SetVariable("OutRight", {"INT", "0"});
 
@@ -89,6 +88,10 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_DESTROY):
                 pGame->GLCallback(std::bind(&NsbInterpreter::Destroy, this,
                                   GetVariable<std::string>(pLine->Params[0])));
+                break;
+            case uint16_t(MAGIC_SET_AUDIO_LOOP):
+                SetAudioLoop(GetVariable<std::string>(pLine->Params[0]),
+                             Boolify(GetVariable<std::string>(pLine->Params[1])));
                 break;
             case uint16_t(MAGIC_SET_AUDIO_RANGE): break; // SFML bug #203
                 SetAudioRange(GetVariable<std::string>(pLine->Params[0]),
@@ -274,6 +277,12 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
         std::cout << "Failed to cast " << Identifier << " to correct type." << std::endl;
         return T();
     }
+}
+
+void NsbInterpreter::SetAudioLoop(const std::string& HandleName, bool Loop)
+{
+    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+        pMusic->setLoop(Loop);
 }
 
 void NsbInterpreter::Destroy(std::string& HandleName)
