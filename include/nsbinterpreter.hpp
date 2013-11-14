@@ -65,6 +65,8 @@ private:
     void SetVariable(const std::string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
 
+    void SetAudioState(const std::string& HandleName, int32_t NumSeconds,
+                       int32_t Volume, const std::string& Tempo);
     void SetAudioLoop(const std::string& HandleName, bool Loop);
     void Destroy(std::string& HandleName);
     void SetAudioRange(const std::string& HandleName, int32_t begin, int32_t end);
