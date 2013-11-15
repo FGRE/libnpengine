@@ -51,7 +51,7 @@ void NsbInterpreter::ThreadMain()
     LoadScript("nss/function.nsb");
     LoadScript("nss/extra_achievements.nsb");
     LoadScript("nss/function_select.nsb");
-    LoadScript("nss/function_stand.nsb");
+    //LoadScript("nss/function_stand.nsb");
 
     do
     {
