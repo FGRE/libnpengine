@@ -86,7 +86,7 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
-            case uint16_t(MAGIC_CREATE_COLOR):
+            case uint16_t(MAGIC_CREATE_COLOR): break;
                 pGame->GLCallback(std::bind(&NsbInterpreter::CreateColor, this,
                                   GetVariable<std::string>(pLine->Params[0]),
                                   GetVariable<int32_t>(pLine->Params[1]),
@@ -318,15 +318,20 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
 void NsbInterpreter::CreateColor(const std::string& HandleName, int32_t Priority, int32_t unk0, int32_t unk1,
                                  int32_t Width, int32_t Height, const std::string& Color)
 {
-    if (sf::Image* pImage = CacheHolder<sf::Image>::Read(HandleName))
-        delete pImage;
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    {
+        pGame->RemoveDrawable(pDrawable);
+        delete pDrawable;
+    }
 
     std::stringstream ss(Color);
     uint32_t IntColor;
     ss >> std::hex >> IntColor;
-    sf::Image* pImage = new sf::Image;
-    pImage->create(Width, Height, sf::Color(IntColor / 0x10000, (IntColor / 0x100) % 0x100, IntColor % 0x100));
-    CacheHolder<sf::Image>::Write(HandleName, pImage);
+    sf::Image ColorImage;
+    ColorImage.create(Width, Height, sf::Color(IntColor / 0x10000, (IntColor / 0x100) % 0x100, IntColor % 0x100));
+    sf::Texture* pTexture = new sf::Texture;
+    NsbAssert(pTexture->loadFromImage(ColorImage), "Failed to create color % texture to handle %.", Color, HandleName);
+    CacheHolder<Drawable>::Write(HandleName, new Drawable(new sf::Sprite(*pTexture), Priority, DRAWABLE_TEXTURE));
 }
 
 
@@ -507,6 +512,7 @@ void NsbInterpreter::LoadTexture(const std::string& HandleName, int32_t unk0, in
     if (!pTexData)
     {
         std::cout << "Failed to read texture " << File << std::endl;
+        delete pTexture;
         CacheHolder<Drawable>::Write(HandleName, nullptr);
         return;
     }
