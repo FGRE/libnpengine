@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <chrono>
+#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics/Sprite.hpp>
@@ -314,9 +315,18 @@ template <class T> T NsbInterpreter::GetVariable(const std::string& Identifier)
     }
 }
 
-void NsbInterpreter::CreateColor(const std::string& Handle, int32_t Priority, int32_t unk0, int32_t unk1,
+void NsbInterpreter::CreateColor(const std::string& HandleName, int32_t Priority, int32_t unk0, int32_t unk1,
                                  int32_t Width, int32_t Height, const std::string& Color)
 {
+    if (sf::Image* pImage = CacheHolder<sf::Image>::Read(HandleName))
+        delete pImage;
+
+    std::stringstream ss(Color);
+    uint32_t IntColor;
+    ss >> std::hex >> IntColor;
+    sf::Image* pImage = new sf::Image;
+    pImage->create(Width, Height, sf::Color(IntColor / 0x10000, (IntColor / 0x100) % 0x100, IntColor % 0x100));
+    CacheHolder<sf::Image>::Write(HandleName, pImage);
 }
 
 
