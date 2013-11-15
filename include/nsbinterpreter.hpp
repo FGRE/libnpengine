@@ -77,6 +77,7 @@ private:
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
 
+    void BindIdentifier(const string& HandleName);
     void SetVariable(const string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
     void ArrayRead(const string& HandleName, int32_t Depth);
