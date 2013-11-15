@@ -93,6 +93,9 @@ void NsbInterpreter::Run()
                 for (uint32_t i = 1; i < Params.size(); ++i)
                     Arrays[GetParam<string>(0)].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
                 break;
+            case uint16_t(MAGIC_BIND_IDENTIFIER):
+                BindIdentifier(GetParam<string>(0));
+                break;
             case uint16_t(MAGIC_CREATE_COLOR): break;
                 pGame->GLCallback(std::bind(&NsbInterpreter::CreateColor, this,
                                   GetParam<string>(0), GetParam<int32_t>(1),
@@ -290,6 +293,11 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 template <class T> T NsbInterpreter::GetParam(int32_t Index)
 {
     return GetVariable<T>(pLine->Params[Index]);
+}
+
+void NsbInterpreter::BindIdentifier(const string& HandleName)
+{
+    // Keep in mind that it can bind identifiers at any level of indirection
 }
 
 void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
