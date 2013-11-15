@@ -24,17 +24,30 @@
 #include <vector>
 #include <thread>
 
+using std::string;
+
 class NsbFile;
 class Game;
 class ResourceMgr;
+class Line;
+class ArrayVariable;
+
+typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 
 struct Variable
 {
     Variable() : Type("STRING") {}
-    Variable(const std::string& Type, const std::string& Value) : Type(Type), Value(Value) {}
+    Variable(const string& Type, const string& Value) : Type(Type), Value(Value) {}
 
-    std::string Type;
-    std::string Value;
+    string Type;
+    string Value;
+};
+
+struct ArrayVariable : Variable
+{
+    ArrayVariable() : Variable() {}
+    ArrayVariable(const Variable& Var) : Variable(Var.Type, Var.Value) {}
+    ArrayMembers Members;
 };
 
 struct FuncReturn
@@ -46,58 +59,60 @@ struct FuncReturn
 class NsbInterpreter
 {
 public:
-    NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const std::string& InitScript);
+    NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const string& InitScript);
     ~NsbInterpreter();
 
     void Stop();
     void Pause();
     void Start();
 
-    void CallScript(const std::string& FileName); // Deprecated
-    void LoadScript(const std::string& FileName);
+    void CallScript(const string& FileName); // Deprecated
+    void LoadScript(const string& FileName);
 
 private:
     void ThreadMain();
     void Run();
 
-    bool Boolify(const std::string& String);
-    template <class T> T GetVariable(const std::string& Identifier);
-    void SetVariable(const std::string& Identifier, const Variable& Var);
+    bool Boolify(const string& String);
+    template <class T> T GetParam(int32_t Index);
+    template <class T> T GetVariable(const string& Identifier);
+    void SetVariable(const string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
-
-    void CreateColor(const std::string& HandleName, int32_t Priority, int32_t unk0, int32_t unk1,
-                     int32_t Width, int32_t Height, const std::string& Color);
-    void SetTextboxAttributes(const std::string& Handle, int32_t unk0,
-                              const std::string& Font, int32_t unk1,
-                              const std::string& Color1, const std::string& Color2,
-                              int32_t unk2, const std::string& unk3);
-    void SetFontAttributes(const std::string& Font, int32_t size,
-                           const std::string& Color1, const std::string& Color2,
-                           int32_t unk0, const std::string& unk1);
-    void SetAudioState(const std::string& HandleName, int32_t NumSeconds,
-                       int32_t Volume, const std::string& Tempo);
-    void SetAudioLoop(const std::string& HandleName, bool Loop);
-    void Destroy(std::string& HandleName);
-    void SetAudioRange(const std::string& HandleName, int32_t begin, int32_t end);
-    void LoadAudio(const std::string& HandleName, const std::string& Type, const std::string& File);
-    void StartAnimation(const std::string& HandleName, int32_t TimeRequired,
-                        int32_t x, int32_t y, const std::string& Tempo, bool Wait);
+    void ArrayRead(const string& HandleName, int32_t Depth);
+    void CreateColor(const string& HandleName, int32_t Priority, int32_t unk0, int32_t unk1,
+                     int32_t Width, int32_t Height, const string& Color);
+    void SetTextboxAttributes(const string& Handle, int32_t unk0,
+                              const string& Font, int32_t unk1,
+                              const string& Color1, const string& Color2,
+                              int32_t unk2, const string& unk3);
+    void SetFontAttributes(const string& Font, int32_t size,
+                           const string& Color1, const string& Color2,
+                           int32_t unk0, const string& unk1);
+    void SetAudioState(const string& HandleName, int32_t NumSeconds,
+                       int32_t Volume, const string& Tempo);
+    void SetAudioLoop(const string& HandleName, bool Loop);
+    void Destroy(string& HandleName);
+    void SetAudioRange(const string& HandleName, int32_t begin, int32_t end);
+    void LoadAudio(const string& HandleName, const string& Type, const string& File);
+    void StartAnimation(const string& HandleName, int32_t TimeRequired,
+                        int32_t x, int32_t y, const string& Tempo, bool Wait);
     void Sleep(int32_t ms);
-    void ParseText(const std::string& unk0, const std::string& unk1, const std::string& Text);
-    void LoadMovie(const std::string& HandleName, int32_t Priority, int32_t x,
-                   int32_t y, bool Loop, bool unk0, const std::string& File, bool unk1);
-    void LoadTexture(const std::string& HandleName, int32_t unk0, int32_t unk1,
-                     int32_t unk2, const std::string& File);
-    void Display(const std::string& HandleName, int32_t unk0, int32_t unk1,
-                 const std::string& unk2, bool unk3);
-    void SetDisplayState(const std::string& HandleName, const std::string& State);
-    void GetMovieTime(const std::string& HandleName);
+    void ParseText(const string& unk0, const string& unk1, const string& Text);
+    void LoadMovie(const string& HandleName, int32_t Priority, int32_t x,
+                   int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
+    void LoadTexture(const string& HandleName, int32_t unk0, int32_t unk1,
+                     int32_t unk2, const string& File);
+    void Display(const string& HandleName, int32_t unk0, int32_t unk1,
+                 const string& unk2, bool unk3);
+    void SetDisplayState(const string& HandleName, const string& State);
+    void GetMovieTime(const string& HandleName);
 
     void DumpTrace();
     void NsbAssert(bool expr, const char* fmt);
     void NsbAssert(const char* fmt);
     template<typename T, typename... A> void NsbAssert(bool expr, const char* fmt, T value, A... args);
 
+    Line* pLine;
     Game* pGame;
     ResourceMgr* pResourceMgr;
     NsbFile* pScript;
@@ -106,7 +121,8 @@ private:
 
     std::stack<FuncReturn> Returns;
     std::vector<NsbFile*> LoadedScripts;
-    std::map<std::string, Variable> Variables;
+    std::map<string, Variable> Variables;
+    std::map<string, ArrayVariable> Arrays;
     std::vector<Variable> Params;
     std::thread ScriptThread;
 };
