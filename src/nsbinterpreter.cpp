@@ -86,7 +86,7 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
-            case uint16_t(MAGIC_ARRAY_READ):
+            case uint16_t(MAGIC_ARRAY_READ): break;
                 ArrayRead(GetParam<string>(0), GetParam<int32_t>(1));
                 break;
             case uint16_t(MAGIC_CREATE_ARRAY):

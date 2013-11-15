@@ -76,34 +76,24 @@ private:
     bool Boolify(const string& String);
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
+
     void SetVariable(const string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
     void ArrayRead(const string& HandleName, int32_t Depth);
-    void CreateColor(const string& HandleName, int32_t Priority, int32_t unk0, int32_t unk1,
-                     int32_t Width, int32_t Height, const string& Color);
-    void SetTextboxAttributes(const string& Handle, int32_t unk0,
-                              const string& Font, int32_t unk1,
-                              const string& Color1, const string& Color2,
-                              int32_t unk2, const string& unk3);
-    void SetFontAttributes(const string& Font, int32_t size,
-                           const string& Color1, const string& Color2,
-                           int32_t unk0, const string& unk1);
-    void SetAudioState(const string& HandleName, int32_t NumSeconds,
-                       int32_t Volume, const string& Tempo);
+    void CreateColor(const string& HandleName, int32_t Priority, int32_t unk0, int32_t unk1, int32_t Width, int32_t Height, const string& Color);
+    void SetTextboxAttributes(const string& Handle, int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
+    void SetFontAttributes(const string& Font, int32_t size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
+    void SetAudioState(const string& HandleName, int32_t NumSeconds, int32_t Volume, const string& Tempo);
     void SetAudioLoop(const string& HandleName, bool Loop);
     void Destroy(string& HandleName);
     void SetAudioRange(const string& HandleName, int32_t begin, int32_t end);
     void LoadAudio(const string& HandleName, const string& Type, const string& File);
-    void StartAnimation(const string& HandleName, int32_t TimeRequired,
-                        int32_t x, int32_t y, const string& Tempo, bool Wait);
+    void StartAnimation(const string& HandleName, int32_t TimeRequired, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void Sleep(int32_t ms);
     void ParseText(const string& unk0, const string& unk1, const string& Text);
-    void LoadMovie(const string& HandleName, int32_t Priority, int32_t x,
-                   int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
-    void LoadTexture(const string& HandleName, int32_t unk0, int32_t unk1,
-                     int32_t unk2, const string& File);
-    void Display(const string& HandleName, int32_t unk0, int32_t unk1,
-                 const string& unk2, bool unk3);
+    void LoadMovie(const string& HandleName, int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
+    void LoadTexture(const string& HandleName, int32_t unk0, int32_t unk1, int32_t unk2, const string& File);
+    void Display(const string& HandleName, int32_t unk0, int32_t unk1, const string& unk2, bool unk3);
     void SetDisplayState(const string& HandleName, const string& State);
     void GetMovieTime(const string& HandleName);
 
