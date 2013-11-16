@@ -91,7 +91,7 @@ void NsbInterpreter::Run()
                           GetParam<int32_t>(4), GetParam<int32_t>(5),
                           Boolify(GetParam<string>(6)));
                 break;
-            case uint16_t(MAGIC_ARRAY_READ):
+            case uint16_t(MAGIC_ARRAY_READ): break;
                 ArrayRead(GetParam<string>(0), GetParam<int32_t>(1));
                 break;
             case uint16_t(MAGIC_CREATE_ARRAY):
@@ -303,6 +303,8 @@ template <class T> T NsbInterpreter::GetParam(int32_t Index)
 
 void NsbInterpreter::CreateBox(const string& HandleName, int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
 {
+    sf::IntRect* pRect = new sf::IntRect(x, y, Width, Height);
+    CacheHolder<sf::IntRect>::Write(HandleName, pRect);
 }
 
 void NsbInterpreter::BindIdentifier(const string& /*HandleName*/)
@@ -517,9 +519,16 @@ void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32
     }
 
     sfe::Movie* pMovie = new sfe::Movie;
+    pMovie->setLoop(Loop); // NYI
     pMovie->openFromFile(File);
-    pMovie->setPosition(x, y);
-    // pMovie->setLoop(Loop);
+    string BoxHandle(HandleName, 0, HandleName.find_first_of("/"));
+    if (sf::IntRect* pRect = CacheHolder<sf::IntRect>::Read(BoxHandle))
+    {
+        pMovie->setTextureRect(*pRect);
+        pMovie->setPosition(pRect->left, pRect->top);
+    }
+    else
+        pMovie->setPosition(x, y); // Maybe add xy and pRect->xy?
 
     // Abuse CacheHolder as HandleHolder :)
     CacheHolder<Drawable>::Write(HandleName, new Drawable(pMovie, Priority, DRAWABLE_MOVIE));
