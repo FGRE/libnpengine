@@ -77,12 +77,11 @@ void NsbInterpreter::Start()
 
 void NsbInterpreter::Run()
 {
-    NsbAssert(pScript, "Interpreting null script");
-
     while (RunInterpreter)
     {
         pLine = pScript->GetNextLine();
         NsbAssert(pLine, "Interpreting null line");
+        NsbAssert(pScript, "Interpreting null script");
 
         switch (pLine->Magic)
         {
@@ -258,6 +257,7 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_UNK3):
             case uint16_t(MAGIC_UNK6):
                 Params.clear();
+                ArrayParams.clear();
                 break;
             case uint16_t(MAGIC_CALLBACK):
                 pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
@@ -305,7 +305,7 @@ void NsbInterpreter::BindIdentifier(const string& /*HandleName*/)
 void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
 {
     const string* MemberName = &HandleName;
-    ArrayVariable* pVariable;
+    ArrayVariable* pVariable = nullptr;
 
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
@@ -321,7 +321,11 @@ void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
         }
     }
 
+    if (!pVariable)
+        return;
+
     ArrayParams.push_back(pVariable);
+    Params.push_back(*pVariable);
 }
 
 void NsbInterpreter::CreateColor(const string& HandleName, int32_t Priority, int32_t unk0, int32_t unk1,
@@ -552,14 +556,31 @@ bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
 
 void NsbInterpreter::DumpTrace()
 {
-    std::cout << "**STACK TRACE BEGIN**" << std::endl;
+    std::cout << "\nCRASH:\n**STACK TRACE BEGIN**\n";
     std::stack<FuncReturn> Stack = Returns;
     while (!Stack.empty())
     {
         std::cout << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
         Stack.pop();
     }
-    std::cout << "STACK TRACE END**" << std::endl;
+    std::cout << "**STACK TRACE END**\nRecovering...\n" << std::endl;
+}
+
+void NsbInterpreter::Abort()
+{
+#ifdef DEBUG
+    abort();
+#else
+    Recover(); // #if NDEBUG
+#endif
+}
+
+void NsbInterpreter::Recover()
+{
+    while (Line* pLine = pScript->GetNextLine())
+        if (pLine->Magic == MAGIC_UNK6)
+            break;
+    pScript->SetSourceIter(pScript->GetNextLineEntry() - 2);
 }
 
 // Rename/eliminate pls?
@@ -582,10 +603,10 @@ void NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
                 ++fmt;
             else
             {
-                std::cout << value << std::flush;
+                std::cout << value << std::endl;
                 NsbAssert(false, fmt + 1, args...); // call even when *s == 0 to detect extra arguments
                 DumpTrace();
-                abort();
+                Abort();
             }
         }
         std::cout << *fmt++;
@@ -599,5 +620,5 @@ void NsbInterpreter::NsbAssert(bool expr, const char* fmt)
 
     NsbAssert(fmt);
     DumpTrace();
-    abort();
+    Abort();
 }
