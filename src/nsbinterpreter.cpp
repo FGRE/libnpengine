@@ -101,7 +101,7 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_BIND_IDENTIFIER):
                 BindIdentifier(GetParam<string>(0));
                 break;
-            case uint16_t(MAGIC_CREATE_COLOR): break;
+            case uint16_t(MAGIC_CREATE_COLOR):
                 pGame->GLCallback(std::bind(&NsbInterpreter::CreateColor, this,
                                   GetParam<string>(0), GetParam<int32_t>(1),
                                   GetParam<int32_t>(2), GetParam<int32_t>(3),
@@ -281,6 +281,18 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
     if (Identifier == "@")
         return T();
 
+    // Needs special handling, currently a hack
+    if (Identifier[0] == '@')
+    {
+        // Hack wildcard
+        uint32_t Len = Identifier.size() - 1;
+        if (Identifier[Len] == '*')
+            --Len;
+
+        string NewId = string(Identifier, 1, Len);
+        return boost::lexical_cast<T>(NewId);
+    }
+
     auto iter = Variables.find(Identifier);
 
     try
@@ -340,8 +352,8 @@ void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
     Params.push_back(*pVariable);
 }
 
-void NsbInterpreter::CreateColor(const string& HandleName, int32_t Priority, int32_t unk0, int32_t unk1,
-                                 int32_t Width, int32_t Height, const string& Color)
+void NsbInterpreter::CreateColor(const string& HandleName, int32_t Priority, int32_t x,
+                                 int32_t y, int32_t Width, int32_t Height, string Color)
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
@@ -349,14 +361,32 @@ void NsbInterpreter::CreateColor(const string& HandleName, int32_t Priority, int
         delete pDrawable;
     }
 
-    std::stringstream ss(Color);
     uint32_t IntColor;
-    ss >> std::hex >> IntColor;
+
+    std::transform(Color.begin(), Color.end(), Color.begin(), ::tolower);
+    if (Color[0] == '#')
+    {
+        Color = string(Color.c_str() + 1);
+        std::stringstream ss(Color);
+        ss >> std::hex >> IntColor;
+    }
+    else
+    {
+        if (Color == "black")
+            IntColor = 0;
+        else if (Color == "white")
+            IntColor = 0xFFFFFF;
+        else if (Color == "blue")
+            IntColor = 0xFF;
+    }
+
     sf::Image ColorImage;
     ColorImage.create(Width, Height, sf::Color(IntColor / 0x10000, (IntColor / 0x100) % 0x100, IntColor % 0x100));
     sf::Texture* pTexture = new sf::Texture;
     NsbAssert(pTexture->loadFromImage(ColorImage), "Failed to create color % texture to handle %.", Color, HandleName);
-    CacheHolder<Drawable>::Write(HandleName, new Drawable(new sf::Sprite(*pTexture), Priority, DRAWABLE_TEXTURE));
+    sf::Sprite* pSprite = new sf::Sprite(*pTexture);
+    pSprite->setPosition(x, y);
+    CacheHolder<Drawable>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
 }
 
 
@@ -376,6 +406,8 @@ void NsbInterpreter::SetFontAttributes(const string& Font, int32_t size,
 void NsbInterpreter::SetAudioState(const string& HandleName, int32_t NumSeconds,
                                    int32_t Volume, const string& Tempo)
 {
+    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+        pMusic->setVolume(Volume / 10);
 }
 
 void NsbInterpreter::SetAudioLoop(const string& HandleName, bool Loop)
@@ -500,13 +532,19 @@ void NsbInterpreter::SetDisplayState(const string& HandleName, const string& Sta
             pMusic->play();
 }
 
-// Display($ColorNut, 処理時間, 1000, テンポ, 待ち);
-void NsbInterpreter::Display(const string& HandleName, int32_t unk0, int32_t unk1, const string& Tempo, bool Wait)
+// TODO: Rename to Fade()
+void NsbInterpreter::Display(const string& HandleName, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
 {
-    if (unk1 > 0)
-        if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
-            if (pDrawable->Type == DRAWABLE_TEXTURE)
-                pGame->AddDrawable(pDrawable);
+    static const float Convert = 0.255f;
+
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    {
+        float Alpha = Opacity / Convert;
+        sf::Uint8 UAlpha = static_cast<sf::Uint8>(Alpha);
+
+        if (pDrawable->Type == DRAWABLE_TEXTURE)
+            ((sf::Sprite*)pDrawable->Get())->setColor(sf::Color(0xFF, 0xFF, 0xFF, UAlpha));
+    }
 }
 
 void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32_t x,
@@ -556,7 +594,9 @@ void NsbInterpreter::LoadTexture(const string& HandleName, int32_t Priority, int
 
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
     pSprite->setPosition(x, y);
-    CacheHolder<Drawable>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
+    Drawable* pDrawable = new Drawable(pSprite, Priority, DRAWABLE_TEXTURE);
+    CacheHolder<Drawable>::Write(HandleName, pDrawable);
+    pGame->AddDrawable(pDrawable);
 }
 
 void NsbInterpreter::LoadScript(const string& FileName)
