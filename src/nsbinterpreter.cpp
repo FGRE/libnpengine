@@ -417,7 +417,13 @@ void NsbInterpreter::SetAudioRange(const string& HandleName, int32_t begin, int3
 void NsbInterpreter::StartAnimation(const string& HandleName, int32_t TimeRequired,
                                     int32_t x, int32_t y, const string& Tempo, bool Wait)
 {
-    ;
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    {
+        if (pDrawable->Type == DRAWABLE_TEXTURE)
+            ((sf::Sprite*)pDrawable->Get())->setPosition(x, y);
+        else if (pDrawable->Type == DRAWABLE_MOVIE)
+            ((sfe::Movie*)pDrawable->Get())->setPosition(x, y);
+    }
 }
 
 void NsbInterpreter::ParseText(const string& unk0, const string& unk1, const string& Text)
@@ -509,8 +515,7 @@ void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32
     CacheHolder<Drawable>::Write(HandleName, new Drawable(pMovie, Priority, DRAWABLE_MOVIE));
 }
 
-void NsbInterpreter::LoadTexture(const string& HandleName, int32_t unk0, int32_t unk1,
-                                 int32_t unk2, const string& File)
+void NsbInterpreter::LoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File)
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
@@ -529,7 +534,10 @@ void NsbInterpreter::LoadTexture(const string& HandleName, int32_t unk0, int32_t
         return;
     }
     NsbAssert(pTexture->loadFromMemory(pTexData, Size), "Failed to load texture %!", File);
-    CacheHolder<Drawable>::Write(HandleName, new Drawable(new sf::Sprite(*pTexture), 0, DRAWABLE_TEXTURE));
+
+    sf::Sprite* pSprite = new sf::Sprite(*pTexture);
+    pSprite->setPosition(x, y);
+    CacheHolder<Drawable>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
 }
 
 void NsbInterpreter::LoadScript(const string& FileName)
@@ -571,7 +579,7 @@ void NsbInterpreter::Abort()
 #ifdef DEBUG
     abort();
 #else
-    Recover(); // #if NDEBUG
+    Recover();
 #endif
 }
 
