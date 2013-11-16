@@ -85,6 +85,12 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_CREATE_BOX):
+                CreateBox(GetParam<string>(0), GetParam<int32_t>(1),
+                          GetParam<int32_t>(2), GetParam<int32_t>(3),
+                          GetParam<int32_t>(4), GetParam<int32_t>(5),
+                          Boolify(GetParam<string>(6)));
+                break;
             case uint16_t(MAGIC_ARRAY_READ):
                 ArrayRead(GetParam<string>(0), GetParam<int32_t>(1));
                 break;
@@ -134,7 +140,7 @@ void NsbInterpreter::Run()
                                GetParam<int32_t>(3), GetParam<string>(4), Boolify(GetParam<string>(5)));
                 break;
             case uint16_t(MAGIC_UNK29):
-                // This is (mistakenly) done by MAGIC_PARAM
+                // This is (mistakenly) done by MAGIC_CALL
                 //SetVariable(pLine->Params[0], {"STRING", GetVariable<string>(pLine->Params[1])});
                 break;
             case uint16_t(MAGIC_SLEEP_MS):
@@ -293,6 +299,10 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 template <class T> T NsbInterpreter::GetParam(int32_t Index)
 {
     return GetVariable<T>(pLine->Params[Index]);
+}
+
+void NsbInterpreter::CreateBox(const string& HandleName, int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
+{
 }
 
 void NsbInterpreter::BindIdentifier(const string& /*HandleName*/)
