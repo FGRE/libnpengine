@@ -295,15 +295,17 @@ template <class T> T NsbInterpreter::GetParam(int32_t Index)
     return GetVariable<T>(pLine->Params[Index]);
 }
 
-void NsbInterpreter::BindIdentifier(const string& HandleName)
+void NsbInterpreter::BindIdentifier(const string& /*HandleName*/)
 {
-    // Keep in mind that it can bind identifiers at any level of indirection
+    ArrayVariable* Var = ArrayParams[ArrayParams.size() - 1];
+    for (uint32_t i = 1; i < Params.size(); ++i)
+        Var->Members[i - 1].first = Params[i].Value;
 }
 
 void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
 {
     const string* MemberName = &HandleName;
-    Variable* pVariable;
+    ArrayVariable* pVariable;
 
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
@@ -319,7 +321,7 @@ void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
         }
     }
 
-    Params.push_back(*pVariable);
+    ArrayParams.push_back(pVariable);
 }
 
 void NsbInterpreter::CreateColor(const string& HandleName, int32_t Priority, int32_t unk0, int32_t unk1,
@@ -477,8 +479,7 @@ void NsbInterpreter::SetDisplayState(const string& HandleName, const string& Sta
 }
 
 // Display($ColorNut, 処理時間, 1000, テンポ, 待ち);
-void NsbInterpreter::Display(const string& HandleName, int32_t unk0, int32_t unk1,
-                             const string& unk2, bool unk3)
+void NsbInterpreter::Display(const string& HandleName, int32_t unk0, int32_t unk1, const string& Tempo, bool Wait)
 {
     if (unk1 > 0)
         if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
