@@ -78,6 +78,7 @@ private:
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
 
+    void CreateBox(const string& HandleName, int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void BindIdentifier(const string& HandleName);
     void SetVariable(const string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
