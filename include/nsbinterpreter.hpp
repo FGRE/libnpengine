@@ -67,9 +67,10 @@ public:
     void Start();
 
     void CallScript(const string& FileName); // Deprecated
-    void LoadScript(const string& FileName);
 
 private:
+    void LoadScript(const string& FileName);
+
     void ThreadMain();
     void Run();
 
@@ -93,11 +94,13 @@ private:
     void Sleep(int32_t ms);
     void ParseText(const string& unk0, const string& unk1, const string& Text);
     void LoadMovie(const string& HandleName, int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
-    void LoadTexture(const string& HandleName, int32_t unk0, int32_t unk1, int32_t unk2, const string& File);
-    void Display(const string& HandleName, int32_t unk0, int32_t unk1, const string& unk2, bool unk3);
+    void LoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File);
+    void Display(const string& HandleName, int32_t unk0, int32_t unk1, const string& Tempo, bool Wait);
     void SetDisplayState(const string& HandleName, const string& State);
     void GetMovieTime(const string& HandleName);
 
+    void Abort();
+    void Recover();
     void DumpTrace();
     void NsbAssert(bool expr, const char* fmt);
     void NsbAssert(const char* fmt);
@@ -115,6 +118,7 @@ private:
     std::map<string, Variable> Variables;
     std::map<string, ArrayVariable> Arrays;
     std::vector<Variable> Params;
+    std::vector<ArrayVariable*> ArrayParams;
     std::thread ScriptThread;
 };
 

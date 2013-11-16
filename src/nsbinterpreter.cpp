@@ -77,16 +77,15 @@ void NsbInterpreter::Start()
 
 void NsbInterpreter::Run()
 {
-    NsbAssert(pScript, "Interpreting null script");
-
     while (RunInterpreter)
     {
         pLine = pScript->GetNextLine();
         NsbAssert(pLine, "Interpreting null line");
+        NsbAssert(pScript, "Interpreting null script");
 
         switch (pLine->Magic)
         {
-            case uint16_t(MAGIC_ARRAY_READ): break;
+            case uint16_t(MAGIC_ARRAY_READ):
                 ArrayRead(GetParam<string>(0), GetParam<int32_t>(1));
                 break;
             case uint16_t(MAGIC_CREATE_ARRAY):
@@ -258,6 +257,7 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_UNK3):
             case uint16_t(MAGIC_UNK6):
                 Params.clear();
+                ArrayParams.clear();
                 break;
             case uint16_t(MAGIC_CALLBACK):
                 pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
@@ -295,15 +295,17 @@ template <class T> T NsbInterpreter::GetParam(int32_t Index)
     return GetVariable<T>(pLine->Params[Index]);
 }
 
-void NsbInterpreter::BindIdentifier(const string& HandleName)
+void NsbInterpreter::BindIdentifier(const string& /*HandleName*/)
 {
-    // Keep in mind that it can bind identifiers at any level of indirection
+    ArrayVariable* Var = ArrayParams[ArrayParams.size() - 1];
+    for (uint32_t i = 1; i < Params.size(); ++i)
+        Var->Members[i - 1].first = Params[i].Value;
 }
 
 void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
 {
     const string* MemberName = &HandleName;
-    Variable* pVariable;
+    ArrayVariable* pVariable = nullptr;
 
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
@@ -319,6 +321,10 @@ void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
         }
     }
 
+    if (!pVariable)
+        return;
+
+    ArrayParams.push_back(pVariable);
     Params.push_back(*pVariable);
 }
 
@@ -411,7 +417,13 @@ void NsbInterpreter::SetAudioRange(const string& HandleName, int32_t begin, int3
 void NsbInterpreter::StartAnimation(const string& HandleName, int32_t TimeRequired,
                                     int32_t x, int32_t y, const string& Tempo, bool Wait)
 {
-    ;
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    {
+        if (pDrawable->Type == DRAWABLE_TEXTURE)
+            ((sf::Sprite*)pDrawable->Get())->setPosition(x, y);
+        else if (pDrawable->Type == DRAWABLE_MOVIE)
+            ((sfe::Movie*)pDrawable->Get())->setPosition(x, y);
+    }
 }
 
 void NsbInterpreter::ParseText(const string& unk0, const string& unk1, const string& Text)
@@ -477,8 +489,7 @@ void NsbInterpreter::SetDisplayState(const string& HandleName, const string& Sta
 }
 
 // Display($ColorNut, 処理時間, 1000, テンポ, 待ち);
-void NsbInterpreter::Display(const string& HandleName, int32_t unk0, int32_t unk1,
-                             const string& unk2, bool unk3)
+void NsbInterpreter::Display(const string& HandleName, int32_t unk0, int32_t unk1, const string& Tempo, bool Wait)
 {
     if (unk1 > 0)
         if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
@@ -504,8 +515,7 @@ void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32
     CacheHolder<Drawable>::Write(HandleName, new Drawable(pMovie, Priority, DRAWABLE_MOVIE));
 }
 
-void NsbInterpreter::LoadTexture(const string& HandleName, int32_t unk0, int32_t unk1,
-                                 int32_t unk2, const string& File)
+void NsbInterpreter::LoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File)
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
@@ -524,7 +534,10 @@ void NsbInterpreter::LoadTexture(const string& HandleName, int32_t unk0, int32_t
         return;
     }
     NsbAssert(pTexture->loadFromMemory(pTexData, Size), "Failed to load texture %!", File);
-    CacheHolder<Drawable>::Write(HandleName, new Drawable(new sf::Sprite(*pTexture), 0, DRAWABLE_TEXTURE));
+
+    sf::Sprite* pSprite = new sf::Sprite(*pTexture);
+    pSprite->setPosition(x, y);
+    CacheHolder<Drawable>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
 }
 
 void NsbInterpreter::LoadScript(const string& FileName)
@@ -551,14 +564,31 @@ bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
 
 void NsbInterpreter::DumpTrace()
 {
-    std::cout << "**STACK TRACE BEGIN**" << std::endl;
+    std::cout << "\nCRASH:\n**STACK TRACE BEGIN**\n";
     std::stack<FuncReturn> Stack = Returns;
     while (!Stack.empty())
     {
         std::cout << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
         Stack.pop();
     }
-    std::cout << "STACK TRACE END**" << std::endl;
+    std::cout << "**STACK TRACE END**\nRecovering...\n" << std::endl;
+}
+
+void NsbInterpreter::Abort()
+{
+#ifdef DEBUG
+    abort();
+#else
+    Recover();
+#endif
+}
+
+void NsbInterpreter::Recover()
+{
+    while (Line* pLine = pScript->GetNextLine())
+        if (pLine->Magic == MAGIC_UNK6)
+            break;
+    pScript->SetSourceIter(pScript->GetNextLineEntry() - 2);
 }
 
 // Rename/eliminate pls?
@@ -581,10 +611,10 @@ void NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
                 ++fmt;
             else
             {
-                std::cout << value << std::flush;
+                std::cout << value << std::endl;
                 NsbAssert(false, fmt + 1, args...); // call even when *s == 0 to detect extra arguments
                 DumpTrace();
-                abort();
+                Abort();
             }
         }
         std::cout << *fmt++;
@@ -598,5 +628,5 @@ void NsbInterpreter::NsbAssert(bool expr, const char* fmt)
 
     NsbAssert(fmt);
     DumpTrace();
-    abort();
+    Abort();
 }
