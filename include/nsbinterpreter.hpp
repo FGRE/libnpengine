@@ -99,6 +99,8 @@ private:
     void SetDisplayState(const string& HandleName, const string& State);
     void GetMovieTime(const string& HandleName);
 
+    void Abort();
+    void Recover();
     void DumpTrace();
     void NsbAssert(bool expr, const char* fmt);
     void NsbAssert(const char* fmt);
