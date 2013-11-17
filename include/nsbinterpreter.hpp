@@ -34,16 +34,6 @@ class ArrayVariable;
 
 typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 
-enum : int32_t
-{
-    POS_CENTER = -1,
-    POS_IN_BOTTOM = -2,
-    POS_MIDDLE = -3,
-    POS_ON_LEFT = -4,
-    POS_OUT_TOP = -5,
-    POS_IN_TOP = -6
-};
-
 struct Variable
 {
     Variable() : Type("STRING") {}

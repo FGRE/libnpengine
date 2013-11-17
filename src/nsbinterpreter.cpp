@@ -30,14 +30,23 @@
 
 #define SPECIAL_POS_NUM 6
 
+enum : int32_t
+{
+    POS_CENTER = -1,
+    POS_IN_BOTTOM = -2,
+    POS_MIDDLE = -3,
+    POS_ON_LEFT = -4,
+    POS_OUT_TOP = -5,
+    POS_IN_TOP = -6
+};
+
 const std::string SpecialPos[SPECIAL_POS_NUM] =
 {
     "Center", "InBottom", "Middle",
     "OnLeft", "OutTop", "InTop"
 };
 
-
-std::function<int32_t(int32_t)> SpecialPosTable[] =
+std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
 {
   [] (int32_t x) { return WINDOW_WIDTH / 2 - x / 2; },
   [] (int32_t y) { return WINDOW_HEIGHT - y; },
@@ -315,15 +324,7 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 
     // Needs special handling, currently a hack
     if (Identifier[0] == '@')
-    {
-        // Hack wildcard
-        uint32_t Len = Identifier.size() - 1;
-        //if (Identifier[Len] == '*')
-            //--Len;
-
-        string NewId = string(Identifier, 1, Len);
-        return boost::lexical_cast<T>(NewId);
-    }
+        return boost::lexical_cast<T>(string(Identifier, 1, Identifier.size() - 1));
 
     auto iter = Variables.find(Identifier);
 
