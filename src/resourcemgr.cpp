@@ -20,7 +20,6 @@
 #include "nsbfile.hpp"
 
 #include <memory>
-#include <algorithm>
 
 ResourceMgr::ResourceMgr(const std::vector<std::string>& AchieveFileNames)
 {

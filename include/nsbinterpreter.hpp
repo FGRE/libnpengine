@@ -34,6 +34,16 @@ class ArrayVariable;
 
 typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 
+enum : int32_t
+{
+    POS_CENTER = -1,
+    POS_IN_BOTTOM = -2,
+    POS_MIDDLE = -3,
+    POS_ON_LEFT = -4,
+    POS_OUT_TOP = -5,
+    POS_IN_TOP = -6
+};
+
 struct Variable
 {
     Variable() : Type("STRING") {}
@@ -96,7 +106,7 @@ private:
     void ParseText(const string& unk0, const string& unk1, const string& Text);
     void LoadMovie(const string& HandleName, int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
     void LoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File);
-    void Display(const string& HandleName, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
+    void SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void SetDisplayState(const string& HandleName, const string& State);
     void GetMovieTime(const string& HandleName);
 
