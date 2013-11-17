@@ -22,11 +22,11 @@
 #include <sfeMovie/Movie.hpp>
 
 Game::Game(const std::vector<std::string>& AchieveFileNames, const std::string& InitScript) :
-sf::RenderWindow(sf::VideoMode(1024, 576), "steins-gate", sf::Style::Close),
+sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "steins-gate", sf::Style::Close),
 IsRunning(true)
 {
     sf::Vector2i WindowPos(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height);
-    WindowPos -= sf::Vector2i(1024, 576);
+    WindowPos -= sf::Vector2i(WINDOW_WIDTH, WINDOW_HEIGHT);
     WindowPos /= 2;
     setPosition(WindowPos);
     pInterpreter = new NsbInterpreter(this, new ResourceMgr(AchieveFileNames), InitScript);

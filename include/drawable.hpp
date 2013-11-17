@@ -19,6 +19,7 @@
 #define DRAWABLE_HPP
 
 #include <cstdint>
+#include <SFML/System/Clock.hpp>
 
 enum
 {
@@ -37,12 +38,17 @@ public:
     Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type);
     ~Drawable();
 
+    void Update();
+    void Fade(int32_t Opacity, int32_t Time);
     int32_t GetPriority() const;
     sf::Drawable* Get() const;
 
 private:
     sf::Drawable* pDrawable;
     int32_t Priority;
+    int32_t Opacity;
+    int32_t Time;
+    sf::Clock FadeClock;
 public: // hack
     uint8_t Type;
 };

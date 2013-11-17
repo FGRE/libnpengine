@@ -28,6 +28,25 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Audio/Music.hpp>
 
+#define SPECIAL_POS_NUM 6
+
+const std::string SpecialPos[SPECIAL_POS_NUM] =
+{
+    "Center", "InBottom", "Middle",
+    "OnLeft", "OutTop", "InTop"
+};
+
+
+std::function<int32_t(int32_t)> SpecialPosTable[] =
+{
+  [] (int32_t x) { return WINDOW_WIDTH / 2 - x / 2; },
+  [] (int32_t y) { return WINDOW_HEIGHT - y; },
+  [] (int32_t y) { return WINDOW_HEIGHT / 2 + y / 2; },
+  [] (int32_t x) { return 0; },
+  [] (int32_t y) { return 0; },
+  [] (int32_t y) { return 0; }
+};
+
 NsbInterpreter::NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const string& InitScript) :
 pGame(pGame),
 pResourceMgr(pResourceMgr),
@@ -235,26 +254,39 @@ void NsbInterpreter::Run()
             }
             case uint16_t(MAGIC_LOAD_TEXTURE):
             {
-                int32_t unk1, unk2;
-                if (Params[2].Type == "STRING")
-                    unk1 = 0;
-                else
-                    unk1 = GetParam<int32_t>(2);
-                if (Params[3].Type == "STRING")
-                    unk2 = 0;
-                else
-                    unk2 = GetParam<int32_t>(3);
+                int32_t Pos[2];
+                for (int32_t i = 2; i <= 3; ++i)
+                {
+                    if (Params[i].Type == "STRING")
+                    {
+                        for (int32_t j = 0; j < SPECIAL_POS_NUM; ++j)
+                            if (Params[i].Value == SpecialPos[j])
+                                Pos[i - 2] = -(j + 1);
+                    }
+                    else
+                        Pos[i - 2] = GetParam<int32_t>(i);
+                }
 
                 pGame->GLCallback(std::bind(&NsbInterpreter::LoadTexture, this,
                                   GetParam<string>(0), GetParam<int32_t>(1),
-                                  unk1, unk2, GetParam<string>(4)));
+                                  Pos[0], Pos[1], GetParam<string>(4)));
                 break;
             }
-            case uint16_t(MAGIC_DISPLAY):
-                Display(GetParam<string>(0), GetParam<int32_t>(1),
-                        GetParam<int32_t>(2), GetParam<string>(3),
-                        Boolify(GetParam<string>(4)));
+            case uint16_t(MAGIC_SET_OPACITY):
+            {
+                string Handle = GetParam<string>(0);
+                if (Handle.back() == '*')
+                    for (auto i = CacheHolder<Drawable>::ReadFirstMatch(Handle);
+                         i != CacheHolder<Drawable>::Cache.end();
+                         i = CacheHolder<Drawable>::ReadNextMatch(Handle, i))
+                         SetOpacity(i->second, GetParam<int32_t>(1),
+                                    GetParam<int32_t>(2), GetParam<string>(3),
+                                    Boolify(GetParam<string>(4)));
+                else
+                    SetOpacity(CacheHolder<Drawable>::Read(Handle), GetParam<int32_t>(1),
+                               GetParam<int32_t>(2), GetParam<string>(3), Boolify(GetParam<string>(4)));
                 break;
+            }
             case uint16_t(MAGIC_SET_DISPLAY_STATE):
                 SetDisplayState(GetParam<string>(0), GetParam<string>(1));
                 break;
@@ -286,8 +318,8 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
     {
         // Hack wildcard
         uint32_t Len = Identifier.size() - 1;
-        if (Identifier[Len] == '*')
-            --Len;
+        //if (Identifier[Len] == '*')
+            //--Len;
 
         string NewId = string(Identifier, 1, Len);
         return boost::lexical_cast<T>(NewId);
@@ -355,6 +387,10 @@ void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
 void NsbInterpreter::CreateColor(const string& HandleName, int32_t Priority, int32_t x,
                                  int32_t y, int32_t Width, int32_t Height, string Color)
 {
+    // Workaround
+    if (HandleName == "クリア黒")
+        return;
+
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
         pGame->RemoveDrawable(pDrawable);
@@ -378,6 +414,8 @@ void NsbInterpreter::CreateColor(const string& HandleName, int32_t Priority, int
             IntColor = 0xFFFFFF;
         else if (Color == "blue")
             IntColor = 0xFF;
+        else
+            NsbAssert(false, "Unknown color: %, ", Color);
     }
 
     sf::Image ColorImage;
@@ -418,7 +456,7 @@ void NsbInterpreter::SetAudioLoop(const string& HandleName, bool Loop)
 
 void NsbInterpreter::Destroy(string& HandleName)
 {
-    // Handle wildcard
+    // Handle wildcard: TODO: Is it hacked in GetVariable?
     if (HandleName[HandleName.size() - 1] == '*')
         HandleName.pop_back();
 
@@ -532,19 +570,20 @@ void NsbInterpreter::SetDisplayState(const string& HandleName, const string& Sta
             pMusic->play();
 }
 
-// TODO: Rename to Fade()
-void NsbInterpreter::Display(const string& HandleName, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
+void NsbInterpreter::SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
 {
-    static const float Convert = 0.255f;
+    if (!pDrawable)
+        return;
 
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    //if (Time == 0)
     {
-        float Alpha = Opacity / Convert;
-        sf::Uint8 UAlpha = static_cast<sf::Uint8>(Alpha);
-
-        if (pDrawable->Type == DRAWABLE_TEXTURE)
-            ((sf::Sprite*)pDrawable->Get())->setColor(sf::Color(0xFF, 0xFF, 0xFF, UAlpha));
+        if (Opacity == 0)
+            pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame, pDrawable));
+        else if (Opacity == 1000)
+            pGame->GLCallback(std::bind(&Game::AddDrawable, pGame, pDrawable));
     }
+    //else
+        //pDrawable->Fade(Opacity, Time);
 }
 
 void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32_t x,
@@ -593,6 +632,11 @@ void NsbInterpreter::LoadTexture(const string& HandleName, int32_t Priority, int
     NsbAssert(pTexture->loadFromMemory(pTexData, Size), "Failed to load texture %!", File);
 
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
+    // TODO: Positions are x/y specific!
+    if (x < 0 && x >= -SPECIAL_POS_NUM)
+        x = SpecialPosTable[-(x + 1)](pTexture->getSize().x);
+    if (y < 0 && y >= -SPECIAL_POS_NUM)
+        y = SpecialPosTable[-(y + 1)](pTexture->getSize().y);
     pSprite->setPosition(x, y);
     Drawable* pDrawable = new Drawable(pSprite, Priority, DRAWABLE_TEXTURE);
     CacheHolder<Drawable>::Write(HandleName, pDrawable);

@@ -20,9 +20,12 @@
 #include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 
+static const float FadeConvert = 0.255f;
+
 Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
+Time(0),
 Type(Type)
 {
 }
@@ -34,6 +37,27 @@ Drawable::~Drawable()
     else
         delete static_cast<sf::Sprite*>(pDrawable)->getTexture();
     delete pDrawable;
+}
+
+void Drawable::Update()
+{
+}
+
+void Drawable::Fade(int32_t Opacity, int32_t Time)
+{
+    this->Opacity = Opacity;
+    this->Time = Time;
+    FadeClock.restart();
+
+    // Hack: Move to update()
+    float Alpha = Opacity / FadeConvert;
+    sf::Uint8 UAlpha = static_cast<sf::Uint8>(Alpha);
+
+    if (Type == DRAWABLE_TEXTURE)
+        static_cast<sf::Sprite*>(pDrawable)->setColor(sf::Color(0xFF, 0xFF, 0xFF, UAlpha));
+    else
+        static_cast<sfe::Movie*>(pDrawable)->setColor(sf::Color(0xFF, 0xFF, 0xFF, UAlpha));
+
 }
 
 int32_t Drawable::GetPriority() const
