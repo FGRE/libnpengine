@@ -93,7 +93,7 @@ private:
     void LoadAudio(const string& HandleName, const string& Type, const string& File);
     void StartAnimation(const string& HandleName, int32_t TimeRequired, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void Sleep(int32_t ms);
-    void ParseText(const string& unk0, const string& unk1, const string& Text);
+    void ParseText(const string& Text, const string& Box, const string& XML);
     void LoadMovie(const string& HandleName, int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
     void LoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File);
     void SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);

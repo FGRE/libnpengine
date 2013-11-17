@@ -509,9 +509,10 @@ void NsbInterpreter::StartAnimation(const string& HandleName, int32_t TimeRequir
     }
 }
 
-void NsbInterpreter::ParseText(const string& unk0, const string& unk1, const string& Text)
+void NsbInterpreter::ParseText(const string& Text, const string& Box, const string& XML)
 {
-    std::cout << unk0 << " " << unk1 << " " << Text << std::endl;
+    SetVariable("$SYSTEM_present_text", { "STRING", Text });
+    std::cout << Text << " " << Box << " " << XML << std::endl;
     std::cin.get();
 }
 
