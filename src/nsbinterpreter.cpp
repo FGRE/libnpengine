@@ -17,8 +17,10 @@
  * */
 #include "nsbfile.hpp"
 #include "game.hpp"
+#include "drawable.hpp"
 #include "resourcemgr.hpp"
 #include "nsbmagic.hpp"
+#include "text.hpp"
 
 #include <iostream>
 #include <chrono>
@@ -56,20 +58,18 @@ std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
   [] (int32_t y) { return 0; }
 };
 
-NsbInterpreter::NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const string& InitScript) :
+NsbInterpreter::NsbInterpreter(Game* pGame, const string& InitScript) :
 pGame(pGame),
-pResourceMgr(pResourceMgr),
-pScript(pResourceMgr->GetResource<NsbFile>(InitScript)),
+pScript(sResourceMgr->GetResource<NsbFile>(InitScript)),
 StopInterpreter(false),
 ScriptThread(&NsbInterpreter::ThreadMain, this)
 {
-    // Global variable (hack)
+    // Global variable: TODO: Move to SpecialPos
     SetVariable("OutRight", {"INT", "0"});
 }
 
 NsbInterpreter::~NsbInterpreter()
 {
-    delete pResourceMgr;
 }
 
 void NsbInterpreter::ThreadMain()
@@ -190,7 +190,7 @@ void NsbInterpreter::Run()
                 if (std::strcmp(FuncName, "MovieWaitSG") == 0)
                 {
                     GetMovieTime("ムービー");
-                    Sleep(GetVariable<int32_t>(Params[0].Value));
+                    //Sleep(GetVariable<int32_t>(Params[0].Value));
                     pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                                       CacheHolder<Drawable>::Read("ムービー")));
                     break;
@@ -479,7 +479,7 @@ void NsbInterpreter::LoadAudio(const string& HandleName, const string& Type, con
 
     sf::Music* pMusic = new sf::Music;
     uint32_t Size;
-    char* pMusicData = pResourceMgr->Read(File, &Size);
+    char* pMusicData = sResourceMgr->Read(File, &Size);
     if (!pMusicData)
     {
         std::cout << "Failed to read music " << File << std::endl;
@@ -502,6 +502,7 @@ void NsbInterpreter::StartAnimation(const string& HandleName, int32_t TimeRequir
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
+        // TODO: Only if Time == 0, else animate
         if (pDrawable->Type == DRAWABLE_TEXTURE)
             ((sf::Sprite*)pDrawable->Get())->setPosition(x, y);
         else if (pDrawable->Type == DRAWABLE_MOVIE)
@@ -509,16 +510,23 @@ void NsbInterpreter::StartAnimation(const string& HandleName, int32_t TimeRequir
     }
 }
 
-void NsbInterpreter::ParseText(const string& Text, const string& Box, const string& XML)
+void NsbInterpreter::ParseText(const string& HandleName, const string& Box, const string& XML)
 {
-    SetVariable("$SYSTEM_present_text", { "STRING", Text });
-    std::cout << Text << " " << Box << " " << XML << std::endl;
-    std::cin.get();
+    SetVariable("$SYSTEM_present_text", { "STRING", HandleName }); // Box + HandleName?
+    if (Text* pText = CacheHolder<Text>::Read(HandleName))
+        delete pText;
+    Text* pText = new Text(XML);
+    CacheHolder<Text>::Write(HandleName, pText);
+}
+
+void NsbInterpreter::DisplayText(const string& HandleName, const string& unk)
+{
+    if (Text* pText = CacheHolder<Text>::Read(HandleName))
+        pGame->SetText(pText);
 }
 
 void NsbInterpreter::Sleep(int32_t ms)
 {
-    std::cout << "Sleeping for " << ms << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
@@ -623,7 +631,7 @@ void NsbInterpreter::LoadTexture(const string& HandleName, int32_t Priority, int
 
     sf::Texture* pTexture = new sf::Texture;
     uint32_t Size;
-    char* pTexData = pResourceMgr->Read(File, &Size);
+    char* pTexData = sResourceMgr->Read(File, &Size);
     if (!pTexData)
     {
         std::cout << "Failed to read texture " << File << std::endl;
@@ -647,12 +655,12 @@ void NsbInterpreter::LoadTexture(const string& HandleName, int32_t Priority, int
 
 void NsbInterpreter::LoadScript(const string& FileName)
 {
-    LoadedScripts.push_back(pResourceMgr->GetResource<NsbFile>(FileName));
+    LoadedScripts.push_back(sResourceMgr->GetResource<NsbFile>(FileName));
 }
 
 void NsbInterpreter::CallScript(const string& FileName)
 {
-    pScript = pResourceMgr->GetResource<NsbFile>(FileName);
+    pScript = sResourceMgr->GetResource<NsbFile>(FileName);
 }
 
 bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)

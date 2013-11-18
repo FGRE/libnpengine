@@ -30,6 +30,7 @@ class NsbFile;
 class Game;
 class ResourceMgr;
 class Line;
+class Drawable;
 class ArrayVariable;
 
 typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
@@ -59,7 +60,7 @@ struct FuncReturn
 class NsbInterpreter
 {
 public:
-    NsbInterpreter(Game* pGame, ResourceMgr* pResourceMgr, const string& InitScript);
+    NsbInterpreter(Game* pGame, const string& InitScript);
     ~NsbInterpreter();
 
     void Stop();
@@ -78,6 +79,7 @@ private:
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
 
+    void DisplayText(const string& HandleName, const string& unk);
     void CreateBox(const string& HandleName, int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void BindIdentifier(const string& HandleName);
     void SetVariable(const string& Identifier, const Variable& Var);
@@ -93,7 +95,7 @@ private:
     void LoadAudio(const string& HandleName, const string& Type, const string& File);
     void StartAnimation(const string& HandleName, int32_t TimeRequired, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void Sleep(int32_t ms);
-    void ParseText(const string& Text, const string& Box, const string& XML);
+    void ParseText(const string& HandleName, const string& Box, const string& XML);
     void LoadMovie(const string& HandleName, int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
     void LoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File);
     void SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
@@ -109,7 +111,6 @@ private:
 
     Line* pLine;
     Game* pGame;
-    ResourceMgr* pResourceMgr;
     NsbFile* pScript;
     volatile bool RunInterpreter;
     volatile bool StopInterpreter;
