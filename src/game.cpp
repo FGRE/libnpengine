@@ -17,24 +17,29 @@
  * */
 #include "game.hpp"
 #include "resourcemgr.hpp"
+#include "drawable.hpp"
+#include "text.hpp"
 
 #include <SFML/Window/Event.hpp>
 #include <sfeMovie/Movie.hpp>
 
 Game::Game(const std::vector<std::string>& AchieveFileNames, const std::string& InitScript) :
 sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "steins-gate", sf::Style::Close),
-IsRunning(true)
+IsRunning(true),
+pText(nullptr)
 {
     sf::Vector2i WindowPos(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height);
     WindowPos -= sf::Vector2i(WINDOW_WIDTH, WINDOW_HEIGHT);
     WindowPos /= 2;
     setPosition(WindowPos);
-    pInterpreter = new NsbInterpreter(this, new ResourceMgr(AchieveFileNames), InitScript);
+    sResourceMgr = new ResourceMgr(AchieveFileNames);
+    pInterpreter = new NsbInterpreter(this, InitScript);
 }
 
 Game::~Game()
 {
     delete pInterpreter;
+    delete sResourceMgr;
 }
 
 void Game::Run()
@@ -65,6 +70,8 @@ void Game::Run()
             draw(*(*d)->Get());
             ++d;
         }
+        if (pText)
+            draw(*pText);
         display();
 
         GLMutex.lock();
@@ -85,6 +92,16 @@ void Game::GLCallback(const std::function<void()>& Func)
     GLMutex.lock();
     GLCallbacks.push(Func);
     GLMutex.unlock();
+}
+
+void Game::SetText(Text* pText)
+{
+    this->pText = pText;
+}
+
+void Game::ClearText()
+{
+    pText = nullptr;
 }
 
 void Game::AddDrawable(Drawable* pDrawable)

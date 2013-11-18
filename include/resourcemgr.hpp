@@ -128,4 +128,6 @@ template <class T> T* ResourceMgr::GetResource(const std::string& Path)
     return nullptr;
 }
 
+extern ResourceMgr* sResourceMgr;
+
 #endif

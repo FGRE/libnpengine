@@ -21,6 +21,8 @@
 
 #include <memory>
 
+ResourceMgr* sResourceMgr;
+
 ResourceMgr::ResourceMgr(const std::vector<std::string>& AchieveFileNames)
 {
     Achieves.resize(AchieveFileNames.size());
