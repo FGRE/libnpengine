@@ -32,8 +32,11 @@ struct Text : sf::Text
 
     bool NextLine();
     std::vector<sf::Music*> Voices;
-    std::vector<std::string> Lines;
+    std::vector<sf::String> Lines;
     size_t LineIter;
+
+    static void Initialize(const std::string& FontFile);
+    static sf::Font Font;
 };
 
 #endif

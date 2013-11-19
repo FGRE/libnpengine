@@ -22,8 +22,9 @@
 #include <sstream>
 #include <string>
 #include <memory>
-#include <iostream> // HACK
 #include <SFML/Audio/Music.hpp>
+
+sf::Font Text::Font;
 
 Text::Text(const std::string& XML) : LineIter(0)
 {
@@ -47,7 +48,6 @@ Text::Text(const std::string& XML) : LineIter(0)
             {
                 j = TextLine.find('"', i + 1);
                 Attr = TextLine.substr(i + 1, j - i - 1);
-                std::cout << Attr << std::endl;
                 i = TextLine.find('"', j + 1);
                 switch (k)
                 {
@@ -73,16 +73,13 @@ Text::Text(const std::string& XML) : LineIter(0)
         }
         else
         {
-            Lines.push_back(TextLine);
-            std::cout << TextLine;
-            std::cin.get();
+            Lines.push_back(sf::String::fromUtf8(TextLine.begin(), TextLine.end()));
         }
         ++VoiceIter;
     }
 
+    setFont(Font);
     setString(Lines[0]);
-    if (sf::Music* pMusic = Voices[0])
-        pMusic->play();
 }
 
 Text::~Text()
@@ -98,4 +95,9 @@ bool Text::NextLine()
     if (sf::Music* pMusic = Voices[LineIter])
         pMusic->play();
     return true;
+}
+
+void Text::Initialize(const std::string& FontFile)
+{
+    assert(Font.loadFromFile(FontFile));
 }
