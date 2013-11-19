@@ -58,6 +58,11 @@ void Game::Run()
                     for (uint32_t i = 0; i < Callbacks.size(); ++i)
                         if (Callbacks[i].Key == Event.key.code)
                             pInterpreter->CallScript(Callbacks[i].Script);
+                    break;
+                case sf::Event::MouseButtonPressed:
+                    if (pText)
+                        if (!pText->NextLine())
+                            pInterpreter->Start();
                 default:
                     break;
             }
@@ -82,7 +87,8 @@ void Game::Run()
         }
         GLMutex.unlock();
 
-        pInterpreter->Start();
+        if (!pText)
+            pInterpreter->Start();
     }
 }
 

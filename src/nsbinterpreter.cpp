@@ -66,6 +66,7 @@ ScriptThread(&NsbInterpreter::ThreadMain, this)
 {
     // Global variable: TODO: Move to SpecialPos
     SetVariable("OutRight", {"INT", "0"});
+    Text::Initialize("/etc/alternatives/fonts-japanese-gothic.ttf");
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -113,6 +114,9 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_DISPLAY_TEXT):
+                DisplayText(GetParam<string>(0), GetParam<string>(1));
+                return;
             case uint16_t(MAGIC_CREATE_BOX):
                 CreateBox(GetParam<string>(0), GetParam<int32_t>(1),
                           GetParam<int32_t>(2), GetParam<int32_t>(3),
@@ -213,7 +217,8 @@ void NsbInterpreter::Run()
                 Params[0] = {"STRING", string()}; // Hack
                 break;
             case uint16_t(MAGIC_TEXT):
-                ParseText(GetParam<string>(0), GetParam<string>(1), GetParam<string>(2));
+                pGame->GLCallback(std::bind(&NsbInterpreter::ParseText, this,
+                                  GetParam<string>(0), GetParam<string>(1), GetParam<string>(2)));
                 break;
             case uint16_t(MAGIC_BEGIN):
                 // Turn params into variables
@@ -302,7 +307,7 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_UNK12):
                 return;
             case uint16_t(MAGIC_UNK3):
-            case uint16_t(MAGIC_UNK6):
+            case uint16_t(MAGIC_CLEAR_PARAMS):
                 Params.clear();
                 ArrayParams.clear();
                 break;
@@ -428,7 +433,6 @@ void NsbInterpreter::CreateColor(const string& HandleName, int32_t Priority, int
     CacheHolder<Drawable>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
 }
 
-
 void NsbInterpreter::SetTextboxAttributes(const string& Handle, int32_t unk0,
                                           const string& Font, int32_t unk1,
                                           const string& Color1, const string& Color2,
@@ -508,6 +512,8 @@ void NsbInterpreter::StartAnimation(const string& HandleName, int32_t TimeRequir
         else if (pDrawable->Type == DRAWABLE_MOVIE)
             ((sfe::Movie*)pDrawable->Get())->setPosition(x, y);
     }
+    if (Text* pText = CacheHolder<Text>::Read(HandleName))
+        pText->setPosition(x, y);
 }
 
 void NsbInterpreter::ParseText(const string& HandleName, const string& Box, const string& XML)
@@ -522,7 +528,12 @@ void NsbInterpreter::ParseText(const string& HandleName, const string& Box, cons
 void NsbInterpreter::DisplayText(const string& HandleName, const string& unk)
 {
     if (Text* pText = CacheHolder<Text>::Read(HandleName))
+    {
+        if (sf::Music* pMusic = pText->Voices[0])
+            pMusic->play();
         pGame->SetText(pText);
+    }
+    Pause();
 }
 
 void NsbInterpreter::Sleep(int32_t ms)
@@ -699,7 +710,7 @@ void NsbInterpreter::Abort()
 void NsbInterpreter::Recover()
 {
     while (Line* pLine = pScript->GetNextLine())
-        if (pLine->Magic == MAGIC_UNK6)
+        if (pLine->Magic == MAGIC_CLEAR_PARAMS)
             break;
     pScript->SetSourceIter(pScript->GetNextLineEntry() - 2);
 }
