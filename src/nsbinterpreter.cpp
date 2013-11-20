@@ -533,24 +533,25 @@ void NsbInterpreter::StartAnimation(const string& HandleName, int32_t TimeRequir
             ((sf::Sprite*)pDrawable->Get())->setPosition(x, y);
         else if (pDrawable->Type == DRAWABLE_MOVIE)
             ((sfe::Movie*)pDrawable->Get())->setPosition(x, y);
+        else if (pDrawable->Type == DRAWABLE_TEXT)
+            ((Text*)pDrawable)->setPosition(x, y);
     }
-    if (Text* pText = CacheHolder<Text>::Read(HandleName))
-        pText->setPosition(x, y);
 }
 
 void NsbInterpreter::ParseText(const string& HandleName, const string& Box, const string& XML)
 {
     string NewHandle = Box + "/" + HandleName;
     SetVariable("$SYSTEM_present_text", { "STRING", NewHandle });
-    if (Text* pText = CacheHolder<Text>::Read(NewHandle))
+    std::cout << "Parsing to handle " << NewHandle << std::endl;
+    if (Drawable* pText = CacheHolder<Drawable>::Read(NewHandle))
         delete pText;
     Text* pText = new Text(XML);
-    CacheHolder<Text>::Write(NewHandle, pText);
+    CacheHolder<Drawable>::Write(NewHandle, pText);
 }
 
 void NsbInterpreter::DisplayText(const string& unk)
 {
-    if (Text* pText = CacheHolder<Text>::Read(HandleName))
+    if (Text* pText = (Text*)CacheHolder<Drawable>::Read(HandleName))
     {
         if (sf::Music* pMusic = pText->Voices[0])
             pMusic->play();
@@ -618,6 +619,13 @@ void NsbInterpreter::SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opaci
 {
     if (!pDrawable)
         return;
+
+    if (/*Text* pText = */dynamic_cast<Text*>(pDrawable))
+    {
+        if (Opacity == 0)
+            pGame->GLCallback(std::bind(&Game::ClearText, pGame));
+        return;
+    }
 
     //if (Time == 0)
     {

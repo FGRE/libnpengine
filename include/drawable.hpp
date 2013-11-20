@@ -24,7 +24,8 @@
 enum
 {
     DRAWABLE_MOVIE      = 0,
-    DRAWABLE_TEXTURE    = 1
+    DRAWABLE_TEXTURE    = 1,
+    DRAWABLE_TEXT       = 2
 };
 
 namespace sf
@@ -36,14 +37,14 @@ class Drawable
 {
 public:
     Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type);
-    ~Drawable();
+    virtual ~Drawable();
 
     void Update();
     void Fade(int32_t Opacity, int32_t Time);
     int32_t GetPriority() const;
     sf::Drawable* Get() const;
 
-private:
+protected:
     sf::Drawable* pDrawable;
     int32_t Priority;
     int32_t Opacity;

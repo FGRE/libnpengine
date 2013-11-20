@@ -34,7 +34,7 @@ Drawable::~Drawable()
 {
     if (Type == DRAWABLE_MOVIE)
         static_cast<sfe::Movie*>(pDrawable)->stop();
-    else
+    else if (Type == DRAWABLE_TEXTURE);
         delete static_cast<sf::Sprite*>(pDrawable)->getTexture();
     delete pDrawable;
 }

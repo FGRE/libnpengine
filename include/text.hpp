@@ -19,13 +19,14 @@
 #define TEXT_HPP
 
 #include <SFML/Graphics/Text.hpp>
+#include "drawable.hpp"
 
 namespace sf
 {
     class Music;
 };
 
-struct Text : sf::Text
+struct Text : sf::Text, Drawable
 {
     Text(const std::string& XML);
     ~Text();
