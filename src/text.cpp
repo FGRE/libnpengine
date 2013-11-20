@@ -26,7 +26,9 @@
 
 sf::Font Text::Font;
 
-Text::Text(const std::string& XML) : LineIter(0)
+Text::Text(const std::string& XML) :
+::Drawable(new sf::Text, 0xFFFFFF, DRAWABLE_TEXT),
+LineIter(0)
 {
     std::istringstream ss(XML);
     std::string TextLine;
@@ -52,6 +54,8 @@ Text::Text(const std::string& XML) : LineIter(0)
                 switch (k)
                 {
                     case 0: // ？？？
+                        static_cast<sf::Text*>(pDrawable)->setString(sf::String::fromUtf8(Attr.begin(), Attr.end()));
+                        break;
                     case 1: // VID_MAY
                         break;
                     case 2: // voice/MAY_0001
