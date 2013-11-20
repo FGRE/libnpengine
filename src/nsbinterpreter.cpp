@@ -115,13 +115,13 @@ void NsbInterpreter::Run()
         switch (pLine->Magic)
         {
             case uint16_t(MAGIC_DISPLAY_TEXT):
-                DisplayText(GetParam<string>(0), GetParam<string>(1));
+                HandleName = GetParam<string>(0);
+                DisplayText(GetParam<string>(1));
                 return;
             case uint16_t(MAGIC_CREATE_BOX):
-                CreateBox(GetParam<string>(0), GetParam<int32_t>(1),
-                          GetParam<int32_t>(2), GetParam<int32_t>(3),
-                          GetParam<int32_t>(4), GetParam<int32_t>(5),
-                          Boolify(GetParam<string>(6)));
+                HandleName = GetParam<string>(0);
+                CreateBox(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
+                          GetParam<int32_t>(4), GetParam<int32_t>(5), Boolify(GetParam<string>(6)));
                 break;
             case uint16_t(MAGIC_ARRAY_READ): break;
                 ArrayRead(GetParam<string>(0), GetParam<int32_t>(1));
@@ -152,8 +152,25 @@ void NsbInterpreter::Run()
                                   GetParam<int32_t>(4), GetParam<string>(5));
                 break;
             case uint16_t(MAGIC_DESTROY):
-                pGame->GLCallback(std::bind(&NsbInterpreter::Destroy, this, GetParam<string>(0)));
+            {
+                HandleName = GetParam<string>(0);
+                // Hack: Do not destroy * (aka everything)
+                if (HandleName.back() == '*' && HandleName.size() != 1)
+                {
+                    std::cout << "Wildcard destroy " << HandleName << std::endl;
+                    WildcardCall(HandleName, [this](Drawable* pDrawable)
+                    {
+                        pGame->GLCallback(std::bind(&NsbInterpreter::Destroy, this, pDrawable));
+                        CacheHolder<Drawable>::Write(HandleName, nullptr);
+                    });
+                }
+                else
+                {
+                    pGame->GLCallback(std::bind(&NsbInterpreter::Destroy, this, CacheHolder<Drawable>::Read(HandleName)));
+                    CacheHolder<Drawable>::Write(HandleName, nullptr);
+                }
                 break;
+            }
             case uint16_t(MAGIC_SET_AUDIO_STATE):
                 SetAudioState(GetParam<string>(0), GetParam<int32_t>(1),
                               GetParam<int32_t>(2), GetParam<string>(3));
@@ -290,12 +307,11 @@ void NsbInterpreter::Run()
             {
                 string Handle = GetParam<string>(0);
                 if (Handle.back() == '*')
-                    for (auto i = CacheHolder<Drawable>::ReadFirstMatch(Handle);
-                         i != CacheHolder<Drawable>::Cache.end();
-                         i = CacheHolder<Drawable>::ReadNextMatch(Handle, i))
-                         SetOpacity(i->second, GetParam<int32_t>(1),
-                                    GetParam<int32_t>(2), GetParam<string>(3),
-                                    Boolify(GetParam<string>(4)));
+                {
+                    WildcardCall(Handle, std::bind(&NsbInterpreter::SetOpacity, this,
+                                 std::placeholders::_1, GetParam<int32_t>(1), GetParam<int32_t>(2),
+                                 GetParam<string>(3), Boolify(GetParam<string>(4))));
+                }
                 else
                     SetOpacity(CacheHolder<Drawable>::Read(Handle), GetParam<int32_t>(1),
                                GetParam<int32_t>(2), GetParam<string>(3), Boolify(GetParam<string>(4)));
@@ -318,6 +334,17 @@ void NsbInterpreter::Run()
                 //std::cerr << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
                 break;
         }
+    }
+}
+
+template <class T> void NsbInterpreter::WildcardCall(const std::string& Handle, T Func)
+{
+    for (auto i = CacheHolder<Drawable>::ReadFirstMatch(Handle);
+         i != CacheHolder<Drawable>::Cache.end();
+         i = CacheHolder<Drawable>::ReadNextMatch(Handle, i))
+    {
+        HandleName = i->first;
+        Func(i->second);
     }
 }
 
@@ -351,7 +378,7 @@ template <class T> T NsbInterpreter::GetParam(int32_t Index)
     return GetVariable<T>(pLine->Params[Index]);
 }
 
-void NsbInterpreter::CreateBox(const string& HandleName, int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
+void NsbInterpreter::CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
 {
     sf::IntRect* pRect = new sf::IntRect(x, y, Width, Height);
     CacheHolder<sf::IntRect>::Write(HandleName, pRect);
@@ -459,15 +486,10 @@ void NsbInterpreter::SetAudioLoop(const string& HandleName, bool Loop)
         pMusic->setLoop(Loop);
 }
 
-void NsbInterpreter::Destroy(string& HandleName)
+void NsbInterpreter::Destroy(Drawable* pDrawable)
 {
-    // Handle wildcard: TODO: Is it hacked in GetVariable?
-    if (HandleName[HandleName.size() - 1] == '*')
-        HandleName.pop_back();
-
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    if (pDrawable)
     {
-        CacheHolder<Drawable>::Write(HandleName, nullptr);
         pGame->RemoveDrawable(pDrawable);
         delete pDrawable;
     }
@@ -518,14 +540,15 @@ void NsbInterpreter::StartAnimation(const string& HandleName, int32_t TimeRequir
 
 void NsbInterpreter::ParseText(const string& HandleName, const string& Box, const string& XML)
 {
-    SetVariable("$SYSTEM_present_text", { "STRING", HandleName }); // Box + HandleName?
-    if (Text* pText = CacheHolder<Text>::Read(HandleName))
+    string NewHandle = Box + "/" + HandleName;
+    SetVariable("$SYSTEM_present_text", { "STRING", NewHandle });
+    if (Text* pText = CacheHolder<Text>::Read(NewHandle))
         delete pText;
     Text* pText = new Text(XML);
-    CacheHolder<Text>::Write(HandleName, pText);
+    CacheHolder<Text>::Write(NewHandle, pText);
 }
 
-void NsbInterpreter::DisplayText(const string& HandleName, const string& unk)
+void NsbInterpreter::DisplayText(const string& unk)
 {
     if (Text* pText = CacheHolder<Text>::Read(HandleName))
     {

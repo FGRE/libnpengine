@@ -78,9 +78,10 @@ private:
     bool Boolify(const string& String);
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
+    template <class T> void WildcardCall(const std::string& Handle, T Func);
 
-    void DisplayText(const string& HandleName, const string& unk);
-    void CreateBox(const string& HandleName, int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
+    void DisplayText(const string& unk);
+    void CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void BindIdentifier(const string& HandleName);
     void SetVariable(const string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
@@ -90,7 +91,7 @@ private:
     void SetFontAttributes(const string& Font, int32_t size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
     void SetAudioState(const string& HandleName, int32_t NumSeconds, int32_t Volume, const string& Tempo);
     void SetAudioLoop(const string& HandleName, bool Loop);
-    void Destroy(string& HandleName);
+    void Destroy(Drawable* pDrawable);
     void SetAudioRange(const string& HandleName, int32_t begin, int32_t end);
     void LoadAudio(const string& HandleName, const string& Type, const string& File);
     void StartAnimation(const string& HandleName, int32_t TimeRequired, int32_t x, int32_t y, const string& Tempo, bool Wait);
@@ -115,6 +116,7 @@ private:
     volatile bool RunInterpreter;
     volatile bool StopInterpreter;
 
+    string HandleName;
     std::stack<FuncReturn> Returns;
     std::vector<NsbFile*> LoadedScripts;
     std::map<string, Variable> Variables;
