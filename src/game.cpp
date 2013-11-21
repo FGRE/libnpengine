@@ -107,6 +107,7 @@ void Game::SetText(Text* pText)
 
 void Game::ClearText()
 {
+    delete pText; // Doesn't seem quite right...
     pText = nullptr;
 }
 

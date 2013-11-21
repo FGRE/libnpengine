@@ -306,15 +306,15 @@ void NsbInterpreter::Run()
             }
             case uint16_t(MAGIC_SET_OPACITY):
             {
-                string Handle = GetParam<string>(0);
-                if (Handle.back() == '*')
+                HandleName = GetParam<string>(0);
+                if (HandleName.back() == '*')
                 {
-                    WildcardCall(Handle, std::bind(&NsbInterpreter::SetOpacity, this,
+                    WildcardCall(HandleName, std::bind(&NsbInterpreter::SetOpacity, this,
                                  std::placeholders::_1, GetParam<int32_t>(1), GetParam<int32_t>(2),
                                  GetParam<string>(3), Boolify(GetParam<string>(4))));
                 }
                 else
-                    SetOpacity(CacheHolder<Drawable>::Read(Handle), GetParam<int32_t>(1),
+                    SetOpacity(CacheHolder<Drawable>::Read(HandleName), GetParam<int32_t>(1),
                                GetParam<int32_t>(2), GetParam<string>(3), Boolify(GetParam<string>(4)));
                 break;
             }
@@ -554,8 +554,11 @@ void NsbInterpreter::DisplayText(const string& unk)
 {
     if (Text* pText = (Text*)CacheHolder<Drawable>::Read(HandleName))
     {
-        if (sf::Music* pMusic = pText->Voices[0])
+        if (sf::Music* pMusic = pText->Voices[0].pMusic)
+        {
             pMusic->play();
+            pText->pCurrentMusic = pMusic;
+        }
         pGame->SetText(pText);
     }
     Pause();
@@ -624,7 +627,10 @@ void NsbInterpreter::SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opaci
     if (/*Text* pText = */dynamic_cast<Text*>(pDrawable))
     {
         if (Opacity == 0)
+        {
             pGame->GLCallback(std::bind(&Game::ClearText, pGame));
+            CacheHolder<Drawable>::Write(HandleName, nullptr); // hack: see Game::ClearText
+        }
         return;
     }
 

@@ -26,16 +26,22 @@ namespace sf
     class Music;
 };
 
+struct Voice
+{
+    sf::Music* pMusic;
+    sf::String String;
+};
+
 struct Text : sf::Text, Drawable
 {
     Text(const std::string& XML);
     ~Text();
 
     bool NextLine();
-    std::vector<sf::Music*> Voices;
-    std::vector<sf::String> Lines;
+    std::vector<Voice> Voices;
     size_t LineIter;
 
+    sf::Music* pCurrentMusic;
     static void Initialize(const std::string& FontFile);
     static sf::Font Font;
 };
