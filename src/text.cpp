@@ -28,18 +28,17 @@ sf::Font Text::Font;
 
 Text::Text(const std::string& XML) :
 ::Drawable(new sf::Text, 0xFFFFFF, DRAWABLE_TEXT),
-LineIter(0)
+LineIter(0),
+pCurrentMusic(nullptr)
 {
     std::istringstream ss(XML);
     std::string TextLine;
-    size_t VoiceIter = 0;
+    sf::Music* pMusic = nullptr;
 
     while (std::getline(ss, TextLine))
     {
         if (TextLine.empty() || TextLine.compare(0, 4, "<PRE") == 0 || TextLine == "</PRE>")
             continue;
-
-        Voices.resize(Lines.size() + 1);
 
         // TODO: Line may start with <RUBY text or <FONT incolor
         if (TextLine.front() == '<')
@@ -61,12 +60,11 @@ LineIter(0)
                     case 2: // voice/MAY_0001
                     {
                         // TODO: Move to resourcemgr and reuse in interpreter
-                        sf::Music* pMusic = new sf::Music;
+                        pMusic = new sf::Music;
                         uint32_t Size;
                         char* pMusicData = sResourceMgr->Read(Attr + ".ogg", &Size);
                         assert(pMusicData);
                         pMusic->openFromMemory(pMusicData, Size);
-                        Voices[VoiceIter] = pMusic;
                         break;
                     }
                     case 3: // on
@@ -77,27 +75,34 @@ LineIter(0)
         }
         else
         {
-            Lines.push_back(sf::String::fromUtf8(TextLine.begin(), TextLine.end()));
+            Voices.push_back({pMusic, sf::String::fromUtf8(TextLine.begin(), TextLine.end())});
+            pMusic = nullptr;
         }
-        ++VoiceIter;
     }
 
     setFont(Font);
-    setString(Lines[0]);
+    setString(Voices[0].String);
 }
 
 Text::~Text()
 {
-    std::for_each(Voices.begin(), Voices.end(), std::default_delete<sf::Music>());
+    if (pCurrentMusic)
+        pCurrentMusic->stop();
+    std::for_each(Voices.begin(), Voices.end(), [](const Voice& V) { delete V.pMusic; });
 }
 
 bool Text::NextLine()
 {
-    if (++LineIter >= Lines.size())
+    if (++LineIter >= Voices.size())
         return false;
-    setString(Lines[LineIter]);
-    if (sf::Music* pMusic = Voices[LineIter])
+    setString(Voices[LineIter].String);
+    if (sf::Music* pMusic = Voices[LineIter].pMusic)
+    {
+        if (pCurrentMusic)
+            pCurrentMusic->stop();
         pMusic->play();
+        pCurrentMusic = pMusic;
+    }
     return true;
 }
 
