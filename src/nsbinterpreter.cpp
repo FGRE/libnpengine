@@ -30,7 +30,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Audio/Music.hpp>
 
-#define SPECIAL_POS_NUM 6
+#define SPECIAL_POS_NUM 7
 
 enum : int32_t
 {
@@ -39,13 +39,15 @@ enum : int32_t
     POS_MIDDLE = -3,
     POS_ON_LEFT = -4,
     POS_OUT_TOP = -5,
-    POS_IN_TOP = -6
+    POS_IN_TOP = -6,
+    POS_OUT_RIGHT = -7
 };
 
 const std::string SpecialPos[SPECIAL_POS_NUM] =
 {
     "Center", "InBottom", "Middle",
-    "OnLeft", "OutTop", "InTop"
+    "OnLeft", "OutTop", "InTop",
+    "OutRight"
 };
 
 std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
@@ -55,7 +57,8 @@ std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
   [] (int32_t y) { return WINDOW_HEIGHT / 2 + y / 2; },
   [] (int32_t x) { return 0; },
   [] (int32_t y) { return 0; },
-  [] (int32_t y) { return 0; }
+  [] (int32_t y) { return 0; },
+  [] (int32_t x) { return 0; }
 };
 
 NsbInterpreter::NsbInterpreter(Game* pGame, const string& InitScript) :
@@ -64,8 +67,6 @@ pScript(sResourceMgr->GetResource<NsbFile>(InitScript)),
 StopInterpreter(false),
 ScriptThread(&NsbInterpreter::ThreadMain, this)
 {
-    // Global variable: TODO: Move to SpecialPos
-    SetVariable("OutRight", {"INT", "0"});
     Text::Initialize("/etc/alternatives/fonts-japanese-gothic.ttf");
 }
 
