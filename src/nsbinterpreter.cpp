@@ -338,7 +338,7 @@ void NsbInterpreter::Run()
     }
 }
 
-template <class T> void NsbInterpreter::WildcardCall(const std::string& Handle, T Func)
+template <class T> void NsbInterpreter::WildcardCall(std::string Handle, T Func)
 {
     for (auto i = CacheHolder<Drawable>::ReadFirstMatch(Handle);
          i != CacheHolder<Drawable>::Cache.end();
