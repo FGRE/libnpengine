@@ -80,6 +80,7 @@ private:
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, T Func);
 
+    void ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, const string& Tempo, const string& File, bool Wait);
     void DisplayText(const string& unk);
     void CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void BindIdentifier(const string& HandleName);
