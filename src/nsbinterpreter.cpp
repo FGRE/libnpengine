@@ -115,6 +115,14 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_APPLY_MASK):
+                HandleName = GetParam<string>(0);
+                pGame->GLCallback(std::bind(&NsbInterpreter::ApplyMask, this,
+                                  CacheHolder<Drawable>::Read(HandleName),
+                                  GetParam<int32_t>(1), GetParam<int32_t>(2),
+                                  GetParam<int32_t>(3), GetParam<string>(4),
+                                  GetParam<string>(5), Boolify(GetParam<string>(6))));
+                break;
             case uint16_t(MAGIC_DISPLAY_TEXT):
                 HandleName = GetParam<string>(0);
                 DisplayText(GetParam<string>(1));
@@ -377,6 +385,10 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 template <class T> T NsbInterpreter::GetParam(int32_t Index)
 {
     return GetVariable<T>(pLine->Params[Index]);
+}
+
+void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, const string& Tempo, const string& File, bool Wait)
+{
 }
 
 void NsbInterpreter::CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
