@@ -81,7 +81,7 @@ void NsbInterpreter::ThreadMain()
     LoadScript("nss/function.nsb");
     LoadScript("nss/extra_achievements.nsb");
     LoadScript("nss/function_select.nsb");
-    //LoadScript("nss/function_stand.nsb");
+    LoadScript("nss/function_stand.nsb");
 
     do
     {
@@ -329,7 +329,8 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_SET_DISPLAY_STATE):
                 SetDisplayState(GetParam<string>(0), GetParam<string>(1));
                 break;
-            case uint16_t(MAGIC_UNK12):
+            case uint16_t(MAGIC_CHAPTER_END):
+                Stop();
                 return;
             case uint16_t(MAGIC_UNK3):
             case uint16_t(MAGIC_CLEAR_PARAMS):
