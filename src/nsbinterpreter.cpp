@@ -67,7 +67,11 @@ pScript(sResourceMgr->GetResource<NsbFile>(InitScript)),
 StopInterpreter(false),
 ScriptThread(&NsbInterpreter::ThreadMain, this)
 {
+#ifdef _WIN32
+    Text::Initialize("fonts-japanese-gothic.ttf");
+#else
     Text::Initialize("/etc/alternatives/fonts-japanese-gothic.ttf");
+#endif
 }
 
 NsbInterpreter::~NsbInterpreter()
