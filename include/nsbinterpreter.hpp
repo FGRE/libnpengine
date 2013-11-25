@@ -109,6 +109,7 @@ private:
     void DumpTrace();
     void NsbAssert(bool expr, const char* fmt);
     void NsbAssert(const char* fmt);
+    template<typename T, typename... A> void NsbAssert(const char* fmt, T value, A... args);
     template<typename T, typename... A> void NsbAssert(bool expr, const char* fmt, T value, A... args);
 
     Line* pLine;

@@ -784,6 +784,15 @@ void NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
     if (expr)
         return;
 
+    NsbAssert(fmt, value, args...);
+    DumpTrace();
+    Abort();
+}
+
+template<typename T, typename... A>
+void NsbInterpreter::NsbAssert(const char* fmt, T value, A... args)
+{
+
     while (*fmt)
     {
         if (*fmt == '%')
@@ -792,10 +801,9 @@ void NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
                 ++fmt;
             else
             {
-                std::cout << value << std::endl;
-                NsbAssert(false, fmt + 1, args...); // call even when *s == 0 to detect extra arguments
-                DumpTrace();
-                Abort();
+                std::cout << value;
+                NsbAssert(fmt + 1, args...);
+                return;
             }
         }
         std::cout << *fmt++;
