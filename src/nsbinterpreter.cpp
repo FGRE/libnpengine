@@ -23,7 +23,7 @@
 #include "text.hpp"
 
 #include <iostream>
-#include <chrono>
+#include <boost/chrono.hpp>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <sfeMovie/Movie.hpp>
@@ -85,7 +85,7 @@ void NsbInterpreter::ThreadMain()
 
     do
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10)); // yield? mutex?
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(10)); // yield? mutex?
         Run();
     } while (!StopInterpreter);
 }
@@ -329,9 +329,6 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_SET_DISPLAY_STATE):
                 SetDisplayState(GetParam<string>(0), GetParam<string>(1));
                 break;
-            case uint16_t(MAGIC_CHAPTER_END):
-                Stop();
-                return;
             case uint16_t(MAGIC_UNK3):
             case uint16_t(MAGIC_CLEAR_PARAMS):
                 Params.clear();
@@ -584,7 +581,7 @@ void NsbInterpreter::DisplayText(const string& unk)
 
 void NsbInterpreter::Sleep(int32_t ms)
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(ms));
 }
 
 void NsbInterpreter::SetVariable(const string& Identifier, const Variable& Var)
