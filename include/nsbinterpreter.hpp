@@ -22,7 +22,7 @@
 #include <cstdint>
 #include <map>
 #include <vector>
-#include <thread>
+#include <boost/thread/thread.hpp>
 
 using std::string;
 
@@ -124,7 +124,7 @@ private:
     std::map<string, ArrayVariable> Arrays;
     std::vector<Variable> Params;
     std::vector<ArrayVariable*> ArrayParams;
-    std::thread ScriptThread;
+    boost::thread ScriptThread;
 };
 
 template <> bool NsbInterpreter::GetParam(int32_t Index);

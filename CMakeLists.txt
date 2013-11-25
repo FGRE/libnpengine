@@ -8,7 +8,7 @@ endif()
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 find_package(SFML 2 REQUIRED COMPONENTS system audio window graphics)
 find_package(sfeMovie)
-find_package(Boost REQUIRED COMPONENTS locale)
+find_package(Boost REQUIRED COMPONENTS locale thread)
 
 set(CMAKE_BUILD_TYPE Debug)
 include_directories(

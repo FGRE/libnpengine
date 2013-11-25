@@ -23,7 +23,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <list>
-#include <mutex>
+#include <boost/thread/mutex.hpp>
 #include <queue>
 
 #define WINDOW_WIDTH 1024
@@ -55,7 +55,7 @@ private:
     void RegisterCallback(sf::Keyboard::Key Key, const std::string& Script);
     void GLCallback(const std::function<void()>& Func);
 
-    std::mutex GLMutex;
+    boost::mutex GLMutex;
     std::queue<std::function<void()>> GLCallbacks;
     std::vector<Callback> Callbacks;
     std::list<Drawable*> Drawables;
