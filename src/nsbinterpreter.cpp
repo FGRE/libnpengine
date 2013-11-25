@@ -121,7 +121,7 @@ void NsbInterpreter::Run()
                                   CacheHolder<Drawable>::Read(HandleName),
                                   GetParam<int32_t>(1), GetParam<int32_t>(2),
                                   GetParam<int32_t>(3), GetParam<string>(4),
-                                  GetParam<string>(5), Boolify(GetParam<string>(6))));
+                                  GetParam<string>(5), GetParam<bool>(6)));
                 break;
             case uint16_t(MAGIC_DISPLAY_TEXT):
                 HandleName = GetParam<string>(0);
@@ -130,7 +130,7 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_CREATE_BOX):
                 HandleName = GetParam<string>(0);
                 CreateBox(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
-                          GetParam<int32_t>(4), GetParam<int32_t>(5), Boolify(GetParam<string>(6)));
+                          GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<bool>(6));
                 break;
             case uint16_t(MAGIC_ARRAY_READ): break;
                 ArrayRead(GetParam<string>(0), GetParam<int32_t>(1));
@@ -185,7 +185,7 @@ void NsbInterpreter::Run()
                               GetParam<int32_t>(2), GetParam<string>(3));
                 break;
             case uint16_t(MAGIC_SET_AUDIO_LOOP):
-                SetAudioLoop(GetParam<string>(0), Boolify(GetParam<string>(1)));
+                SetAudioLoop(GetParam<string>(0), GetParam<bool>(1));
                 break;
             case uint16_t(MAGIC_SET_AUDIO_RANGE): break; // SFML bug #203
                 SetAudioRange(GetParam<string>(0), GetParam<int32_t>(1), GetParam<int32_t>(2));
@@ -195,7 +195,7 @@ void NsbInterpreter::Run()
                 break;
             case uint16_t(MAGIC_START_ANIMATION):
                 StartAnimation(GetParam<string>(0), GetParam<int32_t>(1), GetParam<int32_t>(2),
-                               GetParam<int32_t>(3), GetParam<string>(4), Boolify(GetParam<string>(5)));
+                               GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
                 break;
             case uint16_t(MAGIC_UNK29):
                 // This is (mistakenly) done by MAGIC_CALL
@@ -288,8 +288,8 @@ void NsbInterpreter::Run()
                 pGame->GLCallback(std::bind(&NsbInterpreter::LoadMovie, this,
                                   GetParam<string>(0), GetParam<int32_t>(1),
                                   GetParam<int32_t>(2), GetParam<int32_t>(3),
-                                  Boolify(GetParam<string>(4)), Boolify(GetParam<string>(5)),
-                                  GetParam<string>(6), Boolify(GetParam<string>(7))));
+                                  GetParam<bool>(4), GetParam<bool>(5),
+                                  GetParam<string>(6), GetParam<bool>(7)));
                 return;
             }
             case uint16_t(MAGIC_LOAD_TEXTURE):
@@ -319,11 +319,11 @@ void NsbInterpreter::Run()
                 {
                     WildcardCall(HandleName, std::bind(&NsbInterpreter::SetOpacity, this,
                                  std::placeholders::_1, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                                 GetParam<string>(3), Boolify(GetParam<string>(4))));
+                                 GetParam<string>(3), GetParam<bool>(4)));
                 }
                 else
                     SetOpacity(CacheHolder<Drawable>::Read(HandleName), GetParam<int32_t>(1),
-                               GetParam<int32_t>(2), GetParam<string>(3), Boolify(GetParam<string>(4)));
+                               GetParam<int32_t>(2), GetParam<string>(3), GetParam<bool>(4));
                 break;
             }
             case uint16_t(MAGIC_SET_DISPLAY_STATE):
@@ -386,6 +386,11 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 template <class T> T NsbInterpreter::GetParam(int32_t Index)
 {
     return GetVariable<T>(pLine->Params[Index]);
+}
+
+template <> bool NsbInterpreter::GetParam(int32_t Index)
+{
+    return Boolify(GetParam<string>(Index));
 }
 
 void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, const string& Tempo, const string& File, bool Wait)

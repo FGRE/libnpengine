@@ -127,4 +127,6 @@ private:
     std::thread ScriptThread;
 };
 
+template <> bool NsbInterpreter::GetParam(int32_t Index);
+
 #endif
