@@ -76,6 +76,14 @@ pCurrentMusic(nullptr)
         else
         {
             Voices.push_back({pMusic, sf::String::fromUtf8(TextLine.begin(), TextLine.end())});
+            sf::String* Str = &Voices[Voices.size() - 1].String;
+            size_t i = 28;
+            while (i < Str->getSize())
+            {
+                const char* lf = "\n";
+                Str->insert(i, sf::String::fromUtf8(lf, lf + 1));
+                i += 29;
+            }
             pMusic = nullptr;
         }
     }
