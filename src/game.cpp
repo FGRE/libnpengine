@@ -58,6 +58,8 @@ void Game::Run()
                     for (uint32_t i = 0; i < Callbacks.size(); ++i)
                         if (Callbacks[i].Key == Event.key.code)
                             pInterpreter->CallScript(Callbacks[i].Script);
+                    if (Event.key.code == sf::Keyboard::F8)
+                        pInterpreter->DumpState();
                     break;
                 case sf::Event::MouseButtonPressed:
                     if (pText)

@@ -68,7 +68,7 @@ public:
     void Start();
 
     void CallScript(const string& FileName); // Deprecated
-
+    void DumpState();
 private:
     void LoadScript(const string& FileName);
 
@@ -104,9 +104,9 @@ private:
     void SetDisplayState(const string& HandleName, const string& State);
     void GetMovieTime(const string& HandleName);
 
-    void Abort();
     void Recover();
-    void DumpTrace();
+    void WriteTrace(std::ostream& Stream);
+    void Crash();
     void NsbAssert(bool expr, const char* fmt);
     void NsbAssert(const char* fmt);
     template<typename T, typename... A> void NsbAssert(const char* fmt, T value, A... args);
