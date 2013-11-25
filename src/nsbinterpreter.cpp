@@ -274,15 +274,11 @@ void NsbInterpreter::Run()
             {
                 uint32_t First = Params.size() - 2, Second = Params.size() - 1;
                 NsbAssert(Params[First].Type == Params[Second].Type,
-                          "Concating params of different types (% and %) in % at %",
+                          "Concating params of different types (% and %)",
                           Params[First].Type,
-                          Params[Second].Type,
-                          pScript->GetName(),
-                          pScript->GetNextLineEntry());
+                          Params[Second].Type);
                 NsbAssert(Params[First].Type == "STRING",
-                          "Concating non-STRING params in % at %",
-                          pScript->GetName(),
-                          pScript->GetNextLineEntry());
+                          "Concating non-STRING params");
                 Params[First].Value += Params[Second].Value;
                 Params.resize(Second);
                 break;
@@ -529,7 +525,7 @@ void NsbInterpreter::LoadAudio(const string& HandleName, const string& Type, con
     if (!pMusicData)
     {
         std::cout << "Failed to read music " << File << std::endl;
-        DumpTrace();
+        WriteTrace(std::cout);
         CacheHolder<sf::Music>::Write(HandleName, nullptr);
         return;
     }
@@ -743,20 +739,29 @@ bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
     return false;
 }
 
-void NsbInterpreter::DumpTrace()
+void NsbInterpreter::WriteTrace(std::ostream& Stream)
 {
-    std::cout << "\nCRASH:\n**STACK TRACE BEGIN**\n";
     std::stack<FuncReturn> Stack = Returns;
+    Stack.push({pScript, pScript->GetNextLineEntry() - 1});
     while (!Stack.empty())
     {
-        std::cout << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
+        Stream << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
         Stack.pop();
     }
-    std::cout << "**STACK TRACE END**\nRecovering...\n" << std::endl;
 }
 
-void NsbInterpreter::Abort()
+void NsbInterpreter::DumpState()
 {
+    std::ofstream Log("state-log.txt");
+    WriteTrace(Log);
+}
+
+void NsbInterpreter::Crash()
+{
+    std::cout << "\n**STACK TRACE BEGIN**\n";
+    WriteTrace(std::cout);
+    std::cout << "**STACK TRACE END**\nRecovering...\n" << std::endl;
+
 #ifdef DEBUG
     abort();
 #else
@@ -785,8 +790,7 @@ void NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
         return;
 
     NsbAssert(fmt, value, args...);
-    DumpTrace();
-    Abort();
+    Crash();
 }
 
 template<typename T, typename... A>
@@ -816,6 +820,5 @@ void NsbInterpreter::NsbAssert(bool expr, const char* fmt)
         return;
 
     NsbAssert(fmt);
-    DumpTrace();
-    Abort();
+    Crash();
 }
