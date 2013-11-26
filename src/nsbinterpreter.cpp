@@ -255,6 +255,8 @@ void NsbInterpreter::Run()
                 for (uint32_t i = 1; i < pLine->Params.size(); ++i)
                     SetVariable(pLine->Params[i], Params[i - 1]);
                 break;
+            case uint16_t(MAGIC_FN_UNK):
+                // Hack used by Funwanovel english translation. Unknown purpose
             case uint16_t(MAGIC_END):
                 NsbAssert(!Returns.empty(), "Empty return stack");
                 pScript = Returns.top().pScript;
