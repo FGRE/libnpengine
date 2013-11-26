@@ -28,6 +28,7 @@ sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "steins-gate", sf::
 IsRunning(true),
 pText(nullptr)
 {
+    setFramerateLimit(60);
     sf::Vector2i WindowPos(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height);
     WindowPos -= sf::Vector2i(WINDOW_WIDTH, WINDOW_HEIGHT);
     WindowPos /= 2;
@@ -74,6 +75,7 @@ void Game::Run()
         auto d = Drawables.begin();
         while (d != Drawables.end())
         {
+            (*d)->Update();
             draw(*(*d)->Get());
             ++d;
         }
@@ -96,10 +98,10 @@ void Game::Run()
 
 void Game::GLCallback(const std::function<void()>& Func)
 {
-    pInterpreter->Pause();
     GLMutex.lock();
     GLCallbacks.push(Func);
     GLMutex.unlock();
+    pInterpreter->Pause();
 }
 
 void Game::SetText(Text* pText)

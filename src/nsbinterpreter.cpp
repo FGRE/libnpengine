@@ -327,7 +327,7 @@ void NsbInterpreter::Run()
                 else
                     SetOpacity(CacheHolder<Drawable>::Read(HandleName), GetParam<int32_t>(1),
                                GetParam<int32_t>(2), GetParam<string>(3), GetParam<bool>(4));
-                break;
+                return;
             }
             case uint16_t(MAGIC_SET_DISPLAY_STATE):
                 SetDisplayState(GetParam<string>(0), GetParam<string>(1));
@@ -658,7 +658,7 @@ void NsbInterpreter::SetDisplayState(const string& HandleName, const string& Sta
         }
 
     }
-    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+    else if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
         if (State == "Play")
             pMusic->play();
 }
@@ -675,20 +675,9 @@ void NsbInterpreter::SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opaci
             pGame->GLCallback(std::bind(&Game::ClearText, pGame));
             CacheHolder<Drawable>::Write(HandleName, nullptr); // hack: see Game::ClearText
         }
-        return;
     }
-
-    //if (Time == 0)
-    {
-        if (Opacity == 0)
-            pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame, pDrawable));
-        else if (Opacity == 1000)
-            pGame->GLCallback(std::bind(&Game::AddDrawable, pGame, pDrawable));
-        else
-            pDrawable->Fade(Opacity, Time);
-    }
-    //else
-        //pDrawable->Fade(Opacity, Time);
+    else
+        pDrawable->SetOpacity(Opacity, Time);
 }
 
 void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32_t x,
@@ -712,8 +701,9 @@ void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32
     else
         pMovie->setPosition(x, y); // Maybe add xy and pRect->xy?
 
-    // Abuse CacheHolder as HandleHolder :)
-    CacheHolder<Drawable>::Write(HandleName, new Drawable(pMovie, Priority, DRAWABLE_MOVIE));
+    Drawable* pDrawable = new Drawable(pMovie, Priority, DRAWABLE_MOVIE);
+    CacheHolder<Drawable>::Write(HandleName, pDrawable);
+    pGame->AddDrawable(pDrawable);
 }
 
 void NsbInterpreter::LoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File)
