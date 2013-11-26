@@ -40,18 +40,23 @@ public:
     virtual ~Drawable();
 
     void Update();
-    void Fade(int32_t Opacity, int32_t Time);
+    void SetOpacity(int32_t NewOpacity, int32_t Time);
     int32_t GetPriority() const;
     sf::Drawable* Get() const;
 
 protected:
     sf::Drawable* pDrawable;
     int32_t Priority;
+    int32_t TargetOpacity;
     int32_t Opacity;
-    int32_t Time;
+    int32_t FadeTime;
     sf::Clock FadeClock;
 public: // hack
     uint8_t Type;
+private:
+    void SetAlpha(sf::Uint8 Alpha);
 };
+
+extern const float FadeConvert;
 
 #endif

@@ -20,12 +20,14 @@
 #include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 
-static const float FadeConvert = 0.255f;
+const float FadeConvert = 0.255f;
 
 Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
-Time(0),
+TargetOpacity(0),
+Opacity(0),
+FadeTime(0),
 Type(Type)
 {
 }
@@ -41,23 +43,52 @@ Drawable::~Drawable()
 
 void Drawable::Update()
 {
+    if (FadeTime == 0)
+        return;
+
+    float Alpha;
+    int32_t Elapsed = FadeClock.getElapsedTime().asMilliseconds();
+
+    if (Elapsed >= FadeTime)
+    {
+        FadeTime = 0;
+        Alpha = TargetOpacity;
+        Opacity = TargetOpacity;
+    }
+    else
+    {
+        float Progress = float(Elapsed) / float(FadeTime);
+        Alpha = float(Opacity);
+        if (TargetOpacity > Opacity)
+            Alpha += float(TargetOpacity - Opacity) * Progress;
+        else
+            Alpha -= float(Opacity - TargetOpacity) * Progress;
+    }
+
+    Alpha *= FadeConvert;
+    SetAlpha(Alpha);
 }
 
-void Drawable::Fade(int32_t Opacity, int32_t Time)
+void Drawable::SetAlpha(sf::Uint8 Alpha)
 {
-    this->Opacity = Opacity;
-    this->Time = Time;
+    if (Type == DRAWABLE_TEXTURE)
+        static_cast<sf::Sprite*>(pDrawable)->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
+    else if (Type == DRAWABLE_MOVIE)
+        static_cast<sfe::Movie*>(pDrawable)->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
+}
+
+void Drawable::SetOpacity(int32_t NewOpacity, int32_t Time)
+{
+    Opacity = TargetOpacity;
+    TargetOpacity = NewOpacity;
+    FadeTime = Time;
     FadeClock.restart();
 
-    // Hack: Move to update()
-    float Alpha = Opacity * FadeConvert;
-    sf::Uint8 UAlpha = static_cast<sf::Uint8>(Alpha);
-
-    if (Type == DRAWABLE_TEXTURE)
-        static_cast<sf::Sprite*>(pDrawable)->setColor(sf::Color(0xFF, 0xFF, 0xFF, UAlpha));
-    else
-        static_cast<sfe::Movie*>(pDrawable)->setColor(sf::Color(0xFF, 0xFF, 0xFF, UAlpha));
-
+    if (Time == 0)
+    {
+        float Alpha = NewOpacity * FadeConvert;
+        SetAlpha(Alpha);
+    }
 }
 
 int32_t Drawable::GetPriority() const
