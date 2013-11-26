@@ -395,6 +395,13 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
 
 void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, const string& File, bool Wait)
 {
+    if (!pDrawable)
+    {
+        std::cout << "Applying " << File << " to NULL drawable!" << std::endl;
+        WriteTrace(std::cout);
+        return;
+    }
+
     sf::Sprite* pSprite = static_cast<sf::Sprite*>(pDrawable->Get());
     sf::Texture* pTexture = const_cast<sf::Texture*>(pSprite->getTexture());
     sf::Image Mask, Original = pTexture->copyToImage();
