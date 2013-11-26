@@ -89,7 +89,7 @@ void NsbInterpreter::ThreadMain()
 
     do
     {
-        boost::this_thread::sleep_for(boost::chrono::milliseconds(10)); // yield? mutex?
+        Sleep(10); // yield? mutex?
         Run();
     } while (!StopInterpreter);
 }
@@ -124,8 +124,9 @@ void NsbInterpreter::Run()
                 pGame->GLCallback(std::bind(&NsbInterpreter::ApplyMask, this,
                                   CacheHolder<Drawable>::Read(HandleName),
                                   GetParam<int32_t>(1), GetParam<int32_t>(2),
-                                  GetParam<int32_t>(3), GetParam<string>(4),
-                                  GetParam<string>(5), GetParam<bool>(6)));
+                                  GetParam<int32_t>(3), GetParam<int32_t>(4),
+                                  GetParam<string>(5), GetParam<string>(6),
+                                  GetParam<bool>(7)));
                 break;
             case uint16_t(MAGIC_DISPLAY_TEXT):
                 HandleName = GetParam<string>(0);
@@ -392,8 +393,27 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
     return Boolify(GetParam<string>(Index));
 }
 
-void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, const string& Tempo, const string& File, bool Wait)
+void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, const string& File, bool Wait)
 {
+    sf::Sprite* pSprite = static_cast<sf::Sprite*>(pDrawable->Get());
+    sf::Texture* pTexture = const_cast<sf::Texture*>(pSprite->getTexture());
+    sf::Image Mask, Original = pTexture->copyToImage();
+    uint32_t Size;
+    char* pPixels = sResourceMgr->Read(File, &Size);
+    Mask.loadFromMemory(pPixels, Size);
+    for (unsigned int y = 0; y < Mask.getSize().y; ++y)
+    {
+        for (unsigned int x = 0; x < Mask.getSize().x; ++x)
+        {
+            sf::Color Pixel(Original.getPixel(x, y));
+            Pixel.a = Mask.getPixel(x, y).r;
+            Original.setPixel(x, y, Pixel);
+        }
+    }
+    delete pTexture;
+    pTexture = new sf::Texture;
+    pTexture->loadFromImage(Original);
+    pSprite->setTexture(*pTexture);
 }
 
 void NsbInterpreter::CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
@@ -657,6 +677,8 @@ void NsbInterpreter::SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opaci
             pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame, pDrawable));
         else if (Opacity == 1000)
             pGame->GLCallback(std::bind(&Game::AddDrawable, pGame, pDrawable));
+        else
+            pDrawable->Fade(Opacity, Time);
     }
     //else
         //pDrawable->Fade(Opacity, Time);
