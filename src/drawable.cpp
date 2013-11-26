@@ -50,7 +50,7 @@ void Drawable::Fade(int32_t Opacity, int32_t Time)
     FadeClock.restart();
 
     // Hack: Move to update()
-    float Alpha = Opacity / FadeConvert;
+    float Alpha = Opacity * FadeConvert;
     sf::Uint8 UAlpha = static_cast<sf::Uint8>(Alpha);
 
     if (Type == DRAWABLE_TEXTURE)
