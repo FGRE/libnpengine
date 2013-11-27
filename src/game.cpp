@@ -76,7 +76,7 @@ void Game::Run()
         while (d != Drawables.end())
         {
             (*d)->Update();
-            draw(*(*d)->Get());
+            (*d)->Draw(this);
             ++d;
         }
         if (pText)
