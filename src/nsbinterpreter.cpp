@@ -225,6 +225,7 @@ void NsbInterpreter::Run()
                 if (std::strcmp(FuncName, "MovieWaitSG") == 0)
                 {
                     GetMovieTime("ムービー");
+                    std::cout << "MovieWaitSG(): Sleeping for " << GetVariable<int32_t>(Params[0].Value) << " milliseconds." << std::endl;
                     Sleep(GetVariable<int32_t>(Params[0].Value));
                     pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                                       CacheHolder<Drawable>::Read("ムービー")));

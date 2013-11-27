@@ -17,6 +17,11 @@
  * */
 #include "game.hpp"
 
+#ifdef _WIN32
+#include <iostream>
+#include <fstream>
+#endif
+
 extern "C"
 {
 int
@@ -25,6 +30,11 @@ __declspec(dllexport)
 #endif
 NitroplusMain()
 {
+#ifdef _WIN32
+    using namespace std;
+    ofstream log("log.txt");
+    cout.rdbuf(log.rdbuf());
+#endif
     // Note that scripts call .nss files, NOT nsb. This is a hack
     Game* pGame = new Game({"cg.npa", "nss.npa", "voice.npa", "sound.npa"}, "nss/sg00_01.nsb");
     pGame->Run();
