@@ -226,7 +226,7 @@ void NsbInterpreter::Run()
                 {
                     GetMovieTime("ムービー");
                     std::cout << "MovieWaitSG(): Sleeping for " << GetVariable<int32_t>(Params[0].Value) << " milliseconds." << std::endl;
-                    Sleep(GetVariable<int32_t>(Params[0].Value));
+                    //Sleep(GetVariable<int32_t>(Params[0].Value));
                     pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                                       CacheHolder<Drawable>::Read("ムービー")));
                     break;
@@ -394,8 +394,13 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
     return Boolify(GetParam<string>(Index));
 }
 
-void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, const string& File, bool Wait)
+void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait)
 {
+    static const string DataInvStr = "data_inv";
+    if (size_t i = File.find(DataInvStr))
+        File.replace(i, DataInvStr.size(), "data");
+    else
+        File.insert(i + 4, "_inv");
     if (!pDrawable)
     {
         std::cout << "Applying " << File << " to NULL drawable!" << std::endl;
@@ -403,25 +408,13 @@ void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start,
         return;
     }
 
-    sf::Sprite* pSprite = static_cast<sf::Sprite*>(pDrawable->Get());
-    sf::Texture* pTexture = const_cast<sf::Texture*>(pSprite->getTexture());
-    sf::Image Mask, Original = pTexture->copyToImage();
     uint32_t Size;
     char* pPixels = sResourceMgr->Read(File, &Size);
-    Mask.loadFromMemory(pPixels, Size);
-    for (unsigned int y = 0; y < Mask.getSize().y; ++y)
-    {
-        for (unsigned int x = 0; x < Mask.getSize().x; ++x)
-        {
-            sf::Color Pixel(Original.getPixel(x, y));
-            Pixel.a = Mask.getPixel(x, y).r;
-            Original.setPixel(x, y, Pixel);
-        }
-    }
-    delete pTexture;
-    pTexture = new sf::Texture;
-    pTexture->loadFromImage(Original);
-    pSprite->setTexture(*pTexture);
+    NsbAssert(pPixels, "Failed to load % pixels", File);
+    sf::Texture* pTexture = new sf::Texture;
+    std::cout << File << std::endl;
+    NsbAssert(pTexture->loadFromMemory(pPixels, Size), "Failed to load pixels from % in memory", File);
+    pDrawable->SetMask(pTexture, Start, End, Time);
 }
 
 void NsbInterpreter::CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
@@ -588,7 +581,6 @@ void NsbInterpreter::ParseText(const string& HandleName, const string& Box, cons
 {
     string NewHandle = Box + "/" + HandleName;
     SetVariable("$SYSTEM_present_text", { "STRING", NewHandle });
-    std::cout << "Parsing to handle " << NewHandle << std::endl;
     if (Drawable* pText = CacheHolder<Drawable>::Read(NewHandle))
         delete pText;
     Text* pText = new Text(XML);
@@ -678,7 +670,7 @@ void NsbInterpreter::SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opaci
         }
     }
     else
-        pDrawable->SetOpacity(Opacity, Time);
+        pDrawable->SetOpacity(Opacity, Time, FADE_TEX);
 }
 
 void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32_t x,

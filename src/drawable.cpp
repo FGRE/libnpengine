@@ -19,17 +19,21 @@
 
 #include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 
 const float FadeConvert = 0.255f;
 
 Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
-TargetOpacity(0),
-Opacity(0),
-FadeTime(0),
-Type(Type)
+Type(Type),
+pMask(nullptr)
 {
+    for (uint8_t i = 0; i < FADE_MAX; ++i)
+        if (Type == DRAWABLE_TEXTURE || Type == DRAWABLE_MOVIE)
+            Fades[i] = new FadeEffect;
+        else
+            Fades[i] = nullptr;
 }
 
 Drawable::~Drawable()
@@ -39,34 +43,57 @@ Drawable::~Drawable()
     else if (Type == DRAWABLE_TEXTURE);
         delete static_cast<sf::Sprite*>(pDrawable)->getTexture();
     delete pDrawable;
+    if (pMask)
+    {
+        delete static_cast<sf::Sprite*>(pMask)->getTexture();
+        delete pMask;
+    }
 }
 
 void Drawable::Update()
 {
-    if (FadeTime == 0)
+    for (uint8_t i = 0; i < FADE_MAX; ++i)
+        UpdateFade(i);
+}
+
+void Drawable::Draw(sf::RenderWindow* pWindow)
+{
+    if (pMask)
+        pWindow->draw(*pMask, sf::BlendMode::BlendMultiply);
+    else
+        pWindow->draw(*pDrawable);
+}
+
+void Drawable::UpdateFade(uint8_t Index)
+{
+    FadeEffect* pEffect = Fades[Index];
+    if (!pEffect || pEffect->FadeTime == 0)
         return;
 
     float Alpha;
-    int32_t Elapsed = FadeClock.getElapsedTime().asMilliseconds();
+    int32_t Elapsed = pEffect->FadeClock.getElapsedTime().asMilliseconds();
 
-    if (Elapsed >= FadeTime)
+    if (Elapsed >= pEffect->FadeTime)
     {
-        FadeTime = 0;
-        Alpha = TargetOpacity;
-        Opacity = TargetOpacity;
+        pEffect->FadeTime = 0;
+        Alpha = pEffect->TargetOpacity;
+        pEffect->Opacity = pEffect->TargetOpacity;
     }
     else
     {
-        float Progress = float(Elapsed) / float(FadeTime);
-        Alpha = float(Opacity);
-        if (TargetOpacity > Opacity)
-            Alpha += float(TargetOpacity - Opacity) * Progress;
+        float Progress = float(Elapsed) / float(pEffect->FadeTime);
+        Alpha = float(pEffect->Opacity);
+        if (pEffect->TargetOpacity > pEffect->Opacity)
+            Alpha += float(pEffect->TargetOpacity - pEffect->Opacity) * Progress;
         else
-            Alpha -= float(Opacity - TargetOpacity) * Progress;
+            Alpha -= float(pEffect->Opacity - pEffect->TargetOpacity) * Progress;
     }
 
     Alpha *= FadeConvert;
-    SetAlpha(Alpha);
+    if (Index == FADE_MASK)
+        pMask->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
+    else
+        SetAlpha(Alpha);
 }
 
 void Drawable::SetAlpha(sf::Uint8 Alpha)
@@ -77,18 +104,26 @@ void Drawable::SetAlpha(sf::Uint8 Alpha)
         static_cast<sfe::Movie*>(pDrawable)->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
 }
 
-void Drawable::SetOpacity(int32_t NewOpacity, int32_t Time)
+void Drawable::SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index)
 {
-    Opacity = TargetOpacity;
-    TargetOpacity = NewOpacity;
-    FadeTime = Time;
-    FadeClock.restart();
+    FadeEffect* pEffect = Fades[Index];
+    pEffect->Opacity = pEffect->TargetOpacity;
+    pEffect->TargetOpacity = NewOpacity;
+    pEffect->FadeTime = Time;
+    pEffect->FadeClock.restart();
 
     if (Time == 0)
     {
         float Alpha = NewOpacity * FadeConvert;
         SetAlpha(Alpha);
     }
+}
+
+void Drawable::SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time)
+{
+    pMask = new sf::Sprite(*pTexture);
+    Fades[FADE_MASK]->TargetOpacity = Start; // Will be flipped to Opacity in SetOpacity
+    SetOpacity(End, Time, FADE_MASK);
 }
 
 int32_t Drawable::GetPriority() const
