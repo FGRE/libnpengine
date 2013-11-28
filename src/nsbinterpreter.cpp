@@ -269,7 +269,7 @@ void NsbInterpreter::Run()
                 break;
             case uint16_t(MAGIC_SET):
                 if (pLine->Params[0] == "__array_variable__")
-                    *ArrayParams[ArrayParams.size() - 1] = Params[0];
+                    ;//*ArrayParams[ArrayParams.size() - 1] = Params[0];
                 else
                     SetVariable(pLine->Params[0], Params[0]);
                 break;
@@ -401,11 +401,6 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
 
 void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait)
 {
-    static const string DataInvStr = "data_inv";
-    if (size_t i = File.find(DataInvStr))
-        File.replace(i, DataInvStr.size(), "data");
-    else
-        File.insert(i + 4, "_inv");
     if (!pDrawable)
     {
         std::cout << "Applying " << File << " to NULL drawable!" << std::endl;
