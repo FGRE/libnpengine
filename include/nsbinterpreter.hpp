@@ -83,7 +83,7 @@ private:
     void ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait);
     void DisplayText(const string& unk);
     void CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
-    void BindIdentifier(const string& HandleName);
+    void BindIdentifier();
     void SetVariable(const string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
     void ArrayRead(const string& HandleName, int32_t Depth);

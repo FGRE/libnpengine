@@ -87,6 +87,7 @@ void NsbInterpreter::ThreadMain()
     LoadScript("nss/function_select.nsb");
     LoadScript("nss/function_stand.nsb");
 
+    //CallFunction(LoadedScripts[LoadedScripts.size() - 1], "StArray");
     do
     {
         Sleep(10); // yield? mutex?
@@ -137,15 +138,16 @@ void NsbInterpreter::Run()
                 CreateBox(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
                           GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<bool>(6));
                 break;
-            case uint16_t(MAGIC_ARRAY_READ): break;
-                ArrayRead(GetParam<string>(0), GetParam<int32_t>(1));
+            case uint16_t(MAGIC_ARRAY_READ):
+                ArrayRead(pLine->Params[0], GetParam<int32_t>(1));
                 break;
             case uint16_t(MAGIC_CREATE_ARRAY):
                 for (uint32_t i = 1; i < Params.size(); ++i)
-                    Arrays[GetParam<string>(0)].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+                    Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
                 break;
             case uint16_t(MAGIC_BIND_IDENTIFIER):
-                BindIdentifier(GetParam<string>(0));
+                HandleName = pLine->Params[0];
+                BindIdentifier();
                 break;
             case uint16_t(MAGIC_CREATE_COLOR):
                 pGame->GLCallback(std::bind(&NsbInterpreter::CreateColor, this,
@@ -266,7 +268,10 @@ void NsbInterpreter::Run()
                 Returns.pop();
                 break;
             case uint16_t(MAGIC_SET):
-                SetVariable(pLine->Params[0], Params[0]);
+                if (pLine->Params[0] == "__array_variable__")
+                    *ArrayParams[ArrayParams.size() - 1] = Params[0];
+                else
+                    SetVariable(pLine->Params[0], Params[0]);
                 break;
             case uint16_t(MAGIC_GET):
                 Params.push_back(Variables[pLine->Params[0]]);
@@ -423,9 +428,9 @@ void NsbInterpreter::CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width
     CacheHolder<sf::IntRect>::Write(HandleName, pRect);
 }
 
-void NsbInterpreter::BindIdentifier(const string& /*HandleName*/)
+void NsbInterpreter::BindIdentifier()
 {
-    ArrayVariable* Var = ArrayParams[ArrayParams.size() - 1];
+    ArrayVariable* Var = &Arrays[HandleName];
     for (uint32_t i = 1; i < Params.size(); ++i)
         Var->Members[i - 1].first = Params[i].Value;
 }
@@ -437,6 +442,7 @@ void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
 
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
+        // TODO: check if exists
         ArrayMembers& Members = Arrays[*MemberName].Members;
         for (uint32_t i = 0; i < Members.size(); ++i)
         {
@@ -756,7 +762,7 @@ bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
 void NsbInterpreter::WriteTrace(std::ostream& Stream)
 {
     std::stack<FuncReturn> Stack = Returns;
-    Stack.push({pScript, pScript->GetNextLineEntry() - 1});
+    Stack.push({pScript, pScript->GetNextLineEntry()});
     while (!Stack.empty())
     {
         Stream << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
