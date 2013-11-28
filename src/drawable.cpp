@@ -23,6 +23,19 @@
 
 const float FadeConvert = 0.255f;
 
+const std::string FadeShader = \
+    "uniform sampler2D Texture;"
+    "uniform sampler2D Mask;"
+    "uniform float Alpha;"
+    "uniform float Target;"
+    "void main()" \
+    "{" \
+    "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
+    "   vec4 MaskPixel = texture2D(Mask, gl_TexCoord[0].xy);"
+    "   Pixel.a = MaskPixel.x * (Alpha / Target);"
+    "   gl_FragColor = Pixel;" \
+    "}";
+
 Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
@@ -43,11 +56,7 @@ Drawable::~Drawable()
     else if (Type == DRAWABLE_TEXTURE);
         delete static_cast<sf::Sprite*>(pDrawable)->getTexture();
     delete pDrawable;
-    if (pMask)
-    {
-        delete static_cast<sf::Sprite*>(pMask)->getTexture();
-        delete pMask;
-    }
+    delete pMask;
 }
 
 void Drawable::Update()
@@ -59,7 +68,7 @@ void Drawable::Update()
 void Drawable::Draw(sf::RenderWindow* pWindow)
 {
     if (pMask)
-        pWindow->draw(*pMask, sf::BlendMode::BlendMultiply);
+        pWindow->draw(*pDrawable, &Shader);
     else
         pWindow->draw(*pDrawable);
 }
@@ -91,7 +100,7 @@ void Drawable::UpdateFade(uint8_t Index)
 
     Alpha *= FadeConvert;
     if (Index == FADE_MASK)
-        pMask->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
+        Shader.setParameter("Alpha", Alpha);
     else
         SetAlpha(Alpha);
 }
@@ -121,7 +130,11 @@ void Drawable::SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index)
 
 void Drawable::SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time)
 {
-    pMask = new sf::Sprite(*pTexture);
+    pMask = pTexture;
+    Shader.loadFromMemory(FadeShader, sf::Shader::Fragment);
+    Shader.setParameter("Mask", *pMask);
+    Shader.setParameter("Texture", sf::Shader::CurrentTexture);
+    Shader.setParameter("Target", End * FadeConvert);
     Fades[FADE_MASK]->TargetOpacity = Start; // Will be flipped to Opacity in SetOpacity
     SetOpacity(End, Time, FADE_MASK);
 }

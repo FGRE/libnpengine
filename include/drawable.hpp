@@ -20,6 +20,7 @@
 
 #include <cstdint>
 #include <SFML/System/Clock.hpp>
+#include <SFML/Graphics/Shader.hpp>
 
 enum
 {
@@ -38,7 +39,6 @@ enum
 namespace sf
 {
     class Drawable;
-    class Sprite;
     class Texture;
     class RenderWindow;
 };
@@ -73,7 +73,8 @@ protected:
 private:
     void UpdateFade(uint8_t Index);
     void SetAlpha(sf::Uint8 Alpha);
-    sf::Sprite* pMask;
+    sf::Shader Shader;
+    sf::Texture* pMask;
 };
 
 extern const float FadeConvert;
