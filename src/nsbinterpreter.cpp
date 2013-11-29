@@ -120,6 +120,11 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_APPLY_BLUR):
+                pGame->GLCallback(std::bind(&NsbInterpreter::ApplyBlur, this,
+                                  CacheHolder<Drawable>::Read(GetParam<string>(0)),
+                                  GetParam<string>(1)));
+                return;
             case uint16_t(MAGIC_APPLY_MASK):
                 HandleName = GetParam<string>(0);
                 pGame->GLCallback(std::bind(&NsbInterpreter::ApplyMask, this,
@@ -128,7 +133,7 @@ void NsbInterpreter::Run()
                                   GetParam<int32_t>(3), GetParam<int32_t>(4),
                                   GetParam<string>(5), GetParam<string>(6),
                                   GetParam<bool>(7)));
-                break;
+                return;
             case uint16_t(MAGIC_DISPLAY_TEXT):
                 HandleName = GetParam<string>(0);
                 DisplayText(GetParam<string>(1));
@@ -399,6 +404,17 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
     return Boolify(GetParam<string>(Index));
 }
 
+void NsbInterpreter::ApplyBlur(Drawable* pDrawable, const string& Heaviness)
+{
+    if (!pDrawable)
+    {
+        std::cout << "Applying blur to NULL drawable!" << std::endl;
+        WriteTrace(std::cout);
+    }
+    else
+        pDrawable->SetBlur(Heaviness);
+}
+
 void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait)
 {
     if (!pDrawable)
@@ -412,7 +428,6 @@ void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start,
     char* pPixels = sResourceMgr->Read(File, &Size);
     NsbAssert(pPixels, "Failed to load % pixels", File);
     sf::Texture* pTexture = new sf::Texture;
-    std::cout << File << std::endl;
     NsbAssert(pTexture->loadFromMemory(pPixels, Size), "Failed to load pixels from % in memory", File);
     pDrawable->SetMask(pTexture, Start, End, Time);
 }

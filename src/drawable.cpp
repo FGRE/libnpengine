@@ -20,6 +20,7 @@
 #include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
 
 const float FadeConvert = 0.255f;
 
@@ -28,19 +29,44 @@ const std::string FadeShader = \
     "uniform sampler2D Mask;"
     "uniform float Alpha;"
     "uniform float Target;"
-    "void main()" \
-    "{" \
+    "void main()"
+    "{"
     "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
     "   vec4 MaskPixel = texture2D(Mask, gl_TexCoord[0].xy);"
     "   Pixel.a = MaskPixel.x * (Alpha / Target);"
-    "   gl_FragColor = Pixel;" \
+    "   gl_FragColor = Pixel;"
+    "}";
+
+const std::string BlurShader = \
+    "uniform float Sigma;"
+    "uniform sampler2D Texture;"
+    "uniform vec2 Pass;"
+    "uniform float BlurSize;"
+    "const float NumSamples = 4.0f;"
+    "const float PI = 3.14159265f;"
+    "void main()"
+    "{"
+    "   vec3 Gaussian = vec3(1.0f / (sqrt(2.0f * PI) * Sigma), exp(-0.5f / (Sigma * Sigma)), 0.0f);"
+    "   Gaussian.z = Gaussian.y * Gaussian.y;"
+    "   vec4 Average = texture2D(Texture, gl_TexCoord[0].xy) * Gaussian.x;"
+    "   float CoeffSum = Gaussian.x;"
+    "   Gaussian.xy *= Gaussian.yz;"
+    "   for (float i = 1.0f; i <= NumSamples; ++i)"
+    "   {"
+    "       Average += texture2D(Texture, gl_TexCoord[0].xy + i * BlurSize * Pass) * Gaussian.x;"
+    "       Average += texture2D(Texture, gl_TexCoord[0].xy - i * BlurSize * Pass) * Gaussian.x;"
+    "       CoeffSum += 2.0f * Gaussian.x;"
+    "       Gaussian.xy *= Gaussian.yz;"
+    "   }"
+    "   gl_FragColor = Average / CoeffSum;"
     "}";
 
 Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
 Type(Type),
-pMask(nullptr)
+pMask(nullptr),
+pBlur(nullptr)
 {
     for (uint8_t i = 0; i < FADE_MAX; ++i)
         if (Type == DRAWABLE_TEXTURE || Type == DRAWABLE_MOVIE)
@@ -67,7 +93,19 @@ void Drawable::Update()
 
 void Drawable::Draw(sf::RenderWindow* pWindow)
 {
-    if (pMask)
+    if (pBlur)
+    {
+        Shader.setParameter("BlurSize", 1.0f / 1024.0f);
+        Shader.setParameter("Pass", sf::Vector2f(1.0f, 0.0f));
+        pBlur->draw(*pDrawable, &Shader);
+        pBlur->display();
+        Shader.setParameter("BlurSize", 1.0f / 576.0f);
+        Shader.setParameter("Pass", sf::Vector2f(0.0f, 1.0f));
+        pBlur->draw(sf::Sprite(pBlur->getTexture()), &Shader);
+        pBlur->display();
+        pWindow->draw(sf::Sprite(pBlur->getTexture()));
+    }
+    else if (pMask)
         pWindow->draw(*pDrawable, &Shader);
     else
         pWindow->draw(*pDrawable);
@@ -137,6 +175,15 @@ void Drawable::SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_
     Shader.setParameter("Target", End * FadeConvert);
     Fades[FADE_MASK]->TargetOpacity = Start; // Will be flipped to Opacity in SetOpacity
     SetOpacity(End, Time, FADE_MASK);
+}
+
+void Drawable::SetBlur(const std::string& Heaviness)
+{
+    pBlur = new sf::RenderTexture;
+    pBlur->create(1024, 576);
+    Shader.loadFromMemory(BlurShader, sf::Shader::Fragment);
+    Shader.setParameter("Sigma", 3.0f); // Guess for SEMIHEAVY
+    Shader.setParameter("Texture", sf::Shader::CurrentTexture);
 }
 
 int32_t Drawable::GetPriority() const
