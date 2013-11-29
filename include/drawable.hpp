@@ -41,6 +41,7 @@ namespace sf
     class Drawable;
     class Texture;
     class RenderWindow;
+    class RenderTexture;
 };
 
 struct FadeEffect
@@ -60,6 +61,7 @@ public:
 
     void Draw(sf::RenderWindow* pWindow);
     void Update();
+    void SetBlur(const std::string& Heaviness);
     void SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index);
     void SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time);
     int32_t GetPriority() const;
@@ -75,6 +77,7 @@ private:
     void SetAlpha(sf::Uint8 Alpha);
     sf::Shader Shader;
     sf::Texture* pMask;
+    sf::RenderTexture* pBlur;
 };
 
 extern const float FadeConvert;
