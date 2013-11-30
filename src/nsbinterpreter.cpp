@@ -29,6 +29,7 @@
 #include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Audio/Music.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
 
 #define SPECIAL_POS_NUM 7
 
@@ -63,9 +64,8 @@ std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
 
 NsbInterpreter::NsbInterpreter(Game* pGame, const string& InitScript) :
 pGame(pGame),
-pScript(sResourceMgr->GetResource<NsbFile>(InitScript)),
 StopInterpreter(false),
-ScriptThread(&NsbInterpreter::ThreadMain, this)
+ScriptThread(&NsbInterpreter::ThreadMain, this, InitScript)
 {
 #ifdef _WIN32
     Text::Initialize("fonts-japanese-gothic.ttf");
@@ -78,7 +78,7 @@ NsbInterpreter::~NsbInterpreter()
 {
 }
 
-void NsbInterpreter::ThreadMain()
+void NsbInterpreter::ThreadMain(string InitScript)
 {
     // TODO: from .map file
     LoadScript("nss/function_steinsgate.nsb");
@@ -87,6 +87,7 @@ void NsbInterpreter::ThreadMain()
     LoadScript("nss/function_select.nsb");
     LoadScript("nss/function_stand.nsb");
 
+    pScript = sResourceMgr->GetResource<NsbFile>(InitScript);
     //CallFunction(LoadedScripts[LoadedScripts.size() - 1], "StArray");
     do
     {
@@ -120,6 +121,16 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_CREATE_TEXTURE):
+                pGame->GLCallback(std::bind(&NsbInterpreter::CreateTexture, this,
+                                  GetParam<string>(0), GetParam<int32_t>(1),
+                                  GetParam<int32_t>(2), GetParam<string>(3)));
+                return;
+            case uint16_t(MAGIC_DRAW_TO_TEXTURE):
+                pGame->GLCallback(std::bind(&NsbInterpreter::DrawToTexture, this,
+                                  GetParam<string>(0), GetParam<int32_t>(1),
+                                  GetParam<int32_t>(2), GetParam<string>(3)));
+                return;
             case uint16_t(MAGIC_APPLY_BLUR):
                 pGame->GLCallback(std::bind(&NsbInterpreter::ApplyBlur, this,
                                   CacheHolder<Drawable>::Read(GetParam<string>(0)),
@@ -402,6 +413,32 @@ template <class T> T NsbInterpreter::GetParam(int32_t Index)
 template <> bool NsbInterpreter::GetParam(int32_t Index)
 {
     return Boolify(GetParam<string>(Index));
+}
+
+void NsbInterpreter::CreateTexture(const string& HandleName, int32_t Width, int32_t Height, const string& Color)
+{
+    if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
+        delete pTexture;
+
+    sf::RenderTexture* pTexture = new sf::RenderTexture;
+    pTexture->create(Width, Height);
+    CacheHolder<sf::RenderTexture>::Write(HandleName, pTexture);
+}
+
+void NsbInterpreter::DrawToTexture(const string& HandleName, int32_t x, int32_t y, const string& File)
+{
+    if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
+    {
+        sf::Texture TempTexture;
+        uint32_t Size;
+        char* pPixels = sResourceMgr->Read(File, &Size);
+        NsbAssert(pPixels, "Failed to load % pixels", File);
+        NsbAssert(TempTexture.loadFromMemory(pPixels, Size), "Failed to load pixels from % in memory", File);
+        sf::Sprite TempSprite(TempTexture);
+        TempSprite.setPosition(x, y);
+        pTexture->draw(TempSprite);
+        pTexture->display();
+    }
 }
 
 void NsbInterpreter::ApplyBlur(Drawable* pDrawable, const string& Heaviness)
@@ -723,17 +760,28 @@ void NsbInterpreter::LoadTexture(const string& HandleName, int32_t Priority, int
         delete pDrawable;
     }
 
-    sf::Texture* pTexture = new sf::Texture;
-    uint32_t Size;
-    char* pTexData = sResourceMgr->Read(File, &Size);
-    if (!pTexData)
+    sf::Texture* pTexture;
+
+    // Load from texture instead of file
+    if (sf::RenderTexture* pRenderTexture = CacheHolder<sf::RenderTexture>::Read(File))
     {
-        std::cout << "Failed to read texture " << File << std::endl;
-        delete pTexture;
-        CacheHolder<Drawable>::Write(HandleName, nullptr);
-        return;
+        // TODO: Dont copy
+        pTexture = new sf::Texture(pRenderTexture->getTexture());
     }
-    NsbAssert(pTexture->loadFromMemory(pTexData, Size), "Failed to load texture %!", File);
+    else
+    {
+        pTexture = new sf::Texture;
+        uint32_t Size;
+        char* pTexData = sResourceMgr->Read(File, &Size);
+        if (!pTexData)
+        {
+            std::cout << "Failed to read texture " << File << std::endl;
+            delete pTexture;
+            CacheHolder<Drawable>::Write(HandleName, nullptr);
+            return;
+        }
+        NsbAssert(pTexture->loadFromMemory(pTexData, Size), "Failed to load texture %!", File);
+    }
 
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
     // TODO: Positions are x/y specific!
