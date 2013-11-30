@@ -75,6 +75,7 @@ private:
     void ThreadMain(string InitScript);
     void Run();
 
+    void Concat();
     bool Boolify(const string& String);
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
