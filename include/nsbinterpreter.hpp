@@ -75,12 +75,13 @@ private:
     void ThreadMain(string InitScript);
     void Run();
 
-    void Concat();
     bool Boolify(const string& String);
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, T Func);
 
+    void Concat();
+    void Format();
     void CreateTexture(const string& HandleName, int32_t Width, int32_t Height, const string& Color);
     void DrawToTexture(const string& HandleName, int32_t x, int32_t y, const string& File);
     void ApplyBlur(Drawable* pDrawable, const string& Heaviness);

@@ -26,6 +26,7 @@
 #include <boost/chrono.hpp>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
+#include <boost/format.hpp>
 #include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Audio/Music.hpp>
@@ -121,6 +122,9 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_FORMAT): break; // TODO: Depends on ArrayRead
+                Format();
+                break;
             case uint16_t(MAGIC_CREATE_TEXTURE):
                 pGame->GLCallback(std::bind(&NsbInterpreter::CreateTexture, this,
                                   GetParam<string>(0), GetParam<int32_t>(1),
@@ -359,6 +363,14 @@ void NsbInterpreter::Run()
                 break;
         }
     }
+}
+
+void NsbInterpreter::Format()
+{
+    boost::format Fmt(Params[0].Value);
+    for (uint8_t i = 1; i < Params.size(); ++i)
+        Fmt % Params[i].Value;
+    Params[0].Value = Fmt.str();
 }
 
 void NsbInterpreter::Concat()
