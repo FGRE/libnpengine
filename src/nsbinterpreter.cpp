@@ -79,8 +79,18 @@ NsbInterpreter::~NsbInterpreter()
 {
 }
 
+void NsbInterpreter::RegisterBuiltins()
+{
+    Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_LOAD_MOVIE] = &NsbInterpreter::LoadMovie;
+    Builtins[MAGIC_APPLY_MASK] = &NsbInterpreter::ApplyMask;
+    Builtins[MAGIC_CREATE_COLOR] = &NsbInterpreter::CreateColor;
+}
+
 void NsbInterpreter::ThreadMain(string InitScript)
 {
+    RegisterBuiltins();
+
     // TODO: from .map file
     LoadScript("nss/function_steinsgate.nsb");
     LoadScript("nss/function.nsb");
@@ -121,6 +131,15 @@ void NsbInterpreter::ExecuteLine()
         return;
     }
 
+    if (pLine->Magic < Builtins.size())
+    {
+        if (BuiltinFunc pFunc = Builtins[pLine->Magic])
+        {
+            (this->*pFunc)();
+            return;
+        }
+    }
+
     switch (pLine->Magic)
     {
         case uint16_t(MAGIC_SET_PLACEHOLDER):
@@ -148,9 +167,6 @@ void NsbInterpreter::ExecuteLine()
                               CacheHolder<Drawable>::Read(GetParam<string>(0)),
                               GetParam<string>(1)));
             return;
-        case uint16_t(MAGIC_APPLY_MASK):
-            ApplyMask();
-            return;
         case uint16_t(MAGIC_DISPLAY_TEXT):
             HandleName = GetParam<string>(0);
             DisplayText(GetParam<string>(1));
@@ -171,9 +187,6 @@ void NsbInterpreter::ExecuteLine()
             HandleName = pLine->Params[0];
             BindIdentifier();
             break;
-        case uint16_t(MAGIC_CREATE_COLOR):
-            CreateColor();
-            return;
         case uint16_t(MAGIC_SET_TEXTBOX_ATTRIBUTES):
             SetTextboxAttributes(GetParam<string>(0), GetParam<int32_t>(1),
                                  GetParam<string>(2), GetParam<int32_t>(3),
@@ -254,9 +267,6 @@ void NsbInterpreter::ExecuteLine()
         case uint16_t(MAGIC_CONCAT):
             Concat();
             break;
-        case uint16_t(MAGIC_LOAD_MOVIE):
-            LoadMovie();
-            return;
         case uint16_t(MAGIC_LOAD_TEXTURE):
             LoadTexture();
             return;

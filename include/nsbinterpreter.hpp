@@ -60,6 +60,7 @@ struct FuncReturn
 
 class NsbInterpreter
 {
+    typedef void (NsbInterpreter::*BuiltinFunc)();
 public:
     NsbInterpreter(Game* pGame, const string& InitScript);
     ~NsbInterpreter();
@@ -73,6 +74,7 @@ public:
 private:
     void LoadScript(const string& FileName);
 
+    void RegisterBuiltins();
     void ThreadMain(string InitScript);
     void ExecuteLine();
 
@@ -142,6 +144,7 @@ private:
     std::vector<Variable> Params;
     std::vector<ArrayVariable*> ArrayParams;
     std::queue<Variable> Placeholders;
+    std::vector<BuiltinFunc> Builtins;
     boost::thread ScriptThread;
 };
 
