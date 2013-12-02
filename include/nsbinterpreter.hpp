@@ -26,9 +26,13 @@
 #include <boost/thread/thread.hpp>
 using std::string;
 
+#define SPECIAL_POS_NUM 7
+
 namespace sf
 {
     class RenderTexture;
+    class Music;
+    class Texture;
 }
 
 class NsbFile;
@@ -73,20 +77,17 @@ public:
     void Pause();
     void Start();
 
-    void CallScript(const string& FileName); // Deprecated
+    void CallScript(const string& FileName); // Deprecated/Incorrect
     void DumpState();
-private:
-    void LoadScript(const string& FileName);
 
+private:
+    void Sleep(int32_t ms);
+    void LoadScript(const string& FileName);
     void RegisterBuiltins();
     void ThreadMain(string InitScript);
-    void ExecuteLine();
 
-    bool Boolify(const string& String);
-    template <class T> T GetParam(int32_t Index);
-    template <class T> T GetVariable(const string& Identifier);
-    template <class T> void WildcardCall(std::string Handle, T Func);
-
+    void SetParam();
+    void Get();
     void DrawToTexture();
     void CreateColor();
     void SetOpacity();
@@ -102,25 +103,40 @@ private:
     void ApplyMask();
     void ClearParams();
     void CreateTexture();
+    void GetMovieTime();
+    void ApplyBlur();
+    void CreateBox();
+    void SetTextboxAttributes();
+    void LoadAudio();
+    void SetAudioRange();
+    void SetFontAttributes();
+    void SetAudioState();
+    void DisplayText();
+    void StartAnimation();
+    void SleepMs();
+    void SetAudioLoop();
+    void ParseText();
+    void SetDisplayState();
+    void RegisterCallback();
+    void ArrayRead();
+    void Set();
+    void SetPlaceholder();
+    void PlaceholderParam();
+    void CreateArray();
+    void UNK5();
 
-    void ApplyBlur(Drawable* pDrawable, const string& Heaviness);
-    void DisplayText(const string& unk);
-    void CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
-    void SetVariable(const string& Identifier, const Variable& Var);
-    bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
-    void ArrayRead(const string& HandleName, int32_t Depth);
-    void SetTextboxAttributes(const string& Handle, int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
-    void SetFontAttributes(const string& Font, int32_t size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
-    void SetAudioState(const string& HandleName, int32_t NumSeconds, int32_t Volume, const string& Tempo);
-    void SetAudioLoop(const string& HandleName, bool Loop);
-    void SetAudioRange(const string& HandleName, int32_t Begin, int32_t End);
-    void LoadAudio(const string& HandleName, const string& Type, const string& File);
-    void StartAnimation(const string& HandleName, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
-    void Sleep(int32_t ms);
-    void ParseText(const string& HandleName, const string& Box, const string& XML);
-    void SetDisplayState(const string& HandleName, const string& State);
-    void GetMovieTime(const string& HandleName);
-
+    void NSBArrayRead(int32_t Depth);
+    void NSBSetDisplayState(const string& State);
+    void NSBSetAudioLoop(sf::Music* pMusic, bool Loop);
+    void NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
+    void NSBDisplayText(const string& unk);
+    void NSBSetAudioState(sf::Music* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
+    void NSBSetAudioRange(sf::Music* pMusic, int32_t Begin, int32_t End);
+    void NSBSetFontAttributes(const string& Font, int32_t Size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
+    void NSBLoadAudio(const string& Type, const string& File);
+    void NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
+    void NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
+    void NSBGetMovieTime();
     void NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void GLDestroy(Drawable* pDrawable);
     void GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
@@ -129,6 +145,15 @@ private:
     void GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait);
     void GLCreateTexture(int32_t Width, int32_t Height, const string& Color);
     void GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File);
+    void GLApplyBlur(Drawable* pDrawable, const string& Heaviness);
+    void GLParseText(const string& Box, const string& XML);
+
+    template <class T> T GetParam(int32_t Index);
+    template <class T> T GetVariable(const string& Identifier);
+    template <class T> void WildcardCall(std::string Handle, T Func);
+    bool CallFunction(NsbFile* pDestScript, const char* FuncName);
+    void SetVariable(const string& Identifier, const Variable& Var);
+    sf::Texture* LoadTextureFromFile(const string& File);
 
     void Recover();
     void WriteTrace(std::ostream& Stream);

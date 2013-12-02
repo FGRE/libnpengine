@@ -24,43 +24,16 @@
 
 #include <iostream>
 #include <boost/chrono.hpp>
-#include <sstream>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
-#include <sfeMovie/Movie.hpp>
-#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Audio/Music.hpp>
-#include <SFML/Graphics/RenderTexture.hpp>
-
-#define SPECIAL_POS_NUM 7
-
-enum : int32_t
-{
-    POS_CENTER = -1,
-    POS_IN_BOTTOM = -2,
-    POS_MIDDLE = -3,
-    POS_ON_LEFT = -4,
-    POS_OUT_TOP = -5,
-    POS_IN_TOP = -6,
-    POS_OUT_RIGHT = -7
-};
+#include <sfeMovie/Movie.hpp>
 
 const std::string SpecialPos[SPECIAL_POS_NUM] =
 {
     "Center", "InBottom", "Middle",
     "OnLeft", "OutTop", "InTop",
     "OutRight"
-};
-
-std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
-{
-  [] (int32_t x) { return WINDOW_WIDTH / 2 - x / 2; },
-  [] (int32_t y) { return WINDOW_HEIGHT - y; },
-  [] (int32_t y) { return WINDOW_HEIGHT / 2 + y / 2; },
-  [] (int32_t x) { return 0; },
-  [] (int32_t y) { return 0; },
-  [] (int32_t y) { return 0; },
-  [] (int32_t x) { return 0; }
 };
 
 NsbInterpreter::NsbInterpreter(Game* pGame, const string& InitScript) :
@@ -82,6 +55,28 @@ NsbInterpreter::~NsbInterpreter()
 void NsbInterpreter::RegisterBuiltins()
 {
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
+    Builtins[MAGIC_SET_PLACEHOLDER] = &NsbInterpreter::SetPlaceholder;
+    Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::CreateArray;
+    Builtins[MAGIC_SET] = &NsbInterpreter::Set;
+    Builtins[MAGIC_ARRAY_READ] = &NsbInterpreter::ArrayRead;
+    Builtins[MAGIC_REGISTER_CALLBACK] = &NsbInterpreter::RegisterCallback;
+    Builtins[MAGIC_SET_DISPLAY_STATE] = &NsbInterpreter::SetDisplayState;
+    Builtins[MAGIC_PARSE_TEXT] = &NsbInterpreter::ParseText;
+    Builtins[MAGIC_SET_AUDIO_LOOP] = &NsbInterpreter::SetAudioLoop;
+    Builtins[MAGIC_SLEEP_MS] = &NsbInterpreter::SleepMs;
+    Builtins[MAGIC_START_ANIMATION] = &NsbInterpreter::StartAnimation;
+    Builtins[MAGIC_DISPLAY_TEXT] = &NsbInterpreter::DisplayText;
+    Builtins[MAGIC_SET_AUDIO_STATE] = &NsbInterpreter::SetAudioState;
+    Builtins[MAGIC_SET_AUDIO_RANGE] = &NsbInterpreter::SetAudioRange;
+    Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
+    Builtins[MAGIC_LOAD_AUDIO] = &NsbInterpreter::LoadAudio;
+    Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
+    Builtins[MAGIC_CREATE_BOX] = &NsbInterpreter::CreateBox;
+    Builtins[MAGIC_APPLY_BLUR] = &NsbInterpreter::ApplyBlur;
+    Builtins[MAGIC_GET_MOVIE_TIME] = &NsbInterpreter::GetMovieTime;
+    Builtins[MAGIC_SET_PARAM] = &NsbInterpreter::SetParam;
+    Builtins[MAGIC_GET] = &NsbInterpreter::Get;
     Builtins[MAGIC_DRAW_TO_TEXTURE] = &NsbInterpreter::DrawToTexture;
     Builtins[MAGIC_CREATE_TEXTURE] = &NsbInterpreter::CreateTexture;
     Builtins[MAGIC_LOAD_MOVIE] = &NsbInterpreter::LoadMovie;
@@ -93,11 +88,12 @@ void NsbInterpreter::RegisterBuiltins()
     Builtins[MAGIC_DESTROY] = &NsbInterpreter::Destroy;
     Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
     Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
-    Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_END] = &NsbInterpreter::End;
+    Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
     Builtins[MAGIC_UNK3] = &NsbInterpreter::ClearParams; // Unknown if this hack is still needed
+    Builtins[MAGIC_UNK5] = &NsbInterpreter::UNK5;
     //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
 }
 
@@ -114,11 +110,17 @@ void NsbInterpreter::ThreadMain(string InitScript)
 
     pScript = sResourceMgr->GetResource<NsbFile>(InitScript);
     //CallFunction(LoadedScripts[LoadedScripts.size() - 1], "StArray");
+
     do
     {
         while (!RunInterpreter) Sleep(10); // yield? mutex?
         pLine = pScript->GetNextLine();
-        ExecuteLine();
+        if (NsbAssert(pScript, "Interpreting null script") ||
+            NsbAssert(pLine, "Interpreting null line"))
+            break;
+        if (pLine->Magic < Builtins.size())
+            if (BuiltinFunc pFunc = Builtins[pLine->Magic])
+                (this->*pFunc)();
     } while (!StopInterpreter);
 }
 
@@ -137,124 +139,147 @@ void NsbInterpreter::Start()
     RunInterpreter = true;
 }
 
-void NsbInterpreter::ExecuteLine()
+void NsbInterpreter::UNK5()
 {
-    if (NsbAssert(pScript, "Interpreting null script") || NsbAssert(pLine, "Interpreting null line"))
-    {
-        Stop();
-        return;
-    }
+    Params[0] = {"STRING", string()};
+}
 
-    if (pLine->Magic < Builtins.size())
-    {
-        if (BuiltinFunc pFunc = Builtins[pLine->Magic])
-        {
-            (this->*pFunc)();
-            return;
-        }
-    }
+void NsbInterpreter::PlaceholderParam()
+{
+    Params.push_back({"PH", ""});
+}
 
-    switch (pLine->Magic)
+void NsbInterpreter::SetPlaceholder()
+{
+    Placeholders.push(Params[Params.size() - 1]);
+    Params.resize(Params.size() - 1);
+}
+
+void NsbInterpreter::CreateArray()
+{
+    for (uint32_t i = 1; i < Params.size(); ++i)
+        Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+}
+
+void NsbInterpreter::Set()
+{
+    if (pLine->Params[0] == "__array_variable__")
+        ;//*ArrayParams[ArrayParams.size() - 1] = Params[0];
+    else
+        SetVariable(pLine->Params[0], Params[0]);
+}
+
+void NsbInterpreter::ArrayRead()
+{
+    HandleName = pLine->Params[0];
+    NSBArrayRead(GetParam<int32_t>(1));
+}
+
+void NsbInterpreter::RegisterCallback()
+{
+    pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
+}
+
+void NsbInterpreter::SetDisplayState()
+{
+    HandleName = GetParam<string>(0);
+    NSBSetDisplayState(GetParam<string>(1));
+}
+
+void NsbInterpreter::ParseText()
+{
+    HandleName = GetParam<string>(0);
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLParseText, this,
+                      GetParam<string>(1), GetParam<string>(2)));
+}
+
+void NsbInterpreter::SetAudioLoop()
+{
+    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+        NSBSetAudioLoop(pMusic, GetParam<bool>(1));
+}
+
+void NsbInterpreter::SleepMs()
+{
+    Sleep(GetVariable<int32_t>(Params[0].Value));
+}
+
+void NsbInterpreter::StartAnimation()
+{
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+        NSBStartAnimation(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
+                          GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
+}
+
+void NsbInterpreter::DisplayText()
+{
+    HandleName = GetParam<string>(0);
+    NSBDisplayText(GetParam<string>(1));
+}
+
+void NsbInterpreter::SetAudioState()
+{
+    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(GetParam<string>(0)))
+        NSBSetAudioState(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
+}
+
+void NsbInterpreter::SetAudioRange()
+{
+    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(GetParam<string>(0)))
+        NSBSetAudioRange(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2));
+}
+
+void NsbInterpreter::SetFontAttributes()
+{
+    NSBSetFontAttributes(GetParam<string>(0), GetParam<int32_t>(1), GetParam<string>(2),
+                         GetParam<string>(3), GetParam<int32_t>(4), GetParam<string>(5));
+}
+
+void NsbInterpreter::LoadAudio()
+{
+    HandleName = GetParam<string>(0);
+    NSBLoadAudio(GetParam<string>(1), GetParam<string>(2) + ".ogg");
+}
+
+void NsbInterpreter::SetTextboxAttributes()
+{
+    HandleName = GetParam<string>(0);
+    NSBSetTextboxAttributes(GetParam<int32_t>(1), GetParam<string>(2), GetParam<int32_t>(3),
+                            GetParam<string>(4), GetParam<string>(5), GetParam<int32_t>(6), GetParam<string>(7));
+}
+
+void NsbInterpreter::CreateBox()
+{
+    HandleName = GetParam<string>(0);
+    NSBCreateBox(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
+                 GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<bool>(6));
+}
+
+void NsbInterpreter::ApplyBlur()
+{
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyBlur, this, pDrawable, GetParam<string>(1)));
+    else
     {
-        case uint16_t(MAGIC_SET_PLACEHOLDER):
-            Placeholders.push(Params[Params.size() - 1]);
-            Params.resize(Params.size() - 1);
-            break;
-        case uint16_t(MAGIC_PLACEHOLDER_PARAM):
-            Params.push_back({"PH", ""});
-            break;
-        case uint16_t(MAGIC_APPLY_BLUR):
-            pGame->GLCallback(std::bind(&NsbInterpreter::ApplyBlur, this,
-                              CacheHolder<Drawable>::Read(GetParam<string>(0)),
-                              GetParam<string>(1)));
-            return;
-        case uint16_t(MAGIC_DISPLAY_TEXT):
-            HandleName = GetParam<string>(0);
-            DisplayText(GetParam<string>(1));
-            return;
-        case uint16_t(MAGIC_CREATE_BOX):
-            HandleName = GetParam<string>(0);
-            CreateBox(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
-                      GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<bool>(6));
-            break;
-        case uint16_t(MAGIC_ARRAY_READ):
-            ArrayRead(pLine->Params[0], GetParam<int32_t>(1));
-            break;
-        case uint16_t(MAGIC_CREATE_ARRAY):
-            for (uint32_t i = 1; i < Params.size(); ++i)
-                Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
-            break;
-        case uint16_t(MAGIC_SET_TEXTBOX_ATTRIBUTES):
-            SetTextboxAttributes(GetParam<string>(0), GetParam<int32_t>(1),
-                                 GetParam<string>(2), GetParam<int32_t>(3),
-                                 GetParam<string>(4), GetParam<string>(5),
-                                 GetParam<int32_t>(6), GetParam<string>(7));
-            break;
-        case uint16_t(MAGIC_SET_FONT_ATTRIBUTES):
-            SetFontAttributes(GetParam<string>(0), GetParam<int32_t>(1),
-                              GetParam<string>(2), GetParam<string>(3),
-                              GetParam<int32_t>(4), GetParam<string>(5));
-            break;
-        case uint16_t(MAGIC_SET_AUDIO_STATE):
-            SetAudioState(GetParam<string>(0), GetParam<int32_t>(1),
-                          GetParam<int32_t>(2), GetParam<string>(3));
-            break;
-        case uint16_t(MAGIC_SET_AUDIO_LOOP):
-            SetAudioLoop(GetParam<string>(0), GetParam<bool>(1));
-            break;
-        case uint16_t(MAGIC_SET_AUDIO_RANGE): break; // SFML bug #203
-            SetAudioRange(GetParam<string>(0), GetParam<int32_t>(1), GetParam<int32_t>(2));
-            break;
-        case uint16_t(MAGIC_LOAD_AUDIO):
-            LoadAudio(GetParam<string>(0), GetParam<string>(1), GetParam<string>(2) + ".ogg");
-            break;
-        case uint16_t(MAGIC_START_ANIMATION):
-            StartAnimation(GetParam<string>(0), GetParam<int32_t>(1), GetParam<int32_t>(2),
-                           GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
-            break;
-        case uint16_t(MAGIC_UNK29):
-            // This is (mistakenly) done by MAGIC_CALL
-            //SetVariable(pLine->Params[0], {"STRING", GetVariable<string>(pLine->Params[1])});
-            break;
-        case uint16_t(MAGIC_SLEEP_MS):
-            Sleep(GetVariable<int32_t>(Params[0].Value));
-            break;
-        case uint16_t(MAGIC_GET_MOVIE_TIME):
-            GetMovieTime(GetParam<string>(0));
-            break;
-        case uint16_t(MAGIC_CALL_SCRIPT):
-            // TODO: extract entry function & convert nss to nsb
-            //CallScript(pLine->Params[0]);
-            break;
-        case uint16_t(MAGIC_UNK5):
-            Params[0] = {"STRING", string()}; // Hack
-            break;
-        case uint16_t(MAGIC_TEXT):
-            pGame->GLCallback(std::bind(&NsbInterpreter::ParseText, this,
-                              GetParam<string>(0), GetParam<string>(1), GetParam<string>(2)));
-            break;
-        case uint16_t(MAGIC_SET):
-            if (pLine->Params[0] == "__array_variable__")
-                ;//*ArrayParams[ArrayParams.size() - 1] = Params[0];
-            else
-                SetVariable(pLine->Params[0], Params[0]);
-            break;
-        case uint16_t(MAGIC_GET):
-            Params.push_back(Variables[pLine->Params[0]]);
-            break;
-        case uint16_t(MAGIC_PARAM):
-            Params.push_back({pLine->Params[0], pLine->Params[1]});
-            break;
-        case uint16_t(MAGIC_SET_DISPLAY_STATE):
-            SetDisplayState(GetParam<string>(0), GetParam<string>(1));
-            break;
-        case uint16_t(MAGIC_CALLBACK):
-            pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
-            break;
-        default:
-            //std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
-            break;
+        std::cout << "Applying blur to NULL drawable!" << std::endl;
+        WriteTrace(std::cout);
     }
+}
+
+void NsbInterpreter::GetMovieTime()
+{
+    HandleName = GetParam<string>(0);
+    NSBGetMovieTime();
+}
+
+void NsbInterpreter::SetParam()
+{
+    Params.push_back({pLine->Params[0], pLine->Params[1]});
+}
+
+void NsbInterpreter::Get()
+{
+    Params.push_back(Variables[pLine->Params[0]]);
 }
 
 void NsbInterpreter::DrawToTexture()
@@ -387,7 +412,8 @@ void NsbInterpreter::Call()
     // Find function override
     if (std::strcmp(FuncName, "MovieWaitSG") == 0)
     {
-        GetMovieTime("ムービー");
+        HandleName = "ムービー";
+        NSBGetMovieTime();
         Sleep(GetVariable<int32_t>(Params[0].Value));
         pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                           CacheHolder<Drawable>::Read("ムービー")));
@@ -481,57 +507,13 @@ template <class T> T NsbInterpreter::GetParam(int32_t Index)
 
 template <> bool NsbInterpreter::GetParam(int32_t Index)
 {
-    return Boolify(GetParam<string>(Index));
-}
-
-void NsbInterpreter::GLCreateTexture(int32_t Width, int32_t Height, const string& Color)
-{
-    if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
-        delete pTexture;
-
-    sf::RenderTexture* pTexture = new sf::RenderTexture;
-    pTexture->create(Width, Height);
-    CacheHolder<sf::RenderTexture>::Write(HandleName, pTexture);
-}
-
-void NsbInterpreter::GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File)
-{
-    sf::Texture TempTexture;
-    uint32_t Size;
-    char* pPixels = sResourceMgr->Read(File, &Size);
-    NsbAssert(pPixels, "Failed to load % pixels", File);
-    NsbAssert(TempTexture.loadFromMemory(pPixels, Size), "Failed to load pixels from % in memory", File);
-    sf::Sprite TempSprite(TempTexture);
-    TempSprite.setPosition(x, y);
-    pTexture->draw(TempSprite);
-    pTexture->display();
-}
-
-void NsbInterpreter::ApplyBlur(Drawable* pDrawable, const string& Heaviness)
-{
-    if (!pDrawable)
-    {
-        std::cout << "Applying blur to NULL drawable!" << std::endl;
-        WriteTrace(std::cout);
-    }
-    else
-        pDrawable->SetBlur(Heaviness);
-}
-
-void NsbInterpreter::GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait)
-{
-    uint32_t Size;
-    char* pPixels = sResourceMgr->Read(File, &Size);
-    NsbAssert(pPixels, "Failed to load % pixels", File);
-    sf::Texture* pTexture = new sf::Texture;
-    NsbAssert(pTexture->loadFromMemory(pPixels, Size), "Failed to load pixels from % in memory", File);
-    pDrawable->SetMask(pTexture, Start, End, Time);
-}
-
-void NsbInterpreter::CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
-{
-    sf::IntRect* pRect = new sf::IntRect(x, y, Width, Height);
-    CacheHolder<sf::IntRect>::Write(HandleName, pRect);
+    std::string String = GetParam<string>(Index);
+    if (String == "true")
+        return true;
+    else if (String == "false")
+        return false;
+    NsbAssert(false, "Invalid boolification of string: ", String.c_str());
+    return false; // Silence gcc
 }
 
 void NsbInterpreter::BindIdentifier()
@@ -542,169 +524,6 @@ void NsbInterpreter::BindIdentifier()
         Var->Members[i - 1].first = Params[i].Value;
 }
 
-void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
-{
-    const string* MemberName = &HandleName;
-    ArrayVariable* pVariable = nullptr;
-
-    while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
-    {
-        // TODO: check if exists
-        ArrayMembers& Members = Arrays[*MemberName].Members;
-        for (uint32_t i = 0; i < Members.size(); ++i)
-        {
-            if (Members[i].first == Params[Params.size() - Depth - 2].Value)
-            {
-                MemberName = &Members[i].first;
-                pVariable = &Members[i].second;
-                break;
-            }
-        }
-    }
-
-    if (!pVariable)
-        return;
-
-    ArrayParams.push_back(pVariable);
-    Params.push_back(*pVariable);
-}
-
-void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color)
-{
-    // Workaround
-    if (HandleName == "クリア黒")
-        return;
-
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
-    {
-        pGame->RemoveDrawable(pDrawable);
-        delete pDrawable;
-    }
-
-    uint32_t IntColor;
-
-    std::transform(Color.begin(), Color.end(), Color.begin(), ::tolower);
-    if (Color[0] == '#')
-    {
-        Color = string(Color.c_str() + 1);
-        std::stringstream ss(Color);
-        ss >> std::hex >> IntColor;
-    }
-    else
-    {
-        if (Color == "black")
-            IntColor = 0;
-        else if (Color == "white")
-            IntColor = 0xFFFFFF;
-        else if (Color == "blue")
-            IntColor = 0xFF;
-        else
-            NsbAssert(false, "Unknown color: %, ", Color);
-    }
-
-    sf::Image ColorImage;
-    ColorImage.create(Width, Height, sf::Color(IntColor / 0x10000, (IntColor / 0x100) % 0x100, IntColor % 0x100));
-    sf::Texture* pTexture = new sf::Texture;
-    NsbAssert(pTexture->loadFromImage(ColorImage), "Failed to create color % texture to handle %.", Color, HandleName);
-    sf::Sprite* pSprite = new sf::Sprite(*pTexture);
-    pSprite->setPosition(x, y);
-    CacheHolder<Drawable>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
-}
-
-void NsbInterpreter::SetTextboxAttributes(const string& Handle, int32_t unk0,
-                                          const string& Font, int32_t unk1,
-                                          const string& Color1, const string& Color2,
-                                          int32_t unk2, const string& unk3)
-{
-}
-
-void NsbInterpreter::SetFontAttributes(const string& Font, int32_t size,
-                                       const string& Color1, const string& Color2,
-                                       int32_t unk0, const string& unk1)
-{
-}
-
-void NsbInterpreter::SetAudioState(const string& HandleName, int32_t NumSeconds,
-                                   int32_t Volume, const string& Tempo)
-{
-    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
-        pMusic->setVolume(Volume / 10);
-}
-
-void NsbInterpreter::SetAudioLoop(const string& HandleName, bool Loop)
-{
-    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
-        pMusic->setLoop(Loop);
-}
-
-void NsbInterpreter::GLDestroy(Drawable* pDrawable)
-{
-    if (pDrawable)
-    {
-        pGame->RemoveDrawable(pDrawable);
-        delete pDrawable;
-    }
-}
-
-void NsbInterpreter::LoadAudio(const string& HandleName, const string& Type, const string& File)
-{
-    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
-    {
-        pMusic->stop();
-        delete pMusic;
-    }
-
-    sf::Music* pMusic = new sf::Music;
-    uint32_t Size;
-    char* pMusicData = sResourceMgr->Read(File, &Size);
-    if (!pMusicData)
-    {
-        std::cout << "Failed to read music " << File << std::endl;
-        WriteTrace(std::cout);
-        CacheHolder<sf::Music>::Write(HandleName, nullptr);
-        return;
-    }
-    NsbAssert(pMusic->openFromMemory(pMusicData, Size), "Failed to load music %!", File);
-    CacheHolder<sf::Music>::Write(HandleName, pMusic);
-}
-
-void NsbInterpreter::SetAudioRange(const string& HandleName, int32_t Begin, int32_t End)
-{
-    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
-        pMusic->setPlayingOffset(sf::milliseconds(Begin));
-}
-
-void NsbInterpreter::StartAnimation(const string& HandleName, int32_t Time,
-                                    int32_t x, int32_t y, const string& Tempo, bool Wait)
-{
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
-        pDrawable->Animate(x, y, Time);
-}
-
-void NsbInterpreter::ParseText(const string& HandleName, const string& Box, const string& XML)
-{
-    string NewHandle = Box + "/" + HandleName;
-    SetVariable("$SYSTEM_present_text", { "STRING", NewHandle });
-    if (Drawable* pText = CacheHolder<Drawable>::Read(NewHandle))
-        delete pText;
-    Text* pText = new Text(XML);
-    CacheHolder<Drawable>::Write(NewHandle, pText);
-}
-
-void NsbInterpreter::DisplayText(const string& unk)
-{
-    if (Text* pText = (Text*)CacheHolder<Drawable>::Read(HandleName))
-    {
-        if (sf::Music* pMusic = pText->Voices[0].pMusic)
-        {
-            pMusic->play();
-            pText->pCurrentMusic = pMusic;
-        }
-        pGame->SetText(pText);
-    }
-    Pause();
-}
-
 void NsbInterpreter::Sleep(int32_t ms)
 {
     boost::this_thread::sleep_for(boost::chrono::milliseconds(ms));
@@ -713,137 +532,6 @@ void NsbInterpreter::Sleep(int32_t ms)
 void NsbInterpreter::SetVariable(const string& Identifier, const Variable& Var)
 {
     Variables[Identifier] = Var;
-}
-
-void NsbInterpreter::GetMovieTime(const string& HandleName)
-{
-    Params.clear();
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
-    {
-        if (sfe::Movie* pMovie = dynamic_cast<sfe::Movie*>(pDrawable->Get()))
-            Params.push_back({"INT", boost::lexical_cast<string>(pMovie->getDuration().asMilliseconds())});
-        else
-            std::cout << "Failed to get movie duration because Drawable is not movie" << std::endl;
-    }
-    else
-        std::cout << "Failed to get movie time because there is no Drawable " << HandleName << std::endl;
-}
-
-bool NsbInterpreter::Boolify(const string& String)
-{
-    if (String == "true")
-        return true;
-    else if (String == "false")
-        return false;
-    NsbAssert(false, "Invalid boolification of string: ", String.c_str());
-    return false; // Silence gcc
-}
-
-void NsbInterpreter::SetDisplayState(const string& HandleName, const string& State)
-{
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
-    {
-        if (State == "Play")
-        {
-            if (sfe::Movie* pMovie = dynamic_cast<sfe::Movie*>(pDrawable->Get()))
-            {
-                pGame->AddDrawable(pDrawable);
-                pMovie->play();
-            }
-            else
-                NsbAssert(false, "Attempted to Play non-movie object ", HandleName);
-        }
-
-    }
-    else if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
-        if (State == "Play")
-            pMusic->play();
-}
-
-void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
-{
-    if (!pDrawable)
-        return;
-
-    if (/*Text* pText = */dynamic_cast<Text*>(pDrawable))
-    {
-        if (Opacity == 0)
-        {
-            pGame->GLCallback(std::bind(&Game::ClearText, pGame));
-            CacheHolder<Drawable>::Write(HandleName, nullptr); // hack: see Game::ClearText
-        }
-    }
-    else
-        pDrawable->SetOpacity(Opacity, Time, FADE_TEX);
-}
-
-void NsbInterpreter::GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop,
-                                 bool unk0, const string& File, bool unk1)
-{
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
-    {
-        pGame->RemoveDrawable(pDrawable);
-        delete pDrawable;
-    }
-
-    sfe::Movie* pMovie = new sfe::Movie;
-    pMovie->setLoop(Loop); // NYI
-    pMovie->openFromFile(File);
-    string BoxHandle(HandleName, 0, HandleName.find_first_of("/"));
-    if (sf::IntRect* pRect = CacheHolder<sf::IntRect>::Read(BoxHandle))
-    {
-        pMovie->setTextureRect(*pRect);
-        pMovie->setPosition(pRect->left, pRect->top);
-    }
-    else
-        pMovie->setPosition(x, y); // Maybe add xy and pRect->xy?
-
-    Drawable* pDrawable = new Drawable(pMovie, Priority, DRAWABLE_MOVIE);
-    CacheHolder<Drawable>::Write(HandleName, pDrawable);
-    pGame->AddDrawable(pDrawable);
-}
-
-void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File)
-{
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
-    {
-        pGame->RemoveDrawable(pDrawable);
-        delete pDrawable;
-    }
-
-    sf::Texture* pTexture;
-
-    // Load from texture instead of file
-    if (sf::RenderTexture* pRenderTexture = CacheHolder<sf::RenderTexture>::Read(File))
-    {
-        // TODO: Dont copy
-        pTexture = new sf::Texture(pRenderTexture->getTexture());
-    }
-    else
-    {
-        pTexture = new sf::Texture;
-        uint32_t Size;
-        char* pTexData = sResourceMgr->Read(File, &Size);
-        if (!pTexData)
-        {
-            std::cout << "Failed to read texture " << File << std::endl;
-            delete pTexture;
-            CacheHolder<Drawable>::Write(HandleName, nullptr);
-            return;
-        }
-        NsbAssert(pTexture->loadFromMemory(pTexData, Size), "Failed to load texture %!", File);
-    }
-
-    sf::Sprite* pSprite = new sf::Sprite(*pTexture);
-    // TODO: Positions are x/y specific!
-    if (x < 0 && x >= -SPECIAL_POS_NUM)
-        x = SpecialPosTable[-(x + 1)](pTexture->getSize().x);
-    if (y < 0 && y >= -SPECIAL_POS_NUM)
-        y = SpecialPosTable[-(y + 1)](pTexture->getSize().y);
-    pSprite->setPosition(x, y);
-    Drawable* pDrawable = new Drawable(pSprite, Priority, DRAWABLE_TEXTURE);
-    CacheHolder<Drawable>::Write(HandleName, pDrawable);
-    pGame->AddDrawable(pDrawable);
 }
 
 void NsbInterpreter::LoadScript(const string& FileName)
@@ -926,7 +614,6 @@ bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
 template<typename T, typename... A>
 void NsbInterpreter::NsbAssert(const char* fmt, T value, A... args)
 {
-
     while (*fmt)
     {
         if (*fmt == '%')
