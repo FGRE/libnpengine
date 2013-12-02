@@ -61,16 +61,25 @@ const std::string BlurShader = \
     "   gl_FragColor = Average / CoeffSum;"
     "}";
 
+float Lerp(float Old, float New, float Progress)
+{
+    if (New > Old)
+        return Old + float(New - Old) * Progress;
+    else
+        return Old - float(Old - New) * Progress;
+}
+
 Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
 Type(Type),
+pAnimation(nullptr),
 pMask(nullptr),
 pBlur(nullptr)
 {
     for (uint8_t i = 0; i < FADE_MAX; ++i)
         if (Type == DRAWABLE_TEXTURE || Type == DRAWABLE_MOVIE)
-            Fades[i] = new FadeEffect;
+            Fades[i] = new FadeEffect; // TODO: allocate on demand
         else
             Fades[i] = nullptr;
 }
@@ -87,6 +96,25 @@ Drawable::~Drawable()
 
 void Drawable::Update()
 {
+    if (pAnimation)
+    {
+        float Progress = float(pAnimation->AnimationClock.getElapsedTime().asMilliseconds()) /
+                         float(pAnimation->Time);
+        if (Progress > 1.0f)
+            Progress = 1.0f;
+
+        sf::Vector2f CurrPos = static_cast<sf::Sprite*>(pDrawable)->getPosition();
+        float NewX = Lerp(CurrPos.x, pAnimation->x, Progress);
+        float NewY = Lerp(CurrPos.y, pAnimation->y, Progress);
+        static_cast<sf::Sprite*>(pDrawable)->setPosition(NewX, NewY);
+
+        if (pAnimation->AnimationClock.getElapsedTime().asMilliseconds() >= pAnimation->Time)
+        {
+            delete pAnimation;
+            pAnimation = nullptr;
+        }
+    }
+
     for (uint8_t i = 0; i < FADE_MAX; ++i)
         UpdateFade(i);
 }
@@ -129,11 +157,7 @@ void Drawable::UpdateFade(uint8_t Index)
     else
     {
         float Progress = float(Elapsed) / float(pEffect->FadeTime);
-        Alpha = float(pEffect->Opacity);
-        if (pEffect->TargetOpacity > pEffect->Opacity)
-            Alpha += float(pEffect->TargetOpacity - pEffect->Opacity) * Progress;
-        else
-            Alpha -= float(pEffect->Opacity - pEffect->TargetOpacity) * Progress;
+        Alpha = Lerp(pEffect->Opacity, pEffect->TargetOpacity, Progress);
     }
 
     Alpha *= FadeConvert;
@@ -184,6 +208,15 @@ void Drawable::SetBlur(const std::string& Heaviness)
     Shader.loadFromMemory(BlurShader, sf::Shader::Fragment);
     Shader.setParameter("Sigma", 3.0f); // Guess for SEMIHEAVY
     Shader.setParameter("Texture", sf::Shader::CurrentTexture);
+}
+
+void Drawable::Animate(int32_t x, int32_t y, int32_t Time)
+{
+    pAnimation = new Animation;
+    pAnimation->x = x;
+    pAnimation->y = y;
+    pAnimation->Time = Time;
+    pAnimation->AnimationClock.restart();
 }
 
 int32_t Drawable::GetPriority() const

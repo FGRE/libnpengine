@@ -53,6 +53,14 @@ struct FadeEffect
     sf::Clock FadeClock;
 };
 
+struct Animation
+{
+    int32_t x;
+    int32_t y;
+    int32_t Time;
+    sf::Clock AnimationClock;
+};
+
 class Drawable
 {
 public:
@@ -64,11 +72,13 @@ public:
     void SetBlur(const std::string& Heaviness);
     void SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index);
     void SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time);
+    void Animate(int32_t x, int32_t y, int32_t Time);
     int32_t GetPriority() const;
     sf::Drawable* Get() const;
 
     uint8_t Type;
 protected:
+    Animation* pAnimation;
     FadeEffect* Fades[FADE_MAX];
     sf::Drawable* pDrawable;
     int32_t Priority;
