@@ -149,13 +149,7 @@ void NsbInterpreter::ExecuteLine()
                               GetParam<string>(1)));
             return;
         case uint16_t(MAGIC_APPLY_MASK):
-            HandleName = GetParam<string>(0);
-            pGame->GLCallback(std::bind(&NsbInterpreter::ApplyMask, this,
-                              CacheHolder<Drawable>::Read(HandleName),
-                              GetParam<int32_t>(1), GetParam<int32_t>(2),
-                              GetParam<int32_t>(3), GetParam<int32_t>(4),
-                              GetParam<string>(5), GetParam<string>(6),
-                              GetParam<bool>(7)));
+            ApplyMask();
             return;
         case uint16_t(MAGIC_DISPLAY_TEXT):
             HandleName = GetParam<string>(0);
@@ -284,6 +278,22 @@ void NsbInterpreter::ExecuteLine()
         default:
             //std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
             break;
+    }
+}
+
+void NsbInterpreter::ApplyMask()
+{
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+    {
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyMask, this, pDrawable,
+                          GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
+                          GetParam<int32_t>(4), GetParam<string>(5), GetParam<string>(6),
+                          GetParam<bool>(7)));
+    }
+    else
+    {
+        std::cout << "Applying mask to NULL drawable!" << std::endl;
+        WriteTrace(std::cout);
     }
 }
 
@@ -504,15 +514,8 @@ void NsbInterpreter::ApplyBlur(Drawable* pDrawable, const string& Heaviness)
         pDrawable->SetBlur(Heaviness);
 }
 
-void NsbInterpreter::ApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait)
+void NsbInterpreter::GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait)
 {
-    if (!pDrawable)
-    {
-        std::cout << "Applying " << File << " to NULL drawable!" << std::endl;
-        WriteTrace(std::cout);
-        return;
-    }
-
     uint32_t Size;
     char* pPixels = sResourceMgr->Read(File, &Size);
     NsbAssert(pPixels, "Failed to load % pixels", File);
