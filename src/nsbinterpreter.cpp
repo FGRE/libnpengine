@@ -82,6 +82,7 @@ NsbInterpreter::~NsbInterpreter()
 void NsbInterpreter::RegisterBuiltins()
 {
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_DRAW_TO_TEXTURE] = &NsbInterpreter::DrawToTexture;
     Builtins[MAGIC_CREATE_TEXTURE] = &NsbInterpreter::CreateTexture;
     Builtins[MAGIC_LOAD_MOVIE] = &NsbInterpreter::LoadMovie;
     Builtins[MAGIC_APPLY_MASK] = &NsbInterpreter::ApplyMask;
@@ -162,11 +163,6 @@ void NsbInterpreter::ExecuteLine()
         case uint16_t(MAGIC_PLACEHOLDER_PARAM):
             Params.push_back({"PH", ""});
             break;
-        case uint16_t(MAGIC_DRAW_TO_TEXTURE):
-            pGame->GLCallback(std::bind(&NsbInterpreter::DrawToTexture, this,
-                              GetParam<string>(0), GetParam<int32_t>(1),
-                              GetParam<int32_t>(2), GetParam<string>(3)));
-            return;
         case uint16_t(MAGIC_APPLY_BLUR):
             pGame->GLCallback(std::bind(&NsbInterpreter::ApplyBlur, this,
                               CacheHolder<Drawable>::Read(GetParam<string>(0)),
@@ -261,6 +257,14 @@ void NsbInterpreter::ExecuteLine()
     }
 }
 
+void NsbInterpreter::DrawToTexture()
+{
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLDrawToTexture, this,
+                      CacheHolder<sf::RenderTexture>::Read(HandleName),
+                      GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3)));
+
+}
+
 void NsbInterpreter::CreateTexture()
 {
     HandleName = GetParam<string>(0);
@@ -309,7 +313,8 @@ void NsbInterpreter::LoadMovie()
 
 void NsbInterpreter::CreateColor()
 {
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateColor, this, GetParam<string>(0),
+    HandleName = GetParam<string>(0);
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateColor, this,
                       GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
                       GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<string>(6)));
 }
@@ -489,20 +494,17 @@ void NsbInterpreter::GLCreateTexture(int32_t Width, int32_t Height, const string
     CacheHolder<sf::RenderTexture>::Write(HandleName, pTexture);
 }
 
-void NsbInterpreter::DrawToTexture(const string& HandleName, int32_t x, int32_t y, const string& File)
+void NsbInterpreter::GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File)
 {
-    if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
-    {
-        sf::Texture TempTexture;
-        uint32_t Size;
-        char* pPixels = sResourceMgr->Read(File, &Size);
-        NsbAssert(pPixels, "Failed to load % pixels", File);
-        NsbAssert(TempTexture.loadFromMemory(pPixels, Size), "Failed to load pixels from % in memory", File);
-        sf::Sprite TempSprite(TempTexture);
-        TempSprite.setPosition(x, y);
-        pTexture->draw(TempSprite);
-        pTexture->display();
-    }
+    sf::Texture TempTexture;
+    uint32_t Size;
+    char* pPixels = sResourceMgr->Read(File, &Size);
+    NsbAssert(pPixels, "Failed to load % pixels", File);
+    NsbAssert(TempTexture.loadFromMemory(pPixels, Size), "Failed to load pixels from % in memory", File);
+    sf::Sprite TempSprite(TempTexture);
+    TempSprite.setPosition(x, y);
+    pTexture->draw(TempSprite);
+    pTexture->display();
 }
 
 void NsbInterpreter::ApplyBlur(Drawable* pDrawable, const string& Heaviness)
@@ -567,8 +569,7 @@ void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
     Params.push_back(*pVariable);
 }
 
-void NsbInterpreter::GLCreateColor(const string& HandleName, int32_t Priority, int32_t x,
-                                   int32_t y, int32_t Width, int32_t Height, string Color)
+void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color)
 {
     // Workaround
     if (HandleName == "クリア黒")

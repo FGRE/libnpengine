@@ -24,8 +24,12 @@
 #include <queue>
 #include <vector>
 #include <boost/thread/thread.hpp>
-
 using std::string;
+
+namespace sf
+{
+    class RenderTexture;
+}
 
 class NsbFile;
 class Game;
@@ -83,6 +87,7 @@ private:
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, T Func);
 
+    void DrawToTexture();
     void CreateColor();
     void SetOpacity();
     void Begin();
@@ -98,7 +103,6 @@ private:
     void ClearParams();
     void CreateTexture();
 
-    void DrawToTexture(const string& HandleName, int32_t x, int32_t y, const string& File);
     void ApplyBlur(Drawable* pDrawable, const string& Heaviness);
     void DisplayText(const string& unk);
     void CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
@@ -120,10 +124,11 @@ private:
     void NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void GLDestroy(Drawable* pDrawable);
     void GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
-    void GLCreateColor(const string& HandleName, int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
+    void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
     void GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
     void GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait);
     void GLCreateTexture(int32_t Width, int32_t Height, const string& Color);
+    void GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File);
 
     void Recover();
     void WriteTrace(std::ostream& Stream);
