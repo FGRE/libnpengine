@@ -21,6 +21,7 @@
 #include <stack>
 #include <cstdint>
 #include <map>
+#include <queue>
 #include <vector>
 #include <boost/thread/thread.hpp>
 
@@ -100,7 +101,7 @@ private:
     void Destroy(Drawable* pDrawable);
     void SetAudioRange(const string& HandleName, int32_t begin, int32_t end);
     void LoadAudio(const string& HandleName, const string& Type, const string& File);
-    void StartAnimation(const string& HandleName, int32_t TimeRequired, int32_t x, int32_t y, const string& Tempo, bool Wait);
+    void StartAnimation(const string& HandleName, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void Sleep(int32_t ms);
     void ParseText(const string& HandleName, const string& Box, const string& XML);
     void LoadMovie(const string& HandleName, int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
@@ -130,6 +131,7 @@ private:
     std::map<string, ArrayVariable> Arrays;
     std::vector<Variable> Params;
     std::vector<ArrayVariable*> ArrayParams;
+    std::queue<Variable> Placeholders;
     boost::thread ScriptThread;
 };
 

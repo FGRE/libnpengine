@@ -122,6 +122,13 @@ void NsbInterpreter::Run()
 
         switch (pLine->Magic)
         {
+            case uint16_t(MAGIC_SET_PLACEHOLDER):
+                Placeholders.push(Params[Params.size() - 1]);
+                Params.resize(Params.size() - 1);
+                break;
+            case uint16_t(MAGIC_PLACEHOLDER_PARAM):
+                Params.push_back({"PH", ""});
+                break;
             case uint16_t(MAGIC_FORMAT): break; // TODO: Depends on ArrayRead
                 Format();
                 break;
@@ -175,7 +182,7 @@ void NsbInterpreter::Run()
                                   GetParam<int32_t>(2), GetParam<int32_t>(3),
                                   GetParam<int32_t>(4), GetParam<int32_t>(5),
                                   GetParam<string>(6)));
-                break;
+                return;
             case uint16_t(MAGIC_SET_TEXTBOX_ATTRIBUTES):
                 SetTextboxAttributes(GetParam<string>(0), GetParam<int32_t>(1),
                                      GetParam<string>(2), GetParam<int32_t>(3),
@@ -300,10 +307,8 @@ void NsbInterpreter::Run()
                 Params.push_back({pLine->Params[0], pLine->Params[1]});
                 break;
             case uint16_t(MAGIC_CONCAT):
-            {
                 Concat();
                 break;
-            }
             case uint16_t(MAGIC_LOAD_MOVIE):
             {
                 pGame->GLCallback(std::bind(&NsbInterpreter::LoadMovie, this,
@@ -354,6 +359,7 @@ void NsbInterpreter::Run()
             case uint16_t(MAGIC_CLEAR_PARAMS):
                 Params.clear();
                 ArrayParams.clear();
+                Placeholders = std::queue<Variable>();
                 break;
             case uint16_t(MAGIC_CALLBACK):
                 pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
@@ -426,6 +432,15 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 
 template <class T> T NsbInterpreter::GetParam(int32_t Index)
 {
+    if (Params.size() > Index && Params[Index].Type == "PH")
+    {
+        if (!Placeholders.empty())
+        {
+            Variable Var = Placeholders.front();
+            Placeholders.pop();
+            return boost::lexical_cast<T>(Var.Value);
+        }
+    }
     return GetVariable<T>(pLine->Params[Index]);
 }
 
@@ -634,18 +649,22 @@ void NsbInterpreter::SetAudioRange(const string& HandleName, int32_t begin, int3
         pMusic->setPlayingOffset(sf::milliseconds(begin));
 }
 
-void NsbInterpreter::StartAnimation(const string& HandleName, int32_t TimeRequired,
+void NsbInterpreter::StartAnimation(const string& HandleName, int32_t Time,
                                     int32_t x, int32_t y, const string& Tempo, bool Wait)
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
-        // TODO: Only if Time == 0, else animate
-        if (pDrawable->Type == DRAWABLE_TEXTURE)
-            ((sf::Sprite*)pDrawable->Get())->setPosition(x, y);
-        else if (pDrawable->Type == DRAWABLE_MOVIE)
-            ((sfe::Movie*)pDrawable->Get())->setPosition(x, y);
-        else if (pDrawable->Type == DRAWABLE_TEXT)
-            ((Text*)pDrawable)->setPosition(x, y);
+        if (Time == 0)
+        {
+            if (pDrawable->Type == DRAWABLE_TEXTURE)
+                ((sf::Sprite*)pDrawable->Get())->setPosition(-x, -y);
+            else if (pDrawable->Type == DRAWABLE_MOVIE)
+                ((sfe::Movie*)pDrawable->Get())->setPosition(x, y);
+            else if (pDrawable->Type == DRAWABLE_TEXT)
+                ((Text*)pDrawable)->setPosition(x, y);
+        }
+        else
+            pDrawable->Animate(-x, -y, Time);
     }
 }
 
