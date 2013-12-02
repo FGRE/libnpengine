@@ -182,5 +182,6 @@ private:
 };
 
 template <> bool NsbInterpreter::GetParam(int32_t Index);
+template <> bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, std::string value);
 
 #endif
