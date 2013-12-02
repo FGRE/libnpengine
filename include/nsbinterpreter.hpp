@@ -81,6 +81,7 @@ private:
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, T Func);
 
+    void Call();
     void Concat();
     void Format();
     void CreateTexture(const string& HandleName, int32_t Width, int32_t Height, const string& Color);

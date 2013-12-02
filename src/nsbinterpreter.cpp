@@ -246,34 +246,8 @@ void NsbInterpreter::Run()
                 //CallScript(pLine->Params[0]);
                 break;
             case uint16_t(MAGIC_CALL):
-            {
-                const char* FuncName = pLine->Params[0].c_str();
-                //std::cout << "Calling function " << FuncName << " in " << pScript->GetName() << " at " << pScript->GetNextLineEntry() << std::endl;
-
-                // Find function override
-                if (std::strcmp(FuncName, "MovieWaitSG") == 0)
-                {
-                    GetMovieTime("ムービー");
-                    std::cout << "MovieWaitSG(): Sleeping for " << GetVariable<int32_t>(Params[0].Value) << " milliseconds." << std::endl;
-                    //Sleep(GetVariable<int32_t>(Params[0].Value));
-                    pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
-                                      CacheHolder<Drawable>::Read("ムービー")));
-                    break;
-                }
-
-                // Find function locally
-                if (CallFunction(pScript, FuncName))
-                    break;
-
-                // Find function globally
-                for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
-                    if (CallFunction(LoadedScripts[i], FuncName))
-                        goto found;
-
-                std::cerr << "Failed to lookup function symbol " << FuncName << std::endl;
-                found:
+                Call();
                 break;
-            }
             case uint16_t(MAGIC_UNK5):
                 Params[0] = {"STRING", string()}; // Hack
                 break;
@@ -365,10 +339,36 @@ void NsbInterpreter::Run()
                 pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
                 break;
             default:
-                //std::cerr << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
+                //std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
                 break;
         }
     }
+}
+
+void NsbInterpreter::Call()
+{
+    const char* FuncName = pLine->Params[0].c_str();
+
+    // Find function override
+    if (std::strcmp(FuncName, "MovieWaitSG") == 0)
+    {
+        GetMovieTime("ムービー");
+        Sleep(GetVariable<int32_t>(Params[0].Value));
+        pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
+                          CacheHolder<Drawable>::Read("ムービー")));
+        return;
+    }
+
+    // Find function locally
+    if (CallFunction(pScript, FuncName))
+        return;
+
+    // Find function globally
+    for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
+        if (CallFunction(LoadedScripts[i], FuncName))
+            return;
+
+    std::cout << "Failed to lookup function symbol " << FuncName << std::endl;
 }
 
 void NsbInterpreter::Format()
