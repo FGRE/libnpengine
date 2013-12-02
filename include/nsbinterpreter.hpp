@@ -74,13 +74,14 @@ private:
     void LoadScript(const string& FileName);
 
     void ThreadMain(string InitScript);
-    void Run();
+    void ExecuteLine();
 
     bool Boolify(const string& String);
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, T Func);
 
+    void End();
     void LoadTexture();
     void Destroy();
     void Call();
@@ -116,10 +117,10 @@ private:
     void Recover();
     void WriteTrace(std::ostream& Stream);
     void Crash();
-    void NsbAssert(bool expr, const char* fmt);
+    bool NsbAssert(bool expr, const char* fmt);
     void NsbAssert(const char* fmt);
     template<typename T, typename... A> void NsbAssert(const char* fmt, T value, A... args);
-    template<typename T, typename... A> void NsbAssert(bool expr, const char* fmt, T value, A... args);
+    template<typename T, typename... A> bool NsbAssert(bool expr, const char* fmt, T value, A... args);
 
     Line* pLine;
     Game* pGame;
