@@ -82,6 +82,7 @@ NsbInterpreter::~NsbInterpreter()
 void NsbInterpreter::RegisterBuiltins()
 {
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_CREATE_TEXTURE] = &NsbInterpreter::CreateTexture;
     Builtins[MAGIC_LOAD_MOVIE] = &NsbInterpreter::LoadMovie;
     Builtins[MAGIC_APPLY_MASK] = &NsbInterpreter::ApplyMask;
     Builtins[MAGIC_CREATE_COLOR] = &NsbInterpreter::CreateColor;
