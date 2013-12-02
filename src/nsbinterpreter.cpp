@@ -90,6 +90,8 @@ void NsbInterpreter::RegisterBuiltins()
     Builtins[MAGIC_CONCAT] = &NsbInterpreter::Concat;
     Builtins[MAGIC_DESTROY] = &NsbInterpreter::Destroy;
     Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
+    Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
+    Builtins[MAGIC_END] = &NsbInterpreter::End;
 }
 
 void NsbInterpreter::ThreadMain(string InitScript)
@@ -188,10 +190,6 @@ void NsbInterpreter::ExecuteLine()
             for (uint32_t i = 1; i < Params.size(); ++i)
                 Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
             break;
-        case uint16_t(MAGIC_BIND_IDENTIFIER):
-            HandleName = pLine->Params[0];
-            BindIdentifier();
-            break;
         case uint16_t(MAGIC_SET_TEXTBOX_ATTRIBUTES):
             SetTextboxAttributes(GetParam<string>(0), GetParam<int32_t>(1),
                                  GetParam<string>(2), GetParam<int32_t>(3),
@@ -248,9 +246,6 @@ void NsbInterpreter::ExecuteLine()
             break;
         case uint16_t(MAGIC_FN_UNK):
             // Hack used by Funwanovel english translation. Unknown purpose
-        case uint16_t(MAGIC_END):
-            End();
-            break;
         case uint16_t(MAGIC_SET):
             if (pLine->Params[0] == "__array_variable__")
                 ;//*ArrayParams[ArrayParams.size() - 1] = Params[0];
@@ -532,6 +527,7 @@ void NsbInterpreter::CreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width
 
 void NsbInterpreter::BindIdentifier()
 {
+    HandleName = pLine->Params[0];
     ArrayVariable* Var = &Arrays[HandleName];
     for (uint32_t i = 1; i < Params.size(); ++i)
         Var->Members[i - 1].first = Params[i].Value;
