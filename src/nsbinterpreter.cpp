@@ -91,7 +91,12 @@ void NsbInterpreter::RegisterBuiltins()
     Builtins[MAGIC_DESTROY] = &NsbInterpreter::Destroy;
     Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
     Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
+    Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
+    Builtins[MAGIC_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_END] = &NsbInterpreter::End;
+    Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
+    Builtins[MAGIC_UNK3] = &NsbInterpreter::ClearParams; // Unknown if this hack is still needed
+    //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
 }
 
 void NsbInterpreter::ThreadMain(string InitScript)
@@ -156,14 +161,6 @@ void NsbInterpreter::ExecuteLine()
         case uint16_t(MAGIC_PLACEHOLDER_PARAM):
             Params.push_back({"PH", ""});
             break;
-        case uint16_t(MAGIC_FORMAT): break; // TODO: Depends on ArrayRead
-            Format();
-            break;
-        case uint16_t(MAGIC_CREATE_TEXTURE):
-            pGame->GLCallback(std::bind(&NsbInterpreter::CreateTexture, this,
-                              GetParam<string>(0), GetParam<int32_t>(1),
-                              GetParam<int32_t>(2), GetParam<string>(3)));
-            return;
         case uint16_t(MAGIC_DRAW_TO_TEXTURE):
             pGame->GLCallback(std::bind(&NsbInterpreter::DrawToTexture, this,
                               GetParam<string>(0), GetParam<int32_t>(1),
@@ -239,13 +236,6 @@ void NsbInterpreter::ExecuteLine()
             pGame->GLCallback(std::bind(&NsbInterpreter::ParseText, this,
                               GetParam<string>(0), GetParam<string>(1), GetParam<string>(2)));
             break;
-        case uint16_t(MAGIC_BEGIN):
-            // Turn params into variables
-            for (uint32_t i = 1; i < pLine->Params.size(); ++i)
-                SetVariable(pLine->Params[i], Params[i - 1]);
-            break;
-        case uint16_t(MAGIC_FN_UNK):
-            // Hack used by Funwanovel english translation. Unknown purpose
         case uint16_t(MAGIC_SET):
             if (pLine->Params[0] == "__array_variable__")
                 ;//*ArrayParams[ArrayParams.size() - 1] = Params[0];
@@ -261,12 +251,6 @@ void NsbInterpreter::ExecuteLine()
         case uint16_t(MAGIC_SET_DISPLAY_STATE):
             SetDisplayState(GetParam<string>(0), GetParam<string>(1));
             break;
-        case uint16_t(MAGIC_UNK3):
-        case uint16_t(MAGIC_CLEAR_PARAMS):
-            Params.clear();
-            ArrayParams.clear();
-            Placeholders = std::queue<Variable>();
-            break;
         case uint16_t(MAGIC_CALLBACK):
             pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
             break;
@@ -274,6 +258,28 @@ void NsbInterpreter::ExecuteLine()
             //std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
             break;
     }
+}
+
+void NsbInterpreter::CreateTexture()
+{
+    HandleName = GetParam<string>(0);
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this,
+                      GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3)));
+
+}
+
+void NsbInterpreter::ClearParams()
+{
+    Params.clear();
+    ArrayParams.clear();
+    Placeholders = std::queue<Variable>();
+}
+
+void NsbInterpreter::Begin()
+{
+    // Turn params into variables
+    for (uint32_t i = 1; i < pLine->Params.size(); ++i)
+        SetVariable(pLine->Params[i], Params[i - 1]);
 }
 
 void NsbInterpreter::ApplyMask()
@@ -344,9 +350,9 @@ void NsbInterpreter::LoadTexture()
             Pos[i - 2] = GetParam<int32_t>(i);
     }
 
+    HandleName = GetParam<string>(0);
     pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTexture, this,
-                      GetParam<string>(0), GetParam<int32_t>(1),
-                      Pos[0], Pos[1], GetParam<string>(4)));
+                      GetParam<int32_t>(1), Pos[0], Pos[1], GetParam<string>(4)));
 }
 
 void NsbInterpreter::Destroy()
@@ -472,7 +478,7 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
     return Boolify(GetParam<string>(Index));
 }
 
-void NsbInterpreter::CreateTexture(const string& HandleName, int32_t Width, int32_t Height, const string& Color)
+void NsbInterpreter::GLCreateTexture(int32_t Width, int32_t Height, const string& Color)
 {
     if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
         delete pTexture;
@@ -795,7 +801,7 @@ void NsbInterpreter::GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Lo
     pGame->AddDrawable(pDrawable);
 }
 
-void NsbInterpreter::GLLoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File)
+void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File)
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
