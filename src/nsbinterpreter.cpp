@@ -85,6 +85,11 @@ void NsbInterpreter::RegisterBuiltins()
     Builtins[MAGIC_LOAD_MOVIE] = &NsbInterpreter::LoadMovie;
     Builtins[MAGIC_APPLY_MASK] = &NsbInterpreter::ApplyMask;
     Builtins[MAGIC_CREATE_COLOR] = &NsbInterpreter::CreateColor;
+    Builtins[MAGIC_LOAD_TEXTURE] = &NsbInterpreter::LoadTexture;
+    Builtins[MAGIC_CALL] = &NsbInterpreter::Call;
+    Builtins[MAGIC_CONCAT] = &NsbInterpreter::Concat;
+    Builtins[MAGIC_DESTROY] = &NsbInterpreter::Destroy;
+    Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
 }
 
 void NsbInterpreter::ThreadMain(string InitScript)
@@ -198,9 +203,6 @@ void NsbInterpreter::ExecuteLine()
                               GetParam<string>(2), GetParam<string>(3),
                               GetParam<int32_t>(4), GetParam<string>(5));
             break;
-        case uint16_t(MAGIC_DESTROY):
-            Destroy();
-            return;
         case uint16_t(MAGIC_SET_AUDIO_STATE):
             SetAudioState(GetParam<string>(0), GetParam<int32_t>(1),
                           GetParam<int32_t>(2), GetParam<string>(3));
@@ -232,9 +234,6 @@ void NsbInterpreter::ExecuteLine()
             // TODO: extract entry function & convert nss to nsb
             //CallScript(pLine->Params[0]);
             break;
-        case uint16_t(MAGIC_CALL):
-            Call();
-            break;
         case uint16_t(MAGIC_UNK5):
             Params[0] = {"STRING", string()}; // Hack
             break;
@@ -264,15 +263,6 @@ void NsbInterpreter::ExecuteLine()
         case uint16_t(MAGIC_PARAM):
             Params.push_back({pLine->Params[0], pLine->Params[1]});
             break;
-        case uint16_t(MAGIC_CONCAT):
-            Concat();
-            break;
-        case uint16_t(MAGIC_LOAD_TEXTURE):
-            LoadTexture();
-            return;
-        case uint16_t(MAGIC_SET_OPACITY):
-            SetOpacity();
-            return;
         case uint16_t(MAGIC_SET_DISPLAY_STATE):
             SetDisplayState(GetParam<string>(0), GetParam<string>(1));
             break;
