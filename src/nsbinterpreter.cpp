@@ -92,8 +92,9 @@ void NsbInterpreter::ThreadMain(string InitScript)
     //CallFunction(LoadedScripts[LoadedScripts.size() - 1], "StArray");
     do
     {
-        Sleep(10); // yield? mutex?
-        Run();
+        while (!RunInterpreter) Sleep(10); // yield? mutex?
+        pLine = pScript->GetNextLine();
+        ExecuteLine();
     } while (!StopInterpreter);
 }
 
@@ -112,203 +113,207 @@ void NsbInterpreter::Start()
     RunInterpreter = true;
 }
 
-void NsbInterpreter::Run()
+void NsbInterpreter::ExecuteLine()
 {
-    while (RunInterpreter)
+    if (NsbAssert(pScript, "Interpreting null script") || NsbAssert(pLine, "Interpreting null line"))
     {
-        pLine = pScript->GetNextLine();
-        NsbAssert(pLine, "Interpreting null line");
-        NsbAssert(pScript, "Interpreting null script");
-
-        switch (pLine->Magic)
-        {
-            case uint16_t(MAGIC_SET_PLACEHOLDER):
-                Placeholders.push(Params[Params.size() - 1]);
-                Params.resize(Params.size() - 1);
-                break;
-            case uint16_t(MAGIC_PLACEHOLDER_PARAM):
-                Params.push_back({"PH", ""});
-                break;
-            case uint16_t(MAGIC_FORMAT): break; // TODO: Depends on ArrayRead
-                Format();
-                break;
-            case uint16_t(MAGIC_CREATE_TEXTURE):
-                pGame->GLCallback(std::bind(&NsbInterpreter::CreateTexture, this,
-                                  GetParam<string>(0), GetParam<int32_t>(1),
-                                  GetParam<int32_t>(2), GetParam<string>(3)));
-                return;
-            case uint16_t(MAGIC_DRAW_TO_TEXTURE):
-                pGame->GLCallback(std::bind(&NsbInterpreter::DrawToTexture, this,
-                                  GetParam<string>(0), GetParam<int32_t>(1),
-                                  GetParam<int32_t>(2), GetParam<string>(3)));
-                return;
-            case uint16_t(MAGIC_APPLY_BLUR):
-                pGame->GLCallback(std::bind(&NsbInterpreter::ApplyBlur, this,
-                                  CacheHolder<Drawable>::Read(GetParam<string>(0)),
-                                  GetParam<string>(1)));
-                return;
-            case uint16_t(MAGIC_APPLY_MASK):
-                HandleName = GetParam<string>(0);
-                pGame->GLCallback(std::bind(&NsbInterpreter::ApplyMask, this,
-                                  CacheHolder<Drawable>::Read(HandleName),
-                                  GetParam<int32_t>(1), GetParam<int32_t>(2),
-                                  GetParam<int32_t>(3), GetParam<int32_t>(4),
-                                  GetParam<string>(5), GetParam<string>(6),
-                                  GetParam<bool>(7)));
-                return;
-            case uint16_t(MAGIC_DISPLAY_TEXT):
-                HandleName = GetParam<string>(0);
-                DisplayText(GetParam<string>(1));
-                return;
-            case uint16_t(MAGIC_CREATE_BOX):
-                HandleName = GetParam<string>(0);
-                CreateBox(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
-                          GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<bool>(6));
-                break;
-            case uint16_t(MAGIC_ARRAY_READ):
-                ArrayRead(pLine->Params[0], GetParam<int32_t>(1));
-                break;
-            case uint16_t(MAGIC_CREATE_ARRAY):
-                for (uint32_t i = 1; i < Params.size(); ++i)
-                    Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
-                break;
-            case uint16_t(MAGIC_BIND_IDENTIFIER):
-                HandleName = pLine->Params[0];
-                BindIdentifier();
-                break;
-            case uint16_t(MAGIC_CREATE_COLOR):
-                pGame->GLCallback(std::bind(&NsbInterpreter::CreateColor, this,
-                                  GetParam<string>(0), GetParam<int32_t>(1),
-                                  GetParam<int32_t>(2), GetParam<int32_t>(3),
-                                  GetParam<int32_t>(4), GetParam<int32_t>(5),
-                                  GetParam<string>(6)));
-                return;
-            case uint16_t(MAGIC_SET_TEXTBOX_ATTRIBUTES):
-                SetTextboxAttributes(GetParam<string>(0), GetParam<int32_t>(1),
-                                     GetParam<string>(2), GetParam<int32_t>(3),
-                                     GetParam<string>(4), GetParam<string>(5),
-                                     GetParam<int32_t>(6), GetParam<string>(7));
-                break;
-            case uint16_t(MAGIC_SET_FONT_ATTRIBUTES):
-                SetFontAttributes(GetParam<string>(0), GetParam<int32_t>(1),
-                                  GetParam<string>(2), GetParam<string>(3),
-                                  GetParam<int32_t>(4), GetParam<string>(5));
-                break;
-            case uint16_t(MAGIC_DESTROY):
-                Destroy();
-                return;
-            case uint16_t(MAGIC_SET_AUDIO_STATE):
-                SetAudioState(GetParam<string>(0), GetParam<int32_t>(1),
-                              GetParam<int32_t>(2), GetParam<string>(3));
-                break;
-            case uint16_t(MAGIC_SET_AUDIO_LOOP):
-                SetAudioLoop(GetParam<string>(0), GetParam<bool>(1));
-                break;
-            case uint16_t(MAGIC_SET_AUDIO_RANGE): break; // SFML bug #203
-                SetAudioRange(GetParam<string>(0), GetParam<int32_t>(1), GetParam<int32_t>(2));
-                break;
-            case uint16_t(MAGIC_LOAD_AUDIO):
-                LoadAudio(GetParam<string>(0), GetParam<string>(1), GetParam<string>(2) + ".ogg");
-                break;
-            case uint16_t(MAGIC_START_ANIMATION):
-                StartAnimation(GetParam<string>(0), GetParam<int32_t>(1), GetParam<int32_t>(2),
-                               GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
-                break;
-            case uint16_t(MAGIC_UNK29):
-                // This is (mistakenly) done by MAGIC_CALL
-                //SetVariable(pLine->Params[0], {"STRING", GetVariable<string>(pLine->Params[1])});
-                break;
-            case uint16_t(MAGIC_SLEEP_MS):
-                Sleep(GetVariable<int32_t>(Params[0].Value));
-                break;
-            case uint16_t(MAGIC_GET_MOVIE_TIME):
-                GetMovieTime(GetParam<string>(0));
-                break;
-            case uint16_t(MAGIC_CALL_SCRIPT):
-                // TODO: extract entry function & convert nss to nsb
-                //CallScript(pLine->Params[0]);
-                break;
-            case uint16_t(MAGIC_CALL):
-                Call();
-                break;
-            case uint16_t(MAGIC_UNK5):
-                Params[0] = {"STRING", string()}; // Hack
-                break;
-            case uint16_t(MAGIC_TEXT):
-                pGame->GLCallback(std::bind(&NsbInterpreter::ParseText, this,
-                                  GetParam<string>(0), GetParam<string>(1), GetParam<string>(2)));
-                break;
-            case uint16_t(MAGIC_BEGIN):
-                // Turn params into variables
-                for (uint32_t i = 1; i < pLine->Params.size(); ++i)
-                    SetVariable(pLine->Params[i], Params[i - 1]);
-                break;
-            case uint16_t(MAGIC_FN_UNK):
-                // Hack used by Funwanovel english translation. Unknown purpose
-            case uint16_t(MAGIC_END):
-                NsbAssert(!Returns.empty(), "Empty return stack");
-                pScript = Returns.top().pScript;
-                pScript->SetSourceIter(Returns.top().SourceLine);
-                Returns.pop();
-                break;
-            case uint16_t(MAGIC_SET):
-                if (pLine->Params[0] == "__array_variable__")
-                    ;//*ArrayParams[ArrayParams.size() - 1] = Params[0];
-                else
-                    SetVariable(pLine->Params[0], Params[0]);
-                break;
-            case uint16_t(MAGIC_GET):
-                Params.push_back(Variables[pLine->Params[0]]);
-                break;
-            case uint16_t(MAGIC_PARAM):
-                Params.push_back({pLine->Params[0], pLine->Params[1]});
-                break;
-            case uint16_t(MAGIC_CONCAT):
-                Concat();
-                break;
-            case uint16_t(MAGIC_LOAD_MOVIE):
-            {
-                pGame->GLCallback(std::bind(&NsbInterpreter::LoadMovie, this,
-                                  GetParam<string>(0), GetParam<int32_t>(1),
-                                  GetParam<int32_t>(2), GetParam<int32_t>(3),
-                                  GetParam<bool>(4), GetParam<bool>(5),
-                                  GetParam<string>(6), GetParam<bool>(7)));
-                return;
-            }
-            case uint16_t(MAGIC_LOAD_TEXTURE):
-                LoadTexture();
-                return;
-            case uint16_t(MAGIC_SET_OPACITY):
-            {
-                HandleName = GetParam<string>(0);
-                if (HandleName.back() == '*')
-                {
-                    WildcardCall(HandleName, std::bind(&NsbInterpreter::SetOpacity, this,
-                                 std::placeholders::_1, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                                 GetParam<string>(3), GetParam<bool>(4)));
-                }
-                else
-                    SetOpacity(CacheHolder<Drawable>::Read(HandleName), GetParam<int32_t>(1),
-                               GetParam<int32_t>(2), GetParam<string>(3), GetParam<bool>(4));
-                return;
-            }
-            case uint16_t(MAGIC_SET_DISPLAY_STATE):
-                SetDisplayState(GetParam<string>(0), GetParam<string>(1));
-                break;
-            case uint16_t(MAGIC_UNK3):
-            case uint16_t(MAGIC_CLEAR_PARAMS):
-                Params.clear();
-                ArrayParams.clear();
-                Placeholders = std::queue<Variable>();
-                break;
-            case uint16_t(MAGIC_CALLBACK):
-                pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
-                break;
-            default:
-                //std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
-                break;
-        }
+        Stop();
+        return;
     }
+
+    switch (pLine->Magic)
+    {
+        case uint16_t(MAGIC_SET_PLACEHOLDER):
+            Placeholders.push(Params[Params.size() - 1]);
+            Params.resize(Params.size() - 1);
+            break;
+        case uint16_t(MAGIC_PLACEHOLDER_PARAM):
+            Params.push_back({"PH", ""});
+            break;
+        case uint16_t(MAGIC_FORMAT): break; // TODO: Depends on ArrayRead
+            Format();
+            break;
+        case uint16_t(MAGIC_CREATE_TEXTURE):
+            pGame->GLCallback(std::bind(&NsbInterpreter::CreateTexture, this,
+                              GetParam<string>(0), GetParam<int32_t>(1),
+                              GetParam<int32_t>(2), GetParam<string>(3)));
+            return;
+        case uint16_t(MAGIC_DRAW_TO_TEXTURE):
+            pGame->GLCallback(std::bind(&NsbInterpreter::DrawToTexture, this,
+                              GetParam<string>(0), GetParam<int32_t>(1),
+                              GetParam<int32_t>(2), GetParam<string>(3)));
+            return;
+        case uint16_t(MAGIC_APPLY_BLUR):
+            pGame->GLCallback(std::bind(&NsbInterpreter::ApplyBlur, this,
+                              CacheHolder<Drawable>::Read(GetParam<string>(0)),
+                              GetParam<string>(1)));
+            return;
+        case uint16_t(MAGIC_APPLY_MASK):
+            HandleName = GetParam<string>(0);
+            pGame->GLCallback(std::bind(&NsbInterpreter::ApplyMask, this,
+                              CacheHolder<Drawable>::Read(HandleName),
+                              GetParam<int32_t>(1), GetParam<int32_t>(2),
+                              GetParam<int32_t>(3), GetParam<int32_t>(4),
+                              GetParam<string>(5), GetParam<string>(6),
+                              GetParam<bool>(7)));
+            return;
+        case uint16_t(MAGIC_DISPLAY_TEXT):
+            HandleName = GetParam<string>(0);
+            DisplayText(GetParam<string>(1));
+            return;
+        case uint16_t(MAGIC_CREATE_BOX):
+            HandleName = GetParam<string>(0);
+            CreateBox(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
+                      GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<bool>(6));
+            break;
+        case uint16_t(MAGIC_ARRAY_READ):
+            ArrayRead(pLine->Params[0], GetParam<int32_t>(1));
+            break;
+        case uint16_t(MAGIC_CREATE_ARRAY):
+            for (uint32_t i = 1; i < Params.size(); ++i)
+                Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+            break;
+        case uint16_t(MAGIC_BIND_IDENTIFIER):
+            HandleName = pLine->Params[0];
+            BindIdentifier();
+            break;
+        case uint16_t(MAGIC_CREATE_COLOR):
+            pGame->GLCallback(std::bind(&NsbInterpreter::CreateColor, this,
+                              GetParam<string>(0), GetParam<int32_t>(1),
+                              GetParam<int32_t>(2), GetParam<int32_t>(3),
+                              GetParam<int32_t>(4), GetParam<int32_t>(5),
+                              GetParam<string>(6)));
+            return;
+        case uint16_t(MAGIC_SET_TEXTBOX_ATTRIBUTES):
+            SetTextboxAttributes(GetParam<string>(0), GetParam<int32_t>(1),
+                                 GetParam<string>(2), GetParam<int32_t>(3),
+                                 GetParam<string>(4), GetParam<string>(5),
+                                 GetParam<int32_t>(6), GetParam<string>(7));
+            break;
+        case uint16_t(MAGIC_SET_FONT_ATTRIBUTES):
+            SetFontAttributes(GetParam<string>(0), GetParam<int32_t>(1),
+                              GetParam<string>(2), GetParam<string>(3),
+                              GetParam<int32_t>(4), GetParam<string>(5));
+            break;
+        case uint16_t(MAGIC_DESTROY):
+            Destroy();
+            return;
+        case uint16_t(MAGIC_SET_AUDIO_STATE):
+            SetAudioState(GetParam<string>(0), GetParam<int32_t>(1),
+                          GetParam<int32_t>(2), GetParam<string>(3));
+            break;
+        case uint16_t(MAGIC_SET_AUDIO_LOOP):
+            SetAudioLoop(GetParam<string>(0), GetParam<bool>(1));
+            break;
+        case uint16_t(MAGIC_SET_AUDIO_RANGE): break; // SFML bug #203
+            SetAudioRange(GetParam<string>(0), GetParam<int32_t>(1), GetParam<int32_t>(2));
+            break;
+        case uint16_t(MAGIC_LOAD_AUDIO):
+            LoadAudio(GetParam<string>(0), GetParam<string>(1), GetParam<string>(2) + ".ogg");
+            break;
+        case uint16_t(MAGIC_START_ANIMATION):
+            StartAnimation(GetParam<string>(0), GetParam<int32_t>(1), GetParam<int32_t>(2),
+                           GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
+            break;
+        case uint16_t(MAGIC_UNK29):
+            // This is (mistakenly) done by MAGIC_CALL
+            //SetVariable(pLine->Params[0], {"STRING", GetVariable<string>(pLine->Params[1])});
+            break;
+        case uint16_t(MAGIC_SLEEP_MS):
+            Sleep(GetVariable<int32_t>(Params[0].Value));
+            break;
+        case uint16_t(MAGIC_GET_MOVIE_TIME):
+            GetMovieTime(GetParam<string>(0));
+            break;
+        case uint16_t(MAGIC_CALL_SCRIPT):
+            // TODO: extract entry function & convert nss to nsb
+            //CallScript(pLine->Params[0]);
+            break;
+        case uint16_t(MAGIC_CALL):
+            Call();
+            break;
+        case uint16_t(MAGIC_UNK5):
+            Params[0] = {"STRING", string()}; // Hack
+            break;
+        case uint16_t(MAGIC_TEXT):
+            pGame->GLCallback(std::bind(&NsbInterpreter::ParseText, this,
+                              GetParam<string>(0), GetParam<string>(1), GetParam<string>(2)));
+            break;
+        case uint16_t(MAGIC_BEGIN):
+            // Turn params into variables
+            for (uint32_t i = 1; i < pLine->Params.size(); ++i)
+                SetVariable(pLine->Params[i], Params[i - 1]);
+            break;
+        case uint16_t(MAGIC_FN_UNK):
+            // Hack used by Funwanovel english translation. Unknown purpose
+        case uint16_t(MAGIC_END):
+            End();
+            break;
+        case uint16_t(MAGIC_SET):
+            if (pLine->Params[0] == "__array_variable__")
+                ;//*ArrayParams[ArrayParams.size() - 1] = Params[0];
+            else
+                SetVariable(pLine->Params[0], Params[0]);
+            break;
+        case uint16_t(MAGIC_GET):
+            Params.push_back(Variables[pLine->Params[0]]);
+            break;
+        case uint16_t(MAGIC_PARAM):
+            Params.push_back({pLine->Params[0], pLine->Params[1]});
+            break;
+        case uint16_t(MAGIC_CONCAT):
+            Concat();
+            break;
+        case uint16_t(MAGIC_LOAD_MOVIE):
+            pGame->GLCallback(std::bind(&NsbInterpreter::LoadMovie, this,
+                              GetParam<string>(0), GetParam<int32_t>(1),
+                              GetParam<int32_t>(2), GetParam<int32_t>(3),
+                              GetParam<bool>(4), GetParam<bool>(5),
+                              GetParam<string>(6), GetParam<bool>(7)));
+            return;
+        case uint16_t(MAGIC_LOAD_TEXTURE):
+            LoadTexture();
+            return;
+        case uint16_t(MAGIC_SET_OPACITY):
+        {
+            HandleName = GetParam<string>(0);
+            if (HandleName.back() == '*')
+            {
+                WildcardCall(HandleName, std::bind(&NsbInterpreter::SetOpacity, this,
+                             std::placeholders::_1, GetParam<int32_t>(1), GetParam<int32_t>(2),
+                             GetParam<string>(3), GetParam<bool>(4)));
+            }
+            else
+                SetOpacity(CacheHolder<Drawable>::Read(HandleName), GetParam<int32_t>(1),
+                           GetParam<int32_t>(2), GetParam<string>(3), GetParam<bool>(4));
+            return;
+        }
+        case uint16_t(MAGIC_SET_DISPLAY_STATE):
+            SetDisplayState(GetParam<string>(0), GetParam<string>(1));
+            break;
+        case uint16_t(MAGIC_UNK3):
+        case uint16_t(MAGIC_CLEAR_PARAMS):
+            Params.clear();
+            ArrayParams.clear();
+            Placeholders = std::queue<Variable>();
+            break;
+        case uint16_t(MAGIC_CALLBACK):
+            pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
+            break;
+        default:
+            //std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
+            break;
+    }
+}
+
+void NsbInterpreter::End()
+{
+    if (NsbAssert(!Returns.empty(), "Empty return stack"))
+        return;
+
+    pScript = Returns.top().pScript;
+    pScript->SetSourceIter(Returns.top().SourceLine);
+    Returns.pop();
 }
 
 void NsbInterpreter::LoadTexture()
@@ -893,13 +898,14 @@ void NsbInterpreter::NsbAssert(const char* fmt)
 }
 
 template<typename T, typename... A>
-void NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
+bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
 {
     if (expr)
-        return;
+        return false;
 
     NsbAssert(fmt, value, args...);
     Crash();
+    return true;
 }
 
 template<typename T, typename... A>
@@ -923,11 +929,12 @@ void NsbInterpreter::NsbAssert(const char* fmt, T value, A... args)
     }
 }
 
-void NsbInterpreter::NsbAssert(bool expr, const char* fmt)
+bool NsbInterpreter::NsbAssert(bool expr, const char* fmt)
 {
     if (expr)
-        return;
+        return false;
 
     NsbAssert(fmt);
     Crash();
+    return true;
 }
