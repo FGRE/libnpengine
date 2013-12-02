@@ -81,6 +81,7 @@ private:
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, T Func);
 
+    void Destroy();
     void Call();
     void Concat();
     void Format();
@@ -99,7 +100,7 @@ private:
     void SetFontAttributes(const string& Font, int32_t size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
     void SetAudioState(const string& HandleName, int32_t NumSeconds, int32_t Volume, const string& Tempo);
     void SetAudioLoop(const string& HandleName, bool Loop);
-    void Destroy(Drawable* pDrawable);
+    void GLDestroy(Drawable* pDrawable);
     void SetAudioRange(const string& HandleName, int32_t Begin, int32_t End);
     void LoadAudio(const string& HandleName, const string& Type, const string& File);
     void StartAnimation(const string& HandleName, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
