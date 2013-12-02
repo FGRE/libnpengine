@@ -85,6 +85,7 @@ private:
 
     void CreateColor();
     void SetOpacity();
+    void Begin();
     void End();
     void LoadTexture();
     void Destroy();
@@ -94,8 +95,9 @@ private:
     void BindIdentifier();
     void LoadMovie();
     void ApplyMask();
+    void ClearParams();
+    void CreateTexture();
 
-    void CreateTexture(const string& HandleName, int32_t Width, int32_t Height, const string& Color);
     void DrawToTexture(const string& HandleName, int32_t x, int32_t y, const string& File);
     void ApplyBlur(Drawable* pDrawable, const string& Heaviness);
     void DisplayText(const string& unk);
@@ -117,10 +119,11 @@ private:
 
     void NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void GLDestroy(Drawable* pDrawable);
-    void GLLoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File);
+    void GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
     void GLCreateColor(const string& HandleName, int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
     void GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
     void GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait);
+    void GLCreateTexture(int32_t Width, int32_t Height, const string& Color);
 
     void Recover();
     void WriteTrace(std::ostream& Stream);
