@@ -1,14 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 project (libnpengine)
 
-if (CMAKE_COMPILER_IS_GNUCXX)
-    add_definitions(-std=c++11)
-endif()
-
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 find_package(SFML 2 REQUIRED COMPONENTS system audio window graphics)
 find_package(sfeMovie)
 find_package(Boost REQUIRED COMPONENTS locale thread)
+
+add_definitions(-std=c++11)
 
 set(CMAKE_BUILD_TYPE Debug)
 include_directories(

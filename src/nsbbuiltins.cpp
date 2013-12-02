@@ -169,7 +169,10 @@ void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const
         pTexture = LoadTextureFromFile(File);
 
     if (!pTexture)
+    {
         CacheHolder<Drawable>::Write(HandleName, nullptr);
+        return;
+    }
 
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
     // TODO: Positions are x/y specific!

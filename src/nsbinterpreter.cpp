@@ -591,7 +591,7 @@ void NsbInterpreter::Recover()
     while (Line* pLine = pScript->GetNextLine())
         if (pLine->Magic == MAGIC_CLEAR_PARAMS)
             break;
-    pScript->SetSourceIter(pScript->GetNextLineEntry() - 2);
+    pScript->SetSourceIter(pScript->GetNextLineEntry() - 1);
 }
 
 // Rename/eliminate pls?
@@ -637,6 +637,16 @@ bool NsbInterpreter::NsbAssert(bool expr, const char* fmt)
         return false;
 
     NsbAssert(fmt);
+    Crash();
+    return true;
+}
+
+// Because fuck you krofna, that's why
+template <> bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, std::string value)
+{
+    if (expr)
+        return false;
+    std::cout << fmt << " " << value << std::endl; // I don't even care enough to format it anymore...
     Crash();
     return true;
 }
