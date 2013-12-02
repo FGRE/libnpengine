@@ -178,11 +178,7 @@ void NsbInterpreter::ExecuteLine()
             BindIdentifier();
             break;
         case uint16_t(MAGIC_CREATE_COLOR):
-            pGame->GLCallback(std::bind(&NsbInterpreter::CreateColor, this,
-                              GetParam<string>(0), GetParam<int32_t>(1),
-                              GetParam<int32_t>(2), GetParam<int32_t>(3),
-                              GetParam<int32_t>(4), GetParam<int32_t>(5),
-                              GetParam<string>(6)));
+            CreateColor();
             return;
         case uint16_t(MAGIC_SET_TEXTBOX_ATTRIBUTES):
             SetTextboxAttributes(GetParam<string>(0), GetParam<int32_t>(1),
@@ -265,11 +261,7 @@ void NsbInterpreter::ExecuteLine()
             Concat();
             break;
         case uint16_t(MAGIC_LOAD_MOVIE):
-            pGame->GLCallback(std::bind(&NsbInterpreter::LoadMovie, this,
-                              GetParam<string>(0), GetParam<int32_t>(1),
-                              GetParam<int32_t>(2), GetParam<int32_t>(3),
-                              GetParam<bool>(4), GetParam<bool>(5),
-                              GetParam<string>(6), GetParam<bool>(7)));
+            LoadMovie();
             return;
         case uint16_t(MAGIC_LOAD_TEXTURE):
             LoadTexture();
@@ -293,6 +285,21 @@ void NsbInterpreter::ExecuteLine()
             //std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
             break;
     }
+}
+
+void NsbInterpreter::LoadMovie()
+{
+    HandleName = GetParam<string>(0);
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadMovie, this, GetParam<int32_t>(1),
+                      GetParam<int32_t>(2), GetParam<int32_t>(3), GetParam<bool>(4),
+                      GetParam<bool>(5), GetParam<string>(6), GetParam<bool>(7)));
+}
+
+void NsbInterpreter::CreateColor()
+{
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateColor, this, GetParam<string>(0),
+                      GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
+                      GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<string>(6)));
 }
 
 void NsbInterpreter::SetOpacity()
@@ -554,8 +561,8 @@ void NsbInterpreter::ArrayRead(const string& HandleName, int32_t Depth)
     Params.push_back(*pVariable);
 }
 
-void NsbInterpreter::CreateColor(const string& HandleName, int32_t Priority, int32_t x,
-                                 int32_t y, int32_t Width, int32_t Height, string Color)
+void NsbInterpreter::GLCreateColor(const string& HandleName, int32_t Priority, int32_t x,
+                                   int32_t y, int32_t Width, int32_t Height, string Color)
 {
     // Workaround
     if (HandleName == "クリア黒")
@@ -763,8 +770,8 @@ void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Op
         pDrawable->SetOpacity(Opacity, Time, FADE_TEX);
 }
 
-void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32_t x,
-                               int32_t y, bool Loop, bool unk0, const string& File, bool unk1)
+void NsbInterpreter::GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop,
+                                 bool unk0, const string& File, bool unk1)
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
