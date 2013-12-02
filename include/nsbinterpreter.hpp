@@ -81,6 +81,7 @@ private:
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, T Func);
 
+    void CreateColor();
     void SetOpacity();
     void End();
     void LoadTexture();
@@ -89,6 +90,8 @@ private:
     void Concat();
     void Format();
     void BindIdentifier();
+    void LoadMovie();
+
     void CreateTexture(const string& HandleName, int32_t Width, int32_t Height, const string& Color);
     void DrawToTexture(const string& HandleName, int32_t x, int32_t y, const string& File);
     void ApplyBlur(Drawable* pDrawable, const string& Heaviness);
@@ -98,7 +101,6 @@ private:
     void SetVariable(const string& Identifier, const Variable& Var);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName); // Obsolete?
     void ArrayRead(const string& HandleName, int32_t Depth);
-    void CreateColor(const string& HandleName, int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
     void SetTextboxAttributes(const string& Handle, int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
     void SetFontAttributes(const string& Font, int32_t size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
     void SetAudioState(const string& HandleName, int32_t NumSeconds, int32_t Volume, const string& Tempo);
@@ -108,12 +110,14 @@ private:
     void StartAnimation(const string& HandleName, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void Sleep(int32_t ms);
     void ParseText(const string& HandleName, const string& Box, const string& XML);
-    void LoadMovie(const string& HandleName, int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
     void SetDisplayState(const string& HandleName, const string& State);
     void GetMovieTime(const string& HandleName);
+
     void NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void GLDestroy(Drawable* pDrawable);
     void GLLoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File);
+    void GLCreateColor(const string& HandleName, int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
+    void GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
 
     void Recover();
     void WriteTrace(std::ostream& Stream);
