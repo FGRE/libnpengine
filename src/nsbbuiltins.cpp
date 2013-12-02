@@ -65,12 +65,14 @@ void NsbInterpreter::GLCreateTexture(int32_t Width, int32_t Height, const string
 
 void NsbInterpreter::GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File)
 {
-    sf::Texture* pTempTexture = LoadTextureFromFile(File);
-    sf::Sprite TempSprite(*pTempTexture);
-    TempSprite.setPosition(x, y);
-    pTexture->draw(TempSprite);
-    pTexture->display();
-    delete pTempTexture;
+    if (sf::Texture* pTempTexture = LoadTextureFromFile(File))
+    {
+        sf::Sprite TempSprite(*pTempTexture);
+        TempSprite.setPosition(x, y);
+        pTexture->draw(TempSprite);
+        pTexture->display();
+        delete pTempTexture;
+    }
 }
 
 void NsbInterpreter::GLApplyBlur(Drawable* pDrawable, const string& Heaviness)
@@ -199,10 +201,8 @@ void NsbInterpreter::GLParseText(const string& Box, const string& XML)
 void NsbInterpreter::GLDestroy(Drawable* pDrawable)
 {
     if (pDrawable) // Not really needed?
-    {
         pGame->RemoveDrawable(pDrawable);
-        delete pDrawable;
-    }
+    delete pDrawable;
 }
 
 void NsbInterpreter::NSBArrayRead(int32_t Depth)
@@ -301,17 +301,12 @@ void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
     sf::Music* pMusic = new sf::Music;
     uint32_t Size;
     char* pMusicData = sResourceMgr->Read(File, &Size);
-    if (!pMusicData)
-    {
-        std::cout << "Failed to read music " << File << std::endl;
-        WriteTrace(std::cout);
+
+    if (NsbAssert(pMusicData != nullptr, "Failed to read music %", File) ||
+        NsbAssert(pMusic->openFromMemory(pMusicData, Size), "Failed to load music %!", File))
         CacheHolder<sf::Music>::Write(HandleName, nullptr);
-    }
     else
-    {
-        NsbAssert(pMusic->openFromMemory(pMusicData, Size), "Failed to load music %!", File);
         CacheHolder<sf::Music>::Write(HandleName, pMusic);
-    }
 }
 
 void NsbInterpreter::NSBDisplayText(const string& unk)
