@@ -275,19 +275,8 @@ void NsbInterpreter::ExecuteLine()
             LoadTexture();
             return;
         case uint16_t(MAGIC_SET_OPACITY):
-        {
-            HandleName = GetParam<string>(0);
-            if (HandleName.back() == '*')
-            {
-                WildcardCall(HandleName, std::bind(&NsbInterpreter::SetOpacity, this,
-                             std::placeholders::_1, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                             GetParam<string>(3), GetParam<bool>(4)));
-            }
-            else
-                SetOpacity(CacheHolder<Drawable>::Read(HandleName), GetParam<int32_t>(1),
-                           GetParam<int32_t>(2), GetParam<string>(3), GetParam<bool>(4));
+            SetOpacity();
             return;
-        }
         case uint16_t(MAGIC_SET_DISPLAY_STATE):
             SetDisplayState(GetParam<string>(0), GetParam<string>(1));
             break;
@@ -304,6 +293,18 @@ void NsbInterpreter::ExecuteLine()
             //std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
             break;
     }
+}
+
+void NsbInterpreter::SetOpacity()
+{
+    HandleName = GetParam<string>(0);
+    if (HandleName.back() == '*')
+        WildcardCall(HandleName, std::bind(&NsbInterpreter::NSBSetOpacity, this,
+                     std::placeholders::_1, GetParam<int32_t>(1), GetParam<int32_t>(2),
+                     GetParam<string>(3), GetParam<bool>(4)));
+    else
+        NSBSetOpacity(CacheHolder<Drawable>::Read(HandleName), GetParam<int32_t>(1),
+                      GetParam<int32_t>(2), GetParam<string>(3), GetParam<bool>(4));
 }
 
 void NsbInterpreter::End()
@@ -745,7 +746,7 @@ void NsbInterpreter::SetDisplayState(const string& HandleName, const string& Sta
             pMusic->play();
 }
 
-void NsbInterpreter::SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
+void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
 {
     if (!pDrawable)
         return;
