@@ -276,25 +276,8 @@ void NsbInterpreter::Run()
                 return;
             }
             case uint16_t(MAGIC_LOAD_TEXTURE):
-            {
-                int32_t Pos[2];
-                for (int32_t i = 2; i <= 3; ++i)
-                {
-                    if (Params[i].Type == "STRING")
-                    {
-                        for (int32_t j = 0; j < SPECIAL_POS_NUM; ++j)
-                            if (Params[i].Value == SpecialPos[j])
-                                Pos[i - 2] = -(j + 1);
-                    }
-                    else
-                        Pos[i - 2] = GetParam<int32_t>(i);
-                }
-
-                pGame->GLCallback(std::bind(&NsbInterpreter::LoadTexture, this,
-                                  GetParam<string>(0), GetParam<int32_t>(1),
-                                  Pos[0], Pos[1], GetParam<string>(4)));
-                break;
-            }
+                LoadTexture();
+                return;
             case uint16_t(MAGIC_SET_OPACITY):
             {
                 HandleName = GetParam<string>(0);
@@ -326,6 +309,26 @@ void NsbInterpreter::Run()
                 break;
         }
     }
+}
+
+void NsbInterpreter::LoadTexture()
+{
+    int32_t Pos[2];
+    for (int32_t i = 2; i <= 3; ++i)
+    {
+        if (Params[i].Type == "STRING")
+        {
+            for (int32_t j = 0; j < SPECIAL_POS_NUM; ++j)
+                if (Params[i].Value == SpecialPos[j])
+                    Pos[i - 2] = -(j + 1);
+        }
+        else
+            Pos[i - 2] = GetParam<int32_t>(i);
+    }
+
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTexture, this,
+                      GetParam<string>(0), GetParam<int32_t>(1),
+                      Pos[0], Pos[1], GetParam<string>(4)));
 }
 
 void NsbInterpreter::Destroy()
@@ -780,7 +783,7 @@ void NsbInterpreter::LoadMovie(const string& HandleName, int32_t Priority, int32
     pGame->AddDrawable(pDrawable);
 }
 
-void NsbInterpreter::LoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File)
+void NsbInterpreter::GLLoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File)
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
