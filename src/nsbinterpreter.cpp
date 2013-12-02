@@ -195,25 +195,8 @@ void NsbInterpreter::Run()
                                   GetParam<int32_t>(4), GetParam<string>(5));
                 break;
             case uint16_t(MAGIC_DESTROY):
-            {
-                HandleName = GetParam<string>(0);
-                // Hack: Do not destroy * (aka everything)
-                if (HandleName.back() == '*' && HandleName.size() != 1)
-                {
-                    std::cout << "Wildcard destroy " << HandleName << std::endl;
-                    WildcardCall(HandleName, [this](Drawable* pDrawable)
-                    {
-                        pGame->GLCallback(std::bind(&NsbInterpreter::Destroy, this, pDrawable));
-                        CacheHolder<Drawable>::Write(HandleName, nullptr);
-                    });
-                }
-                else
-                {
-                    pGame->GLCallback(std::bind(&NsbInterpreter::Destroy, this, CacheHolder<Drawable>::Read(HandleName)));
-                    CacheHolder<Drawable>::Write(HandleName, nullptr);
-                }
-                break;
-            }
+                Destroy();
+                return;
             case uint16_t(MAGIC_SET_AUDIO_STATE):
                 SetAudioState(GetParam<string>(0), GetParam<int32_t>(1),
                               GetParam<int32_t>(2), GetParam<string>(3));
@@ -342,6 +325,25 @@ void NsbInterpreter::Run()
                 //std::cout << "Unknown magic: " << std::hex << pLine->Magic << std::dec << std::endl;
                 break;
         }
+    }
+}
+
+void NsbInterpreter::Destroy()
+{
+    HandleName = GetParam<string>(0);
+    // Hack: Do not destroy * (aka everything)
+    if (HandleName.back() == '*' && HandleName.size() != 1)
+    {
+        WildcardCall(HandleName, [this](Drawable* pDrawable)
+        {
+            pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
+            CacheHolder<Drawable>::Write(HandleName, nullptr);
+        });
+    }
+    else
+    {
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, CacheHolder<Drawable>::Read(HandleName)));
+        CacheHolder<Drawable>::Write(HandleName, nullptr);
     }
 }
 
@@ -612,7 +614,7 @@ void NsbInterpreter::SetAudioLoop(const string& HandleName, bool Loop)
         pMusic->setLoop(Loop);
 }
 
-void NsbInterpreter::Destroy(Drawable* pDrawable)
+void NsbInterpreter::GLDestroy(Drawable* pDrawable)
 {
     if (pDrawable)
     {
