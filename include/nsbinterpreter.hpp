@@ -81,6 +81,7 @@ private:
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, T Func);
 
+    void SetOpacity();
     void End();
     void LoadTexture();
     void Destroy();
@@ -108,9 +109,9 @@ private:
     void Sleep(int32_t ms);
     void ParseText(const string& HandleName, const string& Box, const string& XML);
     void LoadMovie(const string& HandleName, int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
-    void SetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void SetDisplayState(const string& HandleName, const string& State);
     void GetMovieTime(const string& HandleName);
+    void NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void GLDestroy(Drawable* pDrawable);
     void GLLoadTexture(const string& HandleName, int32_t Priority, int32_t x, int32_t y, const string& File);
 
