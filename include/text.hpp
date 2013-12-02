@@ -41,6 +41,7 @@ struct Text : sf::Text, Drawable
     std::vector<Voice> Voices;
     size_t LineIter;
 
+    virtual void Animate(int32_t x, int32_t y, int32_t Time);
     sf::Music* pCurrentMusic;
     static void Initialize(const std::string& FontFile);
     static sf::Font Font;

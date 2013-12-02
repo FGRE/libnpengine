@@ -99,7 +99,7 @@ private:
     void SetAudioState(const string& HandleName, int32_t NumSeconds, int32_t Volume, const string& Tempo);
     void SetAudioLoop(const string& HandleName, bool Loop);
     void Destroy(Drawable* pDrawable);
-    void SetAudioRange(const string& HandleName, int32_t begin, int32_t end);
+    void SetAudioRange(const string& HandleName, int32_t Begin, int32_t End);
     void LoadAudio(const string& HandleName, const string& Type, const string& File);
     void StartAnimation(const string& HandleName, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void Sleep(int32_t ms);

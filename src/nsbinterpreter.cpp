@@ -255,7 +255,7 @@ void NsbInterpreter::Run()
                 {
                     GetMovieTime("ムービー");
                     std::cout << "MovieWaitSG(): Sleeping for " << GetVariable<int32_t>(Params[0].Value) << " milliseconds." << std::endl;
-                    Sleep(GetVariable<int32_t>(Params[0].Value));
+                    //Sleep(GetVariable<int32_t>(Params[0].Value));
                     pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                                       CacheHolder<Drawable>::Read("ムービー")));
                     break;
@@ -643,29 +643,17 @@ void NsbInterpreter::LoadAudio(const string& HandleName, const string& Type, con
     CacheHolder<sf::Music>::Write(HandleName, pMusic);
 }
 
-void NsbInterpreter::SetAudioRange(const string& HandleName, int32_t begin, int32_t end)
+void NsbInterpreter::SetAudioRange(const string& HandleName, int32_t Begin, int32_t End)
 {
     if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
-        pMusic->setPlayingOffset(sf::milliseconds(begin));
+        pMusic->setPlayingOffset(sf::milliseconds(Begin));
 }
 
 void NsbInterpreter::StartAnimation(const string& HandleName, int32_t Time,
                                     int32_t x, int32_t y, const string& Tempo, bool Wait)
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
-    {
-        if (Time == 0)
-        {
-            if (pDrawable->Type == DRAWABLE_TEXTURE)
-                ((sf::Sprite*)pDrawable->Get())->setPosition(-x, -y);
-            else if (pDrawable->Type == DRAWABLE_MOVIE)
-                ((sfe::Movie*)pDrawable->Get())->setPosition(x, y);
-            else if (pDrawable->Type == DRAWABLE_TEXT)
-                ((Text*)pDrawable)->setPosition(x, y);
-        }
-        else
-            pDrawable->Animate(-x, -y, Time);
-    }
+        pDrawable->Animate(x, y, Time);
 }
 
 void NsbInterpreter::ParseText(const string& HandleName, const string& Box, const string& XML)
