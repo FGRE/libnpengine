@@ -212,11 +212,21 @@ void Drawable::SetBlur(const std::string& Heaviness)
 
 void Drawable::Animate(int32_t x, int32_t y, int32_t Time)
 {
-    pAnimation = new Animation;
-    pAnimation->x = x;
-    pAnimation->y = y;
-    pAnimation->Time = Time;
-    pAnimation->AnimationClock.restart();
+    if (Time == 0)
+    {
+        if (Type == DRAWABLE_TEXTURE)
+            ((sf::Sprite*)pDrawable)->setPosition(-x, -y);
+        else if (Type == DRAWABLE_MOVIE)
+            ((sfe::Movie*)pDrawable)->setPosition(x, y);
+    }
+    else
+    {
+        pAnimation = new Animation;
+        pAnimation->x = -x;
+        pAnimation->y = -y;
+        pAnimation->Time = Time;
+        pAnimation->AnimationClock.restart();
+    }
 }
 
 int32_t Drawable::GetPriority() const

@@ -118,3 +118,9 @@ void Text::Initialize(const std::string& FontFile)
 {
     assert(Font.loadFromFile(FontFile));
 }
+
+void Text::Animate(int32_t x, int32_t y, int32_t Time)
+{
+    assert(Time == 0);
+    setPosition(x, y);
+}
