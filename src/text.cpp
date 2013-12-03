@@ -94,20 +94,25 @@ pCurrentMusic(nullptr)
 
 Text::~Text()
 {
+    StopMusic();
+    std::for_each(Voices.begin(), Voices.end(), [](const Voice& V) { delete V.pMusic; });
+}
+
+void Text::StopMusic()
+{
     if (pCurrentMusic)
         pCurrentMusic->stop();
-    std::for_each(Voices.begin(), Voices.end(), [](const Voice& V) { delete V.pMusic; });
 }
 
 bool Text::NextLine()
 {
     if (++LineIter >= Voices.size())
         return false;
+
     setString(Voices[LineIter].String);
     if (sf::Music* pMusic = Voices[LineIter].pMusic)
     {
-        if (pCurrentMusic)
-            pCurrentMusic->stop();
+        StopMusic();
         pMusic->play();
         pCurrentMusic = pMusic;
     }
