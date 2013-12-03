@@ -36,6 +36,13 @@ enum
     FADE_MAX    = 2
 };
 
+enum
+{
+    LERP_ZOOM   = 0,
+    LERP_ANIM   = 1,
+    LERP_MAX    = 2
+};
+
 namespace sf
 {
     class Drawable;
@@ -63,14 +70,6 @@ struct LerpEffect
     sf::Clock Clock;
 };
 
-struct Animation : LerpEffect
-{
-};
-
-struct ZoomEffect : LerpEffect
-{
-};
-
 class Drawable
 {
 public:
@@ -89,8 +88,8 @@ public:
 
     uint8_t Type;
 protected:
-    ZoomEffect* pZoom;
-    Animation* pAnimation;
+    sf::Vector2f UpdateLerp(uint8_t i);
+    LerpEffect* Lerps[LERP_MAX];
     FadeEffect* Fades[FADE_MAX];
     sf::Drawable* pDrawable;
     int32_t Priority;

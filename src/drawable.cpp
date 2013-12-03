@@ -73,8 +73,6 @@ Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
 Type(Type),
-pZoom(nullptr),
-pAnimation(nullptr),
 pMask(nullptr),
 pBlur(nullptr)
 {
@@ -83,6 +81,7 @@ pBlur(nullptr)
             Fades[i] = new FadeEffect; // TODO: allocate on demand
         else
             Fades[i] = nullptr;
+    Lerps[0] = Lerps[1] = nullptr;
 }
 
 Drawable::~Drawable()
@@ -97,45 +96,32 @@ Drawable::~Drawable()
 
 void Drawable::Update()
 {
-    // TODO: Share code with Zoom
-    if (pAnimation)
-    {
-        float Progress = float(pAnimation->Clock.getElapsedTime().asMilliseconds()) /
-                         float(pAnimation->Time);
-        if (Progress > 1.0f)
-            Progress = 1.0f;
-
-        float NewX = Lerp(pAnimation->OldX, pAnimation->NewX, Progress);
-        float NewY = Lerp(pAnimation->OldY, pAnimation->NewY, Progress);
-        static_cast<sf::Sprite*>(pDrawable)->setPosition(NewX, NewY);
-
-        if (pAnimation->Clock.getElapsedTime().asMilliseconds() >= pAnimation->Time)
-        {
-            delete pAnimation;
-            pAnimation = nullptr;
-        }
-    }
-
-    if (pZoom)
-    {
-        float Progress = float(pZoom->Clock.getElapsedTime().asMilliseconds()) /
-                         float(pZoom->Time);
-        if (Progress > 1.0f)
-            Progress = 1.0f;
-
-        float NewX = Lerp(pZoom->OldX, pZoom->NewX, Progress);
-        float NewY = Lerp(pZoom->OldY, pZoom->NewY, Progress);
-        static_cast<sf::Sprite*>(Get())->setScale(NewX, NewY);
-
-        if (pZoom->Clock.getElapsedTime().asMilliseconds() >= pZoom->Time)
-        {
-            delete pZoom;
-            pZoom = nullptr;
-        }
-    }
+    if (Lerps[LERP_ZOOM])
+        static_cast<sf::Sprite*>(Get())->setScale(UpdateLerp(LERP_ZOOM));
+    if (Lerps[LERP_ANIM])
+        static_cast<sf::Sprite*>(Get())->setPosition(UpdateLerp(LERP_ANIM));
 
     for (uint8_t i = 0; i < FADE_MAX; ++i)
         UpdateFade(i);
+}
+
+sf::Vector2f Drawable::UpdateLerp(uint8_t i)
+{
+    LerpEffect* pLerp = Lerps[i];
+    float Progress = float(pLerp->Clock.getElapsedTime().asMilliseconds()) /
+                     float(pLerp->Time);
+    if (Progress > 1.0f)
+        Progress = 1.0f;
+
+    float NewX = Lerp(pLerp->OldX, pLerp->NewX, Progress);
+    float NewY = Lerp(pLerp->OldY, pLerp->NewY, Progress);
+
+    if (pLerp->Clock.getElapsedTime().asMilliseconds() >= pLerp->Time)
+    {
+        delete pLerp;
+        Lerps[i] = nullptr;
+    }
+    return sf::Vector2f(NewX, NewY);
 }
 
 void Drawable::Draw(sf::RenderWindow* pWindow)
@@ -240,25 +226,27 @@ void Drawable::Animate(int32_t x, int32_t y, int32_t Time)
     }
     else
     {
-        pAnimation = new Animation;
+        LerpEffect* pAnimation = new LerpEffect;
         sf::Vector2f CurrPos = static_cast<sf::Sprite*>(pDrawable)->getPosition();
         pAnimation->OldX = CurrPos.x;
         pAnimation->OldY = CurrPos.y;
         pAnimation->NewX = -x;
         pAnimation->NewY = -y;
         pAnimation->Time = Time;
+        Lerps[LERP_ANIM] = pAnimation;
     }
 }
 
 void Drawable::Zoom(float x, float y, int32_t Time)
 {
-    pZoom = new ZoomEffect;
+    LerpEffect* pZoom = new LerpEffect;
     sf::Vector2f CurrScale = static_cast<sf::Sprite*>(pDrawable)->getScale();
     pZoom->OldX = CurrScale.x;
     pZoom->OldY = CurrScale.y;
     pZoom->NewX = x / 1000.0f;
     pZoom->NewY = y / 1000.0f;
     pZoom->Time = Time;
+    Lerps[LERP_ZOOM] = pZoom;
 }
 
 int32_t Drawable::GetPriority() const
