@@ -29,7 +29,7 @@
 #include <SFML/Audio/Music.hpp>
 #include <sfeMovie/Movie.hpp>
 
-const std::string SpecialPos[SPECIAL_POS_NUM] =
+static const std::string SpecialPos[SPECIAL_POS_NUM] =
 {
     "Center", "InBottom", "Middle",
     "OnLeft", "OutTop", "InTop",
@@ -110,7 +110,6 @@ void NsbInterpreter::ThreadMain(string InitScript)
 
     pScript = sResourceMgr->GetResource<NsbFile>(InitScript);
     //CallFunction(LoadedScripts[LoadedScripts.size() - 1], "StArray");
-
     do
     {
         while (!RunInterpreter) Sleep(10); // yield? mutex?
