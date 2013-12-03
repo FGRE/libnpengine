@@ -100,7 +100,6 @@ void Drawable::Update()
         static_cast<sf::Sprite*>(Get())->setScale(UpdateLerp(LERP_ZOOM));
     if (Lerps[LERP_ANIM])
         static_cast<sf::Sprite*>(Get())->setPosition(UpdateLerp(LERP_ANIM));
-
     for (uint8_t i = 0; i < FADE_MAX; ++i)
         UpdateFade(i);
 }
