@@ -84,6 +84,8 @@ void NsbInterpreter::GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Star
 {
     if (sf::Texture* pTexture = LoadTextureFromFile(File))
         pDrawable->SetMask(pTexture, Start, End, Time);
+    if (Wait)
+        WaitTime = Time;
 }
 
 void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color)
@@ -288,6 +290,9 @@ void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Op
     }
     else
         pDrawable->SetOpacity(Opacity, Time, FADE_TEX);
+
+    if (Wait)
+        WaitTime = Time;
 }
 
 void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
@@ -331,6 +336,8 @@ void NsbInterpreter::NSBSetAudioLoop(sf::Music* pMusic, bool Loop)
 void NsbInterpreter::NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait)
 {
     pDrawable->Animate(x, y, Time);
+    if (Wait)
+        WaitTime = Time;
 }
 
 void NsbInterpreter::NSBSetAudioRange(sf::Music* pMusic, int32_t Begin, int32_t End)
