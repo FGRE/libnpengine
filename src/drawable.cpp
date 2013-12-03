@@ -73,6 +73,7 @@ Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
 Type(Type),
+pZoom(nullptr),
 pAnimation(nullptr),
 pMask(nullptr),
 pBlur(nullptr)
@@ -96,22 +97,40 @@ Drawable::~Drawable()
 
 void Drawable::Update()
 {
+    // TODO: Share code with Zoom
     if (pAnimation)
     {
-        float Progress = float(pAnimation->AnimationClock.getElapsedTime().asMilliseconds()) /
+        float Progress = float(pAnimation->Clock.getElapsedTime().asMilliseconds()) /
                          float(pAnimation->Time);
         if (Progress > 1.0f)
             Progress = 1.0f;
 
-        sf::Vector2f CurrPos = static_cast<sf::Sprite*>(pDrawable)->getPosition();
-        float NewX = Lerp(CurrPos.x, pAnimation->x, Progress);
-        float NewY = Lerp(CurrPos.y, pAnimation->y, Progress);
+        float NewX = Lerp(pAnimation->OldX, pAnimation->NewX, Progress);
+        float NewY = Lerp(pAnimation->OldY, pAnimation->NewY, Progress);
         static_cast<sf::Sprite*>(pDrawable)->setPosition(NewX, NewY);
 
-        if (pAnimation->AnimationClock.getElapsedTime().asMilliseconds() >= pAnimation->Time)
+        if (pAnimation->Clock.getElapsedTime().asMilliseconds() >= pAnimation->Time)
         {
             delete pAnimation;
             pAnimation = nullptr;
+        }
+    }
+
+    if (pZoom)
+    {
+        float Progress = float(pZoom->Clock.getElapsedTime().asMilliseconds()) /
+                         float(pZoom->Time);
+        if (Progress > 1.0f)
+            Progress = 1.0f;
+
+        float NewX = Lerp(pZoom->OldX, pZoom->NewX, Progress);
+        float NewY = Lerp(pZoom->OldY, pZoom->NewY, Progress);
+        static_cast<sf::Sprite*>(Get())->setScale(NewX, NewY);
+
+        if (pZoom->Clock.getElapsedTime().asMilliseconds() >= pZoom->Time)
+        {
+            delete pZoom;
+            pZoom = nullptr;
         }
     }
 
@@ -222,11 +241,24 @@ void Drawable::Animate(int32_t x, int32_t y, int32_t Time)
     else
     {
         pAnimation = new Animation;
-        pAnimation->x = -x;
-        pAnimation->y = -y;
+        sf::Vector2f CurrPos = static_cast<sf::Sprite*>(pDrawable)->getPosition();
+        pAnimation->OldX = CurrPos.x;
+        pAnimation->OldY = CurrPos.y;
+        pAnimation->NewX = -x;
+        pAnimation->NewY = -y;
         pAnimation->Time = Time;
-        pAnimation->AnimationClock.restart();
     }
+}
+
+void Drawable::Zoom(float x, float y, int32_t Time)
+{
+    pZoom = new ZoomEffect;
+    sf::Vector2f CurrScale = static_cast<sf::Sprite*>(pDrawable)->getScale();
+    pZoom->OldX = CurrScale.x;
+    pZoom->OldY = CurrScale.y;
+    pZoom->NewX = x / 1000.0f;
+    pZoom->NewY = y / 1000.0f;
+    pZoom->Time = Time;
 }
 
 int32_t Drawable::GetPriority() const

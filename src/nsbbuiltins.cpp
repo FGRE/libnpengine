@@ -351,6 +351,13 @@ void NsbInterpreter::NSBSetAudioState(sf::Music* pMusic, int32_t NumSeconds, int
     pMusic->setVolume(Volume / 10);
 }
 
+void NsbInterpreter::NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait)
+{
+    pDrawable->Zoom(x, y, Time);
+    if (Wait)
+        WaitTime = Time;
+}
+
 void NsbInterpreter::NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1,
                                              const string& Color1, const string& Color2,
                                              int32_t unk2, const string& unk3)

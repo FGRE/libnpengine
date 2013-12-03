@@ -56,6 +56,7 @@ NsbInterpreter::~NsbInterpreter()
 void NsbInterpreter::RegisterBuiltins()
 {
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
     Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
     Builtins[MAGIC_SET_PLACEHOLDER] = &NsbInterpreter::SetPlaceholder;
     Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::CreateArray;
@@ -146,6 +147,13 @@ void NsbInterpreter::Pause()
 void NsbInterpreter::Start()
 {
     RunInterpreter = true;
+}
+
+void NsbInterpreter::Zoom()
+{
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+        NSBZoom(pDrawable, GetParam<int32_t>(1), GetParam<float>(2),
+                GetParam<float>(3), GetParam<string>(4), GetParam<bool>(5));
 }
 
 void NsbInterpreter::UNK5()
@@ -368,7 +376,10 @@ void NsbInterpreter::SetOpacity()
 void NsbInterpreter::End()
 {
     if (NsbAssert(!Returns.empty(), "Empty return stack"))
+    {
+        pScript = nullptr;
         return;
+    }
 
     pScript = Returns.top().pScript;
     pScript->SetSourceIter(Returns.top().SourceLine);
