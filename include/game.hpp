@@ -56,7 +56,7 @@ private:
     void GLCallback(const std::function<void()>& Func);
 
     boost::mutex GLMutex;
-    std::queue<std::function<void()>> GLCallbacks;
+    std::queue<std::function<void()>> GLCallbacks; // TODO: Only one is actually possible in practice
     std::vector<Callback> Callbacks;
     std::list<Drawable*> Drawables;
     bool IsRunning;

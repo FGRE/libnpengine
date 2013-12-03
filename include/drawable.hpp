@@ -53,12 +53,22 @@ struct FadeEffect
     sf::Clock FadeClock;
 };
 
-struct Animation
+struct LerpEffect
 {
-    int32_t x;
-    int32_t y;
+    float OldX;
+    float OldY;
+    float NewX;
+    float NewY;
     int32_t Time;
-    sf::Clock AnimationClock;
+    sf::Clock Clock;
+};
+
+struct Animation : LerpEffect
+{
+};
+
+struct ZoomEffect : LerpEffect
+{
 };
 
 class Drawable
@@ -69,6 +79,7 @@ public:
 
     void Draw(sf::RenderWindow* pWindow);
     void Update();
+    void Zoom(float x, float y, int32_t Time);
     void SetBlur(const std::string& Heaviness);
     void SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index);
     void SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time);
@@ -78,6 +89,7 @@ public:
 
     uint8_t Type;
 protected:
+    ZoomEffect* pZoom;
     Animation* pAnimation;
     FadeEffect* Fades[FADE_MAX];
     sf::Drawable* pDrawable;

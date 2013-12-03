@@ -124,7 +124,9 @@ private:
     void PlaceholderParam();
     void CreateArray();
     void UNK5();
+    void Zoom();
 
+    void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void NSBArrayRead(int32_t Depth);
     void NSBSetDisplayState(const string& State);
     void NSBSetAudioLoop(sf::Music* pMusic, bool Loop);
