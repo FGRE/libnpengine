@@ -168,6 +168,7 @@ private:
     NsbFile* pScript;
     volatile bool RunInterpreter;
     volatile bool StopInterpreter;
+    volatile int32_t WaitTime;
 
     string HandleName;
     std::stack<FuncReturn> Returns;

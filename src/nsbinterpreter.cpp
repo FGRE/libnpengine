@@ -39,6 +39,7 @@ static const std::string SpecialPos[SPECIAL_POS_NUM] =
 NsbInterpreter::NsbInterpreter(Game* pGame, const string& InitScript) :
 pGame(pGame),
 StopInterpreter(false),
+WaitTime(0),
 ScriptThread(&NsbInterpreter::ThreadMain, this, InitScript)
 {
 #ifdef _WIN32
@@ -112,11 +113,20 @@ void NsbInterpreter::ThreadMain(string InitScript)
     //CallFunction(LoadedScripts[LoadedScripts.size() - 1], "StArray");
     do
     {
-        while (!RunInterpreter) Sleep(10); // yield? mutex?
+        while (!RunInterpreter)
+            Sleep(10);
+
+        if (WaitTime > 0)
+        {
+            Sleep(WaitTime);
+            WaitTime = 0;
+        }
+
         pLine = pScript->GetNextLine();
         if (NsbAssert(pScript, "Interpreting null script") ||
             NsbAssert(pLine, "Interpreting null line"))
             break;
+
         if (pLine->Magic < Builtins.size())
             if (BuiltinFunc pFunc = Builtins[pLine->Magic])
                 (this->*pFunc)();
