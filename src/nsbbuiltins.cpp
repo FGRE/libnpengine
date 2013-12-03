@@ -30,7 +30,7 @@ const std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
 {
   [] (int32_t x) { return WINDOW_WIDTH / 2 - x / 2; },
   [] (int32_t y) { return WINDOW_HEIGHT - y; },
-  [] (int32_t y) { return WINDOW_HEIGHT / 2 + y / 2; },
+  [] (int32_t y) { return WINDOW_HEIGHT / 2 - y / 2; },
   [] (int32_t x) { return 0; },
   [] (int32_t y) { return 0; },
   [] (int32_t y) { return 0; },
