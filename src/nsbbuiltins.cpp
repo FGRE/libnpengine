@@ -246,7 +246,18 @@ void NsbInterpreter::NSBSetState(const string& State)
                 pMovie->play();
             }
             else
-                NsbAssert(false, "Attempted to Play non-movie object ", HandleName);
+                NsbAssert(false, "Attempted to Play non-movie object %", HandleName);
+        }
+        else if (State == "Smoothing")
+        {
+            if (NsbAssert(pDrawable->Type == DRAWABLE_TEXTURE, "Smoothing non-texture drawable %", HandleName))
+                return;
+            pGame->GLCallback([pDrawable]()
+            {
+                sf::Sprite* pSprite = static_cast<sf::Sprite*>(pDrawable->Get());
+                sf::Texture* pTexture = const_cast<sf::Texture*>(pSprite->getTexture());
+                pTexture->setSmooth(true);
+            });
         }
 
     }

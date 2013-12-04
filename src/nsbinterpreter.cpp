@@ -137,6 +137,7 @@ void NsbInterpreter::ExecuteScript(const string& InitScript)
 
 void NsbInterpreter::Reset()
 {
+    // TODO: Clear CacheHolder and other stuff too
     Variables.clear();
     Arrays.clear();
     Params.clear();
