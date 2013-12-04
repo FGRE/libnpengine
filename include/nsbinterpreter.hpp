@@ -23,7 +23,6 @@
 #include <map>
 #include <queue>
 #include <vector>
-#include <boost/thread/thread.hpp>
 using std::string;
 
 #define SPECIAL_POS_NUM 7
@@ -69,8 +68,9 @@ struct FuncReturn
 class NsbInterpreter
 {
     typedef void (NsbInterpreter::*BuiltinFunc)();
+    friend void NitroscriptMain(NsbInterpreter* pInterpreter);
 public:
-    NsbInterpreter(Game* pGame, const string& InitScript);
+    NsbInterpreter(Game* pGame);
     ~NsbInterpreter();
 
     void Stop();
@@ -83,8 +83,8 @@ public:
 private:
     void Sleep(int32_t ms);
     void LoadScript(const string& FileName);
-    void RegisterBuiltins();
-    void ThreadMain(string InitScript);
+    void ExecuteScript(const string& InitScript);
+    void Reset();
 
     void SetParam();
     void Get();
@@ -116,7 +116,7 @@ private:
     void SleepMs();
     void SetAudioLoop();
     void ParseText();
-    void SetDisplayState();
+    void SetState();
     void RegisterCallback();
     void ArrayRead();
     void Set();
@@ -128,7 +128,7 @@ private:
 
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void NSBArrayRead(int32_t Depth);
-    void NSBSetDisplayState(const string& State);
+    void NSBSetState(const string& State);
     void NSBSetAudioLoop(sf::Music* pMusic, bool Loop);
     void NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void NSBDisplayText(const string& unk);
@@ -181,7 +181,6 @@ private:
     std::vector<ArrayVariable*> ArrayParams;
     std::queue<Variable> Placeholders;
     std::vector<BuiltinFunc> Builtins;
-    boost::thread ScriptThread;
 };
 
 template <> bool NsbInterpreter::GetParam(int32_t Index);

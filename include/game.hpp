@@ -22,8 +22,8 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Keyboard.hpp>
-#include <list>
 #include <boost/thread/mutex.hpp>
+#include <list>
 #include <queue>
 
 #define WINDOW_WIDTH 1024
@@ -42,7 +42,7 @@ class Game : public sf::RenderWindow
 {
     friend class NsbInterpreter;
 public:
-    Game(const std::vector<std::string>& AchieveFileNames, const std::string& InitScript);
+    Game(const std::vector<std::string>& AchieveFileNames);
     ~Game();
 
     void Run();
@@ -60,6 +60,7 @@ private:
     std::vector<Callback> Callbacks;
     std::list<Drawable*> Drawables;
     bool IsRunning;
+    bool IgnoreText;
     Text* pText;
     NsbInterpreter* pInterpreter;
 };

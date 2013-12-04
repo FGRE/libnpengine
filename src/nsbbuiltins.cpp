@@ -234,7 +234,7 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
     Params.push_back(*pVariable);
 }
 
-void NsbInterpreter::NSBSetDisplayState(const string& State)
+void NsbInterpreter::NSBSetState(const string& State)
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {

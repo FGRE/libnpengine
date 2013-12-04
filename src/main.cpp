@@ -22,6 +22,21 @@
 #include <fstream>
 #endif
 
+void NitroscriptMain(NsbInterpreter* pInterpreter)
+{
+    string ScriptName = "nss/sg00_01.nsb";
+    do
+    {
+        // TODO: Cleanup smashes heap
+        //pInterpreter->Reset();
+        pInterpreter->Start();
+        pInterpreter->ExecuteScript(ScriptName);
+        ScriptName = "nss/" + pInterpreter->GetVariable<std::string>("$GameName");
+        ScriptName.back() = 'b';
+        std::cout << "Switching to: " << ScriptName << std::endl;
+    } while(true);
+}
+
 extern "C"
 {
 int
@@ -36,7 +51,7 @@ NitroplusMain()
     cout.rdbuf(log.rdbuf());
 #endif
     // Note that scripts call .nss files, NOT nsb. This is a hack
-    Game* pGame = new Game({"cg.npa", "nss.npa", "voice.npa", "sound.npa"}, "nss/sg00_01.nsb");
+    Game* pGame = new Game({"cg.npa", "nss.npa", "voice.npa", "sound.npa"});
     pGame->Run();
     delete pGame;
     return 0;
