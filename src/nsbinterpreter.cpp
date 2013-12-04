@@ -63,7 +63,7 @@ void NsbInterpreter::RegisterBuiltins()
     Builtins[MAGIC_SET] = &NsbInterpreter::Set;
     Builtins[MAGIC_ARRAY_READ] = &NsbInterpreter::ArrayRead;
     Builtins[MAGIC_REGISTER_CALLBACK] = &NsbInterpreter::RegisterCallback;
-    Builtins[MAGIC_SET_DISPLAY_STATE] = &NsbInterpreter::SetDisplayState;
+    Builtins[MAGIC_SET_STATE] = &NsbInterpreter::SetDisplayState;
     Builtins[MAGIC_PARSE_TEXT] = &NsbInterpreter::ParseText;
     Builtins[MAGIC_SET_AUDIO_LOOP] = &NsbInterpreter::SetAudioLoop;
     Builtins[MAGIC_SLEEP_MS] = &NsbInterpreter::SleepMs;

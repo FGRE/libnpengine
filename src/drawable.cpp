@@ -186,12 +186,6 @@ void Drawable::SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index)
     pEffect->TargetOpacity = NewOpacity;
     pEffect->FadeTime = Time;
     pEffect->FadeClock.restart();
-
-    if (Time == 0)
-    {
-        float Alpha = NewOpacity * FadeConvert;
-        SetAlpha(Alpha);
-    }
 }
 
 void Drawable::SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time)
