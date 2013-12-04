@@ -64,9 +64,9 @@ const std::string BlurShader = \
 float Lerp(float Old, float New, float Progress)
 {
     if (New > Old)
-        return Old + float(New - Old) * Progress;
+        return Old + (New - Old) * Progress;
     else
-        return Old - float(Old - New) * Progress;
+        return Old - (Old - New) * Progress;
 }
 
 Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
@@ -196,11 +196,19 @@ void Drawable::SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index)
 
 void Drawable::SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time)
 {
+    if (!Shader.loadFromMemory(FadeShader, sf::Shader::Fragment))
+    {
+        delete pTexture;
+        return;
+    }
+
+    if (pMask)
+        delete pMask;
+
     pMask = pTexture;
-    Shader.loadFromMemory(FadeShader, sf::Shader::Fragment);
     Shader.setParameter("Mask", *pMask);
     Shader.setParameter("Texture", sf::Shader::CurrentTexture);
-    Shader.setParameter("Target", End * FadeConvert);
+    Shader.setParameter("Target", (End > Start ? End : Start) * FadeConvert);
     Fades[FADE_MASK]->TargetOpacity = Start; // Will be flipped to Opacity in SetOpacity
     SetOpacity(End, Time, FADE_MASK);
 }
