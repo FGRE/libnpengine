@@ -26,6 +26,7 @@
 #include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
+#include <boost/thread/thread.hpp>
 #include <SFML/Audio/Music.hpp>
 #include <sfeMovie/Movie.hpp>
 
@@ -36,25 +37,17 @@ static const std::string SpecialPos[SPECIAL_POS_NUM] =
     "OutRight"
 };
 
-NsbInterpreter::NsbInterpreter(Game* pGame, const string& InitScript) :
+NsbInterpreter::NsbInterpreter(Game* pGame) :
 pGame(pGame),
 StopInterpreter(false),
-WaitTime(0),
-ScriptThread(&NsbInterpreter::ThreadMain, this, InitScript)
+WaitTime(0)
 {
 #ifdef _WIN32
     Text::Initialize("fonts-japanese-gothic.ttf");
 #else
     Text::Initialize("/etc/alternatives/fonts-japanese-gothic.ttf");
 #endif
-}
 
-NsbInterpreter::~NsbInterpreter()
-{
-}
-
-void NsbInterpreter::RegisterBuiltins()
-{
     Builtins.resize(0xFF, nullptr);
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
     Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
@@ -63,7 +56,7 @@ void NsbInterpreter::RegisterBuiltins()
     Builtins[MAGIC_SET] = &NsbInterpreter::Set;
     Builtins[MAGIC_ARRAY_READ] = &NsbInterpreter::ArrayRead;
     Builtins[MAGIC_REGISTER_CALLBACK] = &NsbInterpreter::RegisterCallback;
-    Builtins[MAGIC_SET_DISPLAY_STATE] = &NsbInterpreter::SetDisplayState;
+    Builtins[MAGIC_SET_STATE] = &NsbInterpreter::SetState;
     Builtins[MAGIC_PARSE_TEXT] = &NsbInterpreter::ParseText;
     Builtins[MAGIC_SET_AUDIO_LOOP] = &NsbInterpreter::SetAudioLoop;
     Builtins[MAGIC_SLEEP_MS] = &NsbInterpreter::SleepMs;
@@ -90,28 +83,28 @@ void NsbInterpreter::RegisterBuiltins()
     Builtins[MAGIC_DESTROY] = &NsbInterpreter::Destroy;
     Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
     Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
-    Builtins[MAGIC_BEGIN] = &NsbInterpreter::Begin;
-    Builtins[MAGIC_END] = &NsbInterpreter::End;
+    Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
+    Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
     Builtins[MAGIC_UNK3] = &NsbInterpreter::ClearParams; // Unknown if this hack is still needed
     Builtins[MAGIC_UNK5] = &NsbInterpreter::UNK5;
     //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
-}
 
-void NsbInterpreter::ThreadMain(string InitScript)
-{
-    RegisterBuiltins();
-
-    // TODO: from .map file
     LoadScript("nss/function_steinsgate.nsb");
     LoadScript("nss/function.nsb");
     LoadScript("nss/extra_achievements.nsb");
     LoadScript("nss/function_select.nsb");
     LoadScript("nss/function_stand.nsb");
+}
 
+NsbInterpreter::~NsbInterpreter()
+{
+}
+
+void NsbInterpreter::ExecuteScript(const string& InitScript)
+{
     pScript = sResourceMgr->GetResource<NsbFile>(InitScript);
-    //CallFunction(LoadedScripts[LoadedScripts.size() - 1], "StArray");
     do
     {
         while (!RunInterpreter)
@@ -123,15 +116,24 @@ void NsbInterpreter::ThreadMain(string InitScript)
             WaitTime = 0;
         }
 
+        if (NsbAssert(pScript, "Interpreting null script"))
+            break;
         pLine = pScript->GetNextLine();
-        if (NsbAssert(pScript, "Interpreting null script") ||
-            NsbAssert(pLine, "Interpreting null line"))
+        if (NsbAssert(pLine, "Interpreting null line"))
             break;
 
         if (pLine->Magic < Builtins.size())
             if (BuiltinFunc pFunc = Builtins[pLine->Magic])
                 (this->*pFunc)();
     } while (!StopInterpreter);
+}
+
+void NsbInterpreter::Reset()
+{
+    Variables.clear();
+    Arrays.clear();
+    Params.clear();
+    ArrayParams.clear();
 }
 
 void NsbInterpreter::Stop()
@@ -197,10 +199,10 @@ void NsbInterpreter::RegisterCallback()
     pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
 }
 
-void NsbInterpreter::SetDisplayState()
+void NsbInterpreter::SetState()
 {
     HandleName = GetParam<string>(0);
-    NSBSetDisplayState(GetParam<string>(1));
+    NSBSetState(GetParam<string>(1));
 }
 
 void NsbInterpreter::ParseText()
@@ -376,14 +378,13 @@ void NsbInterpreter::SetOpacity()
 void NsbInterpreter::End()
 {
     if (NsbAssert(!Returns.empty(), "Empty return stack"))
-    {
         pScript = nullptr;
-        return;
+    else
+    {
+        pScript = Returns.top().pScript;
+        pScript->SetSourceIter(Returns.top().SourceLine);
+        Returns.pop();
     }
-
-    pScript = Returns.top().pScript;
-    pScript->SetSourceIter(Returns.top().SourceLine);
-    Returns.pop();
 }
 
 void NsbInterpreter::LoadTexture()
@@ -578,6 +579,8 @@ bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
 
 void NsbInterpreter::WriteTrace(std::ostream& Stream)
 {
+    if (!pScript)
+        return;
     std::stack<FuncReturn> Stack = Returns;
     Stack.push({pScript, pScript->GetNextLineEntry()});
     while (!Stack.empty())
@@ -608,6 +611,8 @@ void NsbInterpreter::Crash()
 
 void NsbInterpreter::Recover()
 {
+    if (!pScript)
+        return;
     while (Line* pLine = pScript->GetNextLine())
         if (pLine->Magic == MAGIC_CLEAR_PARAMS)
             break;

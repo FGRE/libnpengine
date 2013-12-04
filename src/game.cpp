@@ -22,10 +22,14 @@
 
 #include <SFML/Window/Event.hpp>
 #include <sfeMovie/Movie.hpp>
+#include <boost/thread/thread.hpp>
 
-Game::Game(const std::vector<std::string>& AchieveFileNames, const std::string& InitScript) :
+void NitroscriptMain(NsbInterpreter* pInterpreter);
+
+Game::Game(const std::vector<std::string>& AchieveFileNames) :
 sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "steins-gate", sf::Style::Close),
 IsRunning(true),
+IgnoreText(false),
 pText(nullptr)
 {
     setFramerateLimit(60);
@@ -34,7 +38,7 @@ pText(nullptr)
     WindowPos /= 2;
     setPosition(WindowPos);
     sResourceMgr = new ResourceMgr(AchieveFileNames);
-    pInterpreter = new NsbInterpreter(this, InitScript);
+    pInterpreter = new NsbInterpreter(this);
 }
 
 Game::~Game()
@@ -46,8 +50,7 @@ Game::~Game()
 void Game::Run()
 {
     sf::Event Event;
-
-    pInterpreter->Start();
+    boost::thread ScriptThread(&NitroscriptMain, pInterpreter);
 
     while (IsRunning)
     {
@@ -61,6 +64,8 @@ void Game::Run()
                             pInterpreter->CallScript(Callbacks[i].Script);
                     if (Event.key.code == sf::Keyboard::F8)
                         pInterpreter->DumpState();
+                    else if (Event.key.code == sf::Keyboard::C)
+                        IgnoreText = !IgnoreText;
                     break;
                 case sf::Event::MouseButtonPressed:
                     if (pText)
@@ -91,9 +96,11 @@ void Game::Run()
         }
         GLMutex.unlock();
 
-        if (!pText)
+        if (!pText || IgnoreText)
             pInterpreter->Start();
     }
+
+    ScriptThread.join();
 }
 
 void Game::GLCallback(const std::function<void()>& Func)
