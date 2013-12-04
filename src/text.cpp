@@ -40,8 +40,8 @@ pCurrentMusic(nullptr)
         if (TextLine.empty() || TextLine.compare(0, 4, "<PRE") == 0 || TextLine == "</PRE>")
             continue;
 
-        // TODO: Line may start with <RUBY text or <FONT incolor
-        if (TextLine.front() == '<')
+        // TODO: Line may start with <RUBY text or <FONT incolor or <center>stuff</center>
+        if (TextLine.compare(0, 6, "<voice") == 0)
         {
             std::string Attr;
             size_t i = TextLine.find('"'),  j, k = 0;

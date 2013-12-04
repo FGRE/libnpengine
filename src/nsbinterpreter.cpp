@@ -122,9 +122,16 @@ void NsbInterpreter::ExecuteScript(const string& InitScript)
         if (NsbAssert(pLine, "Interpreting null line"))
             break;
 
-        if (pLine->Magic < Builtins.size())
-            if (BuiltinFunc pFunc = Builtins[pLine->Magic])
-                (this->*pFunc)();
+        try
+        {
+            if (pLine->Magic < Builtins.size())
+                if (BuiltinFunc pFunc = Builtins[pLine->Magic])
+                    (this->*pFunc)();
+        }
+        catch (...)
+        {
+            NsbAssert(false, "Exception caught");
+        }
     } while (!StopInterpreter);
 }
 
