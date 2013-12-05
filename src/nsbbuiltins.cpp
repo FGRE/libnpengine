@@ -242,6 +242,11 @@ void NsbInterpreter::NSBSetState(const string& State)
         {
             if (sfe::Movie* pMovie = dynamic_cast<sfe::Movie*>(pDrawable->Get()))
             {
+                if (pBGM)
+                {
+                    pBGM->stop();
+                    pBGM = nullptr;
+                }
                 pGame->AddDrawable(pDrawable);
                 pMovie->play();
             }
