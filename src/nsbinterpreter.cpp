@@ -444,7 +444,9 @@ void NsbInterpreter::Call()
     {
         HandleName = "ムービー";
         NSBGetMovieTime();
+#ifndef _WIN32
         Sleep(GetVariable<int32_t>(Params[0].Value));
+#endif
         pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                           CacheHolder<Drawable>::Read("ムービー")));
         return;
