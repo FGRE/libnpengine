@@ -30,7 +30,6 @@ using std::string;
 namespace sf
 {
     class RenderTexture;
-    class Music;
     class Texture;
 }
 
@@ -40,6 +39,8 @@ class ResourceMgr;
 class Line;
 class Drawable;
 class ArrayVariable;
+class Text;
+class Music;
 
 typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 
@@ -129,11 +130,11 @@ private:
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void NSBArrayRead(int32_t Depth);
     void NSBSetState(const string& State);
-    void NSBSetAudioLoop(sf::Music* pMusic, bool Loop);
+    void NSBSetAudioLoop(Music* pMusic, bool Loop);
     void NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
-    void NSBDisplayText(const string& unk);
-    void NSBSetAudioState(sf::Music* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
-    void NSBSetAudioRange(sf::Music* pMusic, int32_t Begin, int32_t End);
+    void NSBDisplayText(Text* pText, const string& unk);
+    void NSBSetAudioState(Music* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
+    void NSBSetAudioRange(Music* pMusic, int32_t Begin, int32_t End);
     void NSBSetFontAttributes(const string& Font, int32_t Size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
     void NSBLoadAudio(const string& Type, const string& File);
     void NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
@@ -165,6 +166,7 @@ private:
     template<typename T, typename... A> void NsbAssert(const char* fmt, T value, A... args);
     template<typename T, typename... A> bool NsbAssert(bool expr, const char* fmt, T value, A... args);
 
+    Music* pBGM; // Probably incorrect
     Line* pLine;
     Game* pGame;
     NsbFile* pScript;

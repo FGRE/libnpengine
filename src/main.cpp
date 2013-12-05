@@ -18,7 +18,6 @@
 #include "game.hpp"
 
 #ifdef _WIN32
-#include <iostream>
 #include <fstream>
 #endif
 

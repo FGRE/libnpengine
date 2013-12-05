@@ -64,7 +64,7 @@ void Game::Run()
                             pInterpreter->CallScript(Callbacks[i].Script);
                     if (Event.key.code == sf::Keyboard::F8)
                         pInterpreter->DumpState();
-                    else if (Event.key.code == sf::Keyboard::C)
+                    else if (Event.key.code == sf::Keyboard::LControl)
                         IgnoreText = !IgnoreText;
                     break;
                 case sf::Event::MouseButtonPressed:
