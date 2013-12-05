@@ -19,10 +19,10 @@
 #include "game.hpp"
 #include "resourcemgr.hpp"
 #include "text.hpp"
+#include "music.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
-#include <SFML/Audio/Music.hpp>
 #include <sfeMovie/Movie.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -261,9 +261,19 @@ void NsbInterpreter::NSBSetState(const string& State)
         }
 
     }
-    else if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+    else if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
+    {
         if (State == "Play")
+        {
+            if (pMusic->GetType() == "BGM")
+            {
+                if (pBGM)
+                    pBGM->stop();
+                pBGM = pMusic;
+            }
             pMusic->play();
+        }
+    }
 }
 
 void NsbInterpreter::NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
@@ -308,38 +318,37 @@ void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Op
 
 void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
 {
-    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+    if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
     {
+        if (pBGM == pMusic)
+            pBGM = nullptr;
         pMusic->stop();
         delete pMusic;
     }
 
-    sf::Music* pMusic = new sf::Music;
+    Music* pMusic = new Music(Type);
     uint32_t Size;
     char* pMusicData = sResourceMgr->Read(File, &Size);
 
     if (NsbAssert(pMusicData != nullptr, "Failed to read music %", File) ||
         NsbAssert(pMusic->openFromMemory(pMusicData, Size), "Failed to load music %!", File))
-        CacheHolder<sf::Music>::Write(HandleName, nullptr);
+        CacheHolder<Music>::Write(HandleName, nullptr);
     else
-        CacheHolder<sf::Music>::Write(HandleName, pMusic);
+        CacheHolder<Music>::Write(HandleName, pMusic);
 }
 
-void NsbInterpreter::NSBDisplayText(const string& unk)
+void NsbInterpreter::NSBDisplayText(Text* pText, const string& unk)
 {
-    if (Text* pText = (Text*)CacheHolder<Drawable>::Read(HandleName))
+    if (sf::Music* pMusic = pText->Voices[0].pMusic)
     {
-        if (sf::Music* pMusic = pText->Voices[0].pMusic)
-        {
-            pMusic->play();
-            pText->pCurrentMusic = pMusic;
-        }
-        pGame->SetText(pText);
+        pMusic->play();
+        pText->pCurrentMusic = pMusic;
     }
+    pGame->SetText(pText);
     Pause();
 }
 
-void NsbInterpreter::NSBSetAudioLoop(sf::Music* pMusic, bool Loop)
+void NsbInterpreter::NSBSetAudioLoop(Music* pMusic, bool Loop)
 {
     pMusic->setLoop(Loop);
 }
@@ -351,15 +360,15 @@ void NsbInterpreter::NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_
         WaitTime = Time;
 }
 
-void NsbInterpreter::NSBSetAudioRange(sf::Music* pMusic, int32_t Begin, int32_t End)
+void NsbInterpreter::NSBSetAudioRange(Music* pMusic, int32_t Begin, int32_t End)
 {
     // TODO: Use End as well
     pMusic->setPlayingOffset(sf::milliseconds(Begin));
 }
 
-void NsbInterpreter::NSBSetAudioState(sf::Music* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo)
+void NsbInterpreter::NSBSetAudioState(Music* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo)
 {
-    pMusic->setVolume(Volume / 10);
+    pMusic->setVolume(Volume / 10.f);
 }
 
 void NsbInterpreter::NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait)

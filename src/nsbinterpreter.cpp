@@ -21,13 +21,13 @@
 #include "resourcemgr.hpp"
 #include "nsbmagic.hpp"
 #include "text.hpp"
+#include "music.hpp"
 
 #include <iostream>
 #include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/thread/thread.hpp>
-#include <SFML/Audio/Music.hpp>
 #include <sfeMovie/Movie.hpp>
 
 static const std::string SpecialPos[SPECIAL_POS_NUM] =
@@ -38,6 +38,7 @@ static const std::string SpecialPos[SPECIAL_POS_NUM] =
 };
 
 NsbInterpreter::NsbInterpreter(Game* pGame) :
+pBGM(nullptr),
 pGame(pGame),
 StopInterpreter(false),
 WaitTime(0)
@@ -138,6 +139,7 @@ void NsbInterpreter::ExecuteScript(const string& InitScript)
 void NsbInterpreter::Reset()
 {
     // TODO: Clear CacheHolder and other stuff too
+    pBGM = nullptr;
     Variables.clear();
     Arrays.clear();
     Params.clear();
@@ -173,7 +175,7 @@ void NsbInterpreter::UNK5()
 
 void NsbInterpreter::PlaceholderParam()
 {
-    Params.push_back({"PH", ""});
+    Params.push_back({"@", "@"});
 }
 
 void NsbInterpreter::SetPlaceholder()
@@ -222,7 +224,7 @@ void NsbInterpreter::ParseText()
 
 void NsbInterpreter::SetAudioLoop()
 {
-    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(HandleName))
+    if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
         NSBSetAudioLoop(pMusic, GetParam<bool>(1));
 }
 
@@ -240,19 +242,19 @@ void NsbInterpreter::StartAnimation()
 
 void NsbInterpreter::DisplayText()
 {
-    HandleName = GetParam<string>(0);
-    NSBDisplayText(GetParam<string>(1));
+    if (Text* pText = (Text*)CacheHolder<Drawable>::Read(GetParam<string>(0)))
+        NSBDisplayText(pText, GetParam<string>(1));
 }
 
 void NsbInterpreter::SetAudioState()
 {
-    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(GetParam<string>(0)))
+    if (Music* pMusic = CacheHolder<Music>::Read(GetParam<string>(0)))
         NSBSetAudioState(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
 }
 
 void NsbInterpreter::SetAudioRange()
 {
-    if (sf::Music* pMusic = CacheHolder<sf::Music>::Read(GetParam<string>(0)))
+    if (Music* pMusic = CacheHolder<Music>::Read(GetParam<string>(0)))
         NSBSetAudioRange(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2));
 }
 
@@ -322,7 +324,6 @@ void NsbInterpreter::CreateTexture()
     HandleName = GetParam<string>(0);
     pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this,
                       GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3)));
-
 }
 
 void NsbInterpreter::ClearParams()
@@ -497,21 +498,24 @@ template <class T> void NsbInterpreter::WildcardCall(std::string Handle, T Func)
 
 template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 {
-    // NULL object
     if (Identifier == "@")
         return T();
 
-    // Needs special handling, currently a hack
     if (Identifier[0] == '@')
-        return boost::lexical_cast<T>(string(Identifier, 1, Identifier.size() - 1));
+        return boost::lexical_cast<T>(string(Identifier.c_str() + 1));
 
     auto iter = Variables.find(Identifier);
-
     try
     {
+        // Not a variable but a literal
         if (iter == Variables.end())
             return boost::lexical_cast<T>(Identifier);
-        return boost::lexical_cast<T>(iter->second.Value);
+        // Special variable. I don't know why this works...
+        else if (iter->second.Value[0] == '@')
+            return boost::lexical_cast<T>(string(iter->second.Value.c_str() + 1));
+        // Regular variable
+        else
+            return boost::lexical_cast<T>(iter->second.Value);
     }
     catch (...)
     {
@@ -522,14 +526,11 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 
 template <class T> T NsbInterpreter::GetParam(int32_t Index)
 {
-    if (Params.size() > Index && Params[Index].Type == "PH")
+    if (Params.size() > Index && Params[Index].Type == "@" && !Placeholders.empty())
     {
-        if (!Placeholders.empty())
-        {
-            Variable Var = Placeholders.front();
-            Placeholders.pop();
-            return boost::lexical_cast<T>(Var.Value);
-        }
+        string PHIdentifier = Placeholders.front().Value;
+        Placeholders.pop();
+        return GetVariable<T>(PHIdentifier);
     }
     return GetVariable<T>(pLine->Params[Index]);
 }
