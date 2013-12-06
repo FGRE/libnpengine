@@ -26,7 +26,7 @@ public:
     Music(const std::string& Type) : Type(Type) { }
     const std::string& GetType() const { return Type; }
 private:
-    std::string Type;
+    std::string Type; // TODO: Enumify? Currently unused
 };
 
 #endif
