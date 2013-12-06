@@ -117,8 +117,8 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
             IntColor = 0xFFFFFF;
         else if (Color == "blue")
             IntColor = 0xFF;
-        else
-            NsbAssert(false, "Unknown color: %, ", Color);
+        else if (NsbAssert(false, "Unknown color: %, ", Color))
+            return;
     }
 
     sf::Image ColorImage;
