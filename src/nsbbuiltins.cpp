@@ -303,9 +303,6 @@ void NsbInterpreter::NSBGetMovieTime()
 
 void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
 {
-    if (!pDrawable)
-        return;
-
     if (/*Text* pText = */dynamic_cast<Text*>(pDrawable))
     {
         if (Opacity == 0)

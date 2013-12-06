@@ -248,6 +248,7 @@ void NsbInterpreter::DisplayText()
 
 void NsbInterpreter::SetAudioState()
 {
+    // TODO: Wildcard handling breaks BGM
     if (Music* pMusic = CacheHolder<Music>::Read(GetParam<string>(0)))
         NSBSetAudioState(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
 }
@@ -376,12 +377,16 @@ void NsbInterpreter::SetOpacity()
 {
     HandleName = GetParam<string>(0);
     if (HandleName.back() == '*')
-        WildcardCall(HandleName, std::bind(&NsbInterpreter::NSBSetOpacity, this,
-                     std::placeholders::_1, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                     GetParam<string>(3), GetParam<bool>(4)));
-    else
-        NSBSetOpacity(CacheHolder<Drawable>::Read(HandleName), GetParam<int32_t>(1),
-                      GetParam<int32_t>(2), GetParam<string>(3), GetParam<bool>(4));
+    {
+        WildcardCall<Drawable>(HandleName, [this] (Drawable* pDrawable)
+        {
+            NSBSetOpacity(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
+                          GetParam<string>(3), GetParam<bool>(4));
+        });
+    }
+    else if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+        NSBSetOpacity(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
+                      GetParam<string>(3), GetParam<bool>(4));
 }
 
 void NsbInterpreter::End()
@@ -422,7 +427,7 @@ void NsbInterpreter::Destroy()
     // Hack: Do not destroy * (aka everything)
     if (HandleName.back() == '*' && HandleName.size() != 1)
     {
-        WildcardCall(HandleName, [this](Drawable* pDrawable)
+        WildcardCall<Drawable>(HandleName, [this](Drawable* pDrawable)
         {
             pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
             CacheHolder<Drawable>::Write(HandleName, nullptr);
@@ -487,14 +492,15 @@ void NsbInterpreter::Concat()
     Params.resize(Second);
 }
 
-template <class T> void NsbInterpreter::WildcardCall(std::string Handle, T Func)
+template <class T> void NsbInterpreter::WildcardCall(std::string Handle, std::function<void(T*)> Func)
 {
-    for (auto i = CacheHolder<Drawable>::ReadFirstMatch(Handle);
-         i != CacheHolder<Drawable>::Cache.end();
-         i = CacheHolder<Drawable>::ReadNextMatch(Handle, i))
+    for (auto i = CacheHolder<T>::ReadFirstMatch(Handle);
+         i != CacheHolder<T>::Cache.end();
+         i = CacheHolder<T>::ReadNextMatch(Handle, i))
     {
         HandleName = i->first;
-        Func(i->second);
+        if (i->second)
+            Func(i->second);
     }
 }
 
