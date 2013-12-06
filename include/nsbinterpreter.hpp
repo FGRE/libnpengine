@@ -23,6 +23,7 @@
 #include <map>
 #include <queue>
 #include <vector>
+#include <functional>
 using std::string;
 
 #define SPECIAL_POS_NUM 7
@@ -153,7 +154,7 @@ private:
 
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
-    template <class T> void WildcardCall(std::string Handle, T Func);
+    template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName);
     void SetVariable(const string& Identifier, const Variable& Var);
     sf::Texture* LoadTextureFromFile(const string& File);
