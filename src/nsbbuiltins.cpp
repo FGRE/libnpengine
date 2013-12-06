@@ -242,11 +242,6 @@ void NsbInterpreter::NSBSetState(const string& State)
         {
             if (sfe::Movie* pMovie = dynamic_cast<sfe::Movie*>(pDrawable->Get()))
             {
-                if (pBGM)
-                {
-                    pBGM->stop();
-                    pBGM = nullptr;
-                }
                 pGame->AddDrawable(pDrawable);
                 pMovie->play();
             }
@@ -267,18 +262,8 @@ void NsbInterpreter::NSBSetState(const string& State)
 
     }
     else if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
-    {
         if (State == "Play")
-        {
-            if (pMusic->GetType() == "BGM")
-            {
-                if (pBGM)
-                    pBGM->stop();
-                pBGM = pMusic;
-            }
             pMusic->play();
-        }
-    }
 }
 
 void NsbInterpreter::NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
@@ -322,8 +307,6 @@ void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
 {
     if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
     {
-        if (pBGM == pMusic)
-            pBGM = nullptr;
         pMusic->stop();
         delete pMusic;
     }

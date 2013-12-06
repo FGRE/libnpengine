@@ -167,7 +167,6 @@ private:
     template<typename T, typename... A> void NsbAssert(const char* fmt, T value, A... args);
     template<typename T, typename... A> bool NsbAssert(bool expr, const char* fmt, T value, A... args);
 
-    Music* pBGM; // Probably incorrect
     Line* pLine;
     Game* pGame;
     NsbFile* pScript;

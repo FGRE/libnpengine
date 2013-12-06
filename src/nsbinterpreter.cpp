@@ -38,7 +38,6 @@ static const std::string SpecialPos[SPECIAL_POS_NUM] =
 };
 
 NsbInterpreter::NsbInterpreter(Game* pGame) :
-pBGM(nullptr),
 pGame(pGame),
 StopInterpreter(false),
 WaitTime(0)
@@ -139,7 +138,6 @@ void NsbInterpreter::ExecuteScript(const string& InitScript)
 void NsbInterpreter::Reset()
 {
     // TODO: Clear CacheHolder and other stuff too
-    pBGM = nullptr;
     Variables.clear();
     Arrays.clear();
     Params.clear();
@@ -248,8 +246,15 @@ void NsbInterpreter::DisplayText()
 
 void NsbInterpreter::SetAudioState()
 {
-    // TODO: Wildcard handling breaks BGM
-    if (Music* pMusic = CacheHolder<Music>::Read(GetParam<string>(0)))
+    HandleName = GetParam<string>(0);
+    if (HandleName.back() == '*' && HandleName.size() > 2)
+    {
+        WildcardCall<Music>(HandleName, [this] (Music* pMusic)
+        {
+            NSBSetAudioState(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
+        });
+    }
+    else if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
         NSBSetAudioState(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
 }
 
