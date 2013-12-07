@@ -33,7 +33,7 @@ void NitroscriptMain(NsbInterpreter* pInterpreter)
         ScriptName = "nss/" + pInterpreter->GetVariable<std::string>("$GameName");
         ScriptName.back() = 'b';
         std::cout << "Switching to: " << ScriptName << std::endl;
-    } while(true);
+    } while (true);
 }
 
 extern "C"

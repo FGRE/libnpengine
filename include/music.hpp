@@ -20,13 +20,11 @@
 
 #include <SFML/Audio/Music.hpp>
 
-class Music : public sf::Music
+struct Music : public sf::Music
 {
-public:
-    Music(const std::string& Type) : Type(Type) { }
-    const std::string& GetType() const { return Type; }
-private:
+    std::string File;
     std::string Type; // TODO: Enumify? Currently unused
+    bool Loaded; // For debugging
 };
 
 #endif
