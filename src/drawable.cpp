@@ -97,7 +97,14 @@ Drawable::~Drawable()
 void Drawable::Update()
 {
     if (Lerps[LERP_ZOOM])
-        static_cast<sf::Sprite*>(Get())->setScale(UpdateLerp(LERP_ZOOM));
+    {
+        sf::Sprite* pSprite = static_cast<sf::Sprite*>(Get());
+        pSprite->setScale(UpdateLerp(LERP_ZOOM));
+        pSprite->setPosition(-(sf::Vector2f(pSprite->getGlobalBounds().width,
+                                            pSprite->getGlobalBounds().height) -
+                               sf::Vector2f(pSprite->getLocalBounds().width,
+                                            pSprite->getLocalBounds().height)) / 2.f);
+    }
     if (Lerps[LERP_ANIM])
         static_cast<sf::Sprite*>(Get())->setPosition(UpdateLerp(LERP_ANIM));
     for (uint8_t i = 0; i < FADE_MAX; ++i)
