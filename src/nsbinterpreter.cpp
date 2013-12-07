@@ -526,7 +526,7 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
         // Special variable. I don't know why this works...
         else if (iter->second.Value[0] == '@')
             return boost::lexical_cast<T>(string(iter->second.Value.c_str() + 1));
-        // Regular variable
+        // Regular variable, TODO: Only dereference if $?
         else
             return boost::lexical_cast<T>(iter->second.Value);
     }

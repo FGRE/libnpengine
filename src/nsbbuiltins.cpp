@@ -262,8 +262,27 @@ void NsbInterpreter::NSBSetState(const string& State)
 
     }
     else if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
+    {
         if (State == "Play")
-            pMusic->play();
+        {
+            // **HACK** Need test case for this... **HACK**
+            if (!pMusic->Loaded)
+            {
+                pMusic->Loaded = true;
+                uint32_t Size;
+                char* pMusicData = sResourceMgr->Read(pMusic->File, &Size);
+                if (NsbAssert(pMusicData != nullptr, "Failed to read music %", pMusic->File) ||
+                    NsbAssert(pMusic->openFromMemory(pMusicData, Size), "Failed to load music %!", pMusic->File))
+                {
+                    delete pMusic;
+                    CacheHolder<Music>::Write(HandleName, nullptr);
+                    return;
+                }
+            }
+            if (pMusic->Loaded)
+                pMusic->play();
+        }
+    }
 }
 
 void NsbInterpreter::NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
@@ -311,15 +330,11 @@ void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
         delete pMusic;
     }
 
-    Music* pMusic = new Music(Type);
-    uint32_t Size;
-    char* pMusicData = sResourceMgr->Read(File, &Size);
-
-    if (NsbAssert(pMusicData != nullptr, "Failed to read music %", File) ||
-        NsbAssert(pMusic->openFromMemory(pMusicData, Size), "Failed to load music %!", File))
-        CacheHolder<Music>::Write(HandleName, nullptr);
-    else
-        CacheHolder<Music>::Write(HandleName, pMusic);
+    Music* pMusic = new Music;
+    pMusic->File = File;
+    pMusic->Type = Type;
+    pMusic->Loaded = false;
+    CacheHolder<Music>::Write(HandleName, pMusic);
 }
 
 void NsbInterpreter::NSBDisplayText(Text* pText, const string& unk)
