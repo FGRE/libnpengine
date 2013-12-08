@@ -268,16 +268,13 @@ void NsbInterpreter::NSBSetState(const string& State)
             // **HACK** Need test case for this... **HACK**
             if (!pMusic->Loaded)
             {
-                pMusic->Loaded = true;
                 uint32_t Size;
                 char* pMusicData = sResourceMgr->Read(pMusic->File, &Size);
                 if (NsbAssert(pMusicData != nullptr, "Failed to read music %", pMusic->File) ||
                     NsbAssert(pMusic->openFromMemory(pMusicData, Size), "Failed to load music %!", pMusic->File))
-                {
-                    delete pMusic;
-                    CacheHolder<Music>::Write(HandleName, nullptr);
                     return;
-                }
+                else
+                    pMusic->Loaded = true;
             }
             if (pMusic->Loaded)
                 pMusic->play();
@@ -324,11 +321,10 @@ void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Op
 
 void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
 {
+#ifdef DEBUG
     if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
-    {
-        pMusic->stop();
         delete pMusic;
-    }
+#endif
 
     Music* pMusic = new Music;
     pMusic->File = File;
