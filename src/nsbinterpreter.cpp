@@ -322,7 +322,6 @@ void NsbInterpreter::DrawToTexture()
     if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
         pGame->GLCallback(std::bind(&NsbInterpreter::GLDrawToTexture, this, pTexture,
                          GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3)));
-
 }
 
 void NsbInterpreter::CreateTexture()
