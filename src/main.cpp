@@ -26,8 +26,6 @@ void NitroscriptMain(NsbInterpreter* pInterpreter)
     string ScriptName = "nss/sg00_01.nsb";
     do
     {
-        // TODO: Cleanup smashes heap
-        //pInterpreter->Reset();
         pInterpreter->Start();
         pInterpreter->ExecuteScript(ScriptName);
         ScriptName = "nss/" + pInterpreter->GetVariable<std::string>("$GameName");

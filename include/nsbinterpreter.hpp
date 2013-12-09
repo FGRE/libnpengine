@@ -86,7 +86,6 @@ private:
     void Sleep(int32_t ms);
     void LoadScript(const string& FileName);
     void ExecuteScript(const string& InitScript);
-    void Reset();
 
     // Magic handlers
     void SetParam();
