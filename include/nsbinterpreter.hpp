@@ -129,6 +129,7 @@ private:
     void Zoom();
     void If();
     void LogicalNot();
+    void LogicalEqual();
 
     // Builtins
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
@@ -159,7 +160,7 @@ private:
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName);
-    void JumpTo(uint16_t Magic);
+    bool JumpTo(uint16_t Magic);
     void SetVariable(const string& Identifier, const Variable& Var);
     sf::Texture* LoadTextureFromFile(const string& File);
 
