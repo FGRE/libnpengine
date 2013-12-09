@@ -87,6 +87,7 @@ BranchCondition(true)
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
+    Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
     Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
@@ -163,9 +164,23 @@ void NsbInterpreter::If()
         do
         {
             // TODO: This can be done faster with symbol lookup table (.map)
-            JumpTo(MAGIC_ENDIF);
+            if (!JumpTo(MAGIC_ENDIF))
+                return;
         } while (pLine->Params[0] != Label);
     }
+}
+
+void NsbInterpreter::LogicalEqual()
+{
+    if (NsbAssert(Params[0].Type == Params[1].Type, "Comparing variables of different types for equality"))
+        return;
+
+    if (Params[0].Type == "INT")
+        BranchCondition = (GetVariable<int32_t>(Params[0].Value) ==
+                           GetVariable<int32_t>(Params[1].Value));
+    else
+        BranchCondition = (GetVariable<string>(Params[0].Value) ==
+                           GetVariable<string>(Params[1].Value));
 }
 
 void NsbInterpreter::LogicalNot()
@@ -618,11 +633,18 @@ bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
     return false;
 }
 
-void NsbInterpreter::JumpTo(uint16_t Magic)
+bool NsbInterpreter::JumpTo(uint16_t Magic)
 {
+    // TODO: remove ret val, its a hack for If hack
     while (pLine = pScript->GetNextLine())
+    {
+        if (pLine->Magic == MAGIC_FUNCTION_END)
+            return false;
+
         if (pLine->Magic == Magic)
-            return;
+            return true;
+    }
+    return false;
 }
 
 void NsbInterpreter::WriteTrace(std::ostream& Stream)
