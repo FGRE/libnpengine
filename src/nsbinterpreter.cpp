@@ -138,15 +138,6 @@ void NsbInterpreter::ExecuteScript(const string& InitScript)
     } while (!StopInterpreter);
 }
 
-void NsbInterpreter::Reset()
-{
-    // TODO: Clear CacheHolder and other stuff too
-    Variables.clear();
-    Arrays.clear();
-    Params.clear();
-    ArrayParams.clear();
-}
-
 void NsbInterpreter::Stop()
 {
     StopInterpreter = true;
@@ -171,6 +162,7 @@ void NsbInterpreter::If()
         Label.insert(Label.find_last_of('.') + 1, "end");
         do
         {
+            // TODO: This can be done faster with symbol lookup table (.map)
             JumpTo(MAGIC_ENDIF);
         } while (pLine->Params[0] != Label);
     }
