@@ -130,6 +130,7 @@ private:
     void If();
     void LogicalNot();
     void LogicalEqual();
+    void LogicalNotEqual();
 
     // Builtins
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);

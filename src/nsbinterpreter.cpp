@@ -88,6 +88,7 @@ BranchCondition(true)
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
     Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
+    Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NsbInterpreter::LogicalNotEqual;
     Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
@@ -168,6 +169,20 @@ void NsbInterpreter::If()
                 return;
         } while (pLine->Params[0] != Label);
     }
+}
+
+void NsbInterpreter::LogicalNotEqual()
+{
+    if (NsbAssert(Params[0].Type == Params[1].Type, "Comparing variables of different types for non-equality"))
+        return;
+
+    if (Params[0].Type == "INT")
+        BranchCondition = (GetVariable<int32_t>(Params[0].Value) !=
+                           GetVariable<int32_t>(Params[1].Value));
+    else
+        BranchCondition = (GetVariable<string>(Params[0].Value) !=
+                           GetVariable<string>(Params[1].Value));
+
 }
 
 void NsbInterpreter::LogicalEqual()
