@@ -669,10 +669,7 @@ void NsbInterpreter::Crash()
 void NsbInterpreter::Recover()
 {
     if (pScript)
-    {
         JumpTo(MAGIC_CLEAR_PARAMS);
-        pScript->SetSourceIter(pScript->GetNextLineEntry() - 1);
-    }
 }
 
 // Rename/eliminate pls?
