@@ -88,6 +88,7 @@ private:
     void ExecuteScript(const string& InitScript);
     void Reset();
 
+    // Magic handlers
     void SetParam();
     void Get();
     void DrawToTexture();
@@ -127,7 +128,10 @@ private:
     void CreateArray();
     void UNK5();
     void Zoom();
+    void If();
+    void LogicalNot();
 
+    // Builtins
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void NSBArrayRead(int32_t Depth);
     void NSBSetState(const string& State);
@@ -156,6 +160,7 @@ private:
     template <class T> T GetVariable(const string& Identifier);
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName);
+    void JumpTo(uint16_t Magic);
     void SetVariable(const string& Identifier, const Variable& Var);
     sf::Texture* LoadTextureFromFile(const string& File);
 
@@ -175,6 +180,7 @@ private:
     volatile int32_t WaitTime;
 
     string HandleName;
+    bool BranchCondition;
     std::stack<FuncReturn> Returns;
     std::vector<NsbFile*> LoadedScripts;
     std::map<string, Variable> Variables;
