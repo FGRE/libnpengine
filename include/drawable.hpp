@@ -51,7 +51,7 @@ namespace sf
     class RenderTexture;
 };
 
-struct FadeEffect
+struct FadeEffect // TODO: Also LerpEffect
 {
     FadeEffect() : TargetOpacity(0), Opacity(0), FadeTime(0) { }
     int32_t TargetOpacity;

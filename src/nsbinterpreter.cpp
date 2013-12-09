@@ -40,7 +40,8 @@ static const std::string SpecialPos[SPECIAL_POS_NUM] =
 NsbInterpreter::NsbInterpreter(Game* pGame) :
 pGame(pGame),
 StopInterpreter(false),
-WaitTime(0)
+WaitTime(0),
+BranchCondition(true)
 {
 #ifdef _WIN32
     Text::Initialize("fonts-japanese-gothic.ttf");
@@ -84,6 +85,8 @@ WaitTime(0)
     Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
     Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
+    Builtins[MAGIC_IF] = &NsbInterpreter::If;
+    Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
     Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
@@ -157,6 +160,30 @@ void NsbInterpreter::Pause()
 void NsbInterpreter::Start()
 {
     RunInterpreter = true;
+}
+
+void NsbInterpreter::If()
+{
+    if (!BranchCondition)
+    {
+        string Label = GetParam<string>(0);
+        Label.pop_back();
+        Label.insert(Label.find_last_of('.') + 1, "end");
+        do
+        {
+            JumpTo(MAGIC_ENDIF);
+        } while (pLine->Params[0] != Label);
+    }
+}
+
+void NsbInterpreter::LogicalNot()
+{
+    if (Params.back().Value == "true")
+        BranchCondition = false;
+    else if (Params.back().Value == "false")
+        BranchCondition = true;
+    else
+        std::cout << "LogicalNot(): Applying to " << Params.back().Value << std::endl;
 }
 
 void NsbInterpreter::Zoom()
@@ -336,6 +363,7 @@ void NsbInterpreter::ClearParams()
     Params.clear();
     ArrayParams.clear();
     Placeholders = std::queue<Variable>();
+    BranchCondition = true; // Not sure about this...
 }
 
 void NsbInterpreter::Begin()
@@ -598,10 +626,18 @@ bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
     return false;
 }
 
+void NsbInterpreter::JumpTo(uint16_t Magic)
+{
+    while (pLine = pScript->GetNextLine())
+        if (pLine->Magic == Magic)
+            return;
+}
+
 void NsbInterpreter::WriteTrace(std::ostream& Stream)
 {
     if (!pScript)
         return;
+
     std::stack<FuncReturn> Stack = Returns;
     Stack.push({pScript, pScript->GetNextLineEntry()});
     while (!Stack.empty())
@@ -632,12 +668,11 @@ void NsbInterpreter::Crash()
 
 void NsbInterpreter::Recover()
 {
-    if (!pScript)
-        return;
-    while (Line* pLine = pScript->GetNextLine())
-        if (pLine->Magic == MAGIC_CLEAR_PARAMS)
-            break;
-    pScript->SetSourceIter(pScript->GetNextLineEntry() - 1);
+    if (pScript)
+    {
+        JumpTo(MAGIC_CLEAR_PARAMS);
+        pScript->SetSourceIter(pScript->GetNextLineEntry() - 1);
+    }
 }
 
 // Rename/eliminate pls?

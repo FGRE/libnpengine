@@ -321,10 +321,8 @@ void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Op
 
 void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
 {
-#ifdef DEBUG
     if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
         delete pMusic;
-#endif
 
     Music* pMusic = new Music;
     pMusic->File = File;
