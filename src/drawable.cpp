@@ -106,7 +106,13 @@ void Drawable::Update()
                                             pSprite->getLocalBounds().height)) / 2.f);
     }
     if (Lerps[LERP_ANIM])
-        static_cast<sf::Sprite*>(Get())->setPosition(UpdateLerp(LERP_ANIM));
+    {
+        sf::Vector2f NewPos = UpdateLerp(LERP_ANIM);
+        if (Type == DRAWABLE_TEXTURE)
+            ((sf::Sprite*)pDrawable)->setPosition(NewPos);
+        else if (Type == DRAWABLE_MOVIE)
+            ((sfe::Movie*)pDrawable)->setPosition(NewPos);
+    }
     for (uint8_t i = 0; i < FADE_MAX; ++i)
         UpdateFade(i);
 }
@@ -226,30 +232,17 @@ void Drawable::SetBlur(const std::string& Heaviness)
 void Drawable::Animate(int32_t x, int32_t y, int32_t Time)
 {
     if (Lerps[LERP_ANIM])
-    {
         delete Lerps[LERP_ANIM];
-        Lerps[LERP_ANIM] = nullptr;
-    }
 
-    // TODO: dont handle Time==0 cases...
-    if (Time == 0)
-    {
-        if (Type == DRAWABLE_TEXTURE)
-            ((sf::Sprite*)pDrawable)->setPosition(x, y);
-        else if (Type == DRAWABLE_MOVIE)
-            ((sfe::Movie*)pDrawable)->setPosition(x, y);
-    }
-    else
-    {
-        LerpEffect* pAnimation = new LerpEffect;
-        sf::Vector2f CurrPos = static_cast<sf::Sprite*>(pDrawable)->getPosition();
-        pAnimation->OldX = CurrPos.x;
-        pAnimation->OldY = CurrPos.y;
-        pAnimation->NewX = x;
-        pAnimation->NewY = y;
-        pAnimation->Time = Time;
-        Lerps[LERP_ANIM] = pAnimation;
-    }
+    LerpEffect* pAnimation = new LerpEffect;
+    sf::Vector2f CurrPos = (Type == DRAWABLE_TEXTURE ? static_cast<sf::Sprite*>(pDrawable)->getPosition() :
+                                                       static_cast<sfe::Movie*>(pDrawable)->getPosition());
+    pAnimation->OldX = CurrPos.x;
+    pAnimation->OldY = CurrPos.y;
+    pAnimation->NewX = x;
+    pAnimation->NewY = y;
+    pAnimation->Time = Time;
+    Lerps[LERP_ANIM] = pAnimation;
 }
 
 void Drawable::Zoom(float x, float y, int32_t Time)
