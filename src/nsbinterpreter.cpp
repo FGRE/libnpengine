@@ -52,7 +52,7 @@ BranchCondition(true)
     Builtins.resize(0xFF, nullptr);
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
     Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
-    Builtins[MAGIC_SET_PLACEHOLDER] = &NsbInterpreter::SetPlaceholder;
+    Builtins[MAGIC_NEGATIVE] = &NsbInterpreter::Negative;
     Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::CreateArray;
     Builtins[MAGIC_SET] = &NsbInterpreter::Set;
     Builtins[MAGIC_ARRAY_READ] = &NsbInterpreter::ArrayRead;
@@ -96,6 +96,7 @@ BranchCondition(true)
     Builtins[MAGIC_UNK5] = &NsbInterpreter::UNK5;
     //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
 
+    // TODO: include.nss/herpderp.nss from .map files instead
     LoadScript("nss/function_steinsgate.nsb");
     LoadScript("nss/function.nsb");
     LoadScript("nss/extra_achievements.nsb");
@@ -222,13 +223,12 @@ void NsbInterpreter::UNK5()
 
 void NsbInterpreter::PlaceholderParam()
 {
-    Params.push_back({"@", "@"});
 }
 
-void NsbInterpreter::SetPlaceholder()
+void NsbInterpreter::Negative()
 {
-    Placeholders.push(Params[Params.size() - 1]);
-    Params.resize(Params.size() - 1);
+    Params.back().Value = boost::lexical_cast<string>(-GetVariable<int32_t>(Params.back().Value));
+    Params.back().Type = "WTF";
 }
 
 void NsbInterpreter::CreateArray()
@@ -384,7 +384,6 @@ void NsbInterpreter::ClearParams()
 {
     Params.clear();
     ArrayParams.clear();
-    Placeholders = std::queue<Variable>();
     BranchCondition = true; // Not sure about this...
 }
 
@@ -531,6 +530,7 @@ void NsbInterpreter::Format()
     Params[0].Value = Fmt.str();
 }
 
+// TODO: Rename to Add
 void NsbInterpreter::Concat()
 {
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
@@ -588,12 +588,8 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 
 template <class T> T NsbInterpreter::GetParam(int32_t Index)
 {
-    if (Params.size() > Index && Params[Index].Type == "@" && !Placeholders.empty())
-    {
-        string PHIdentifier = Placeholders.front().Value;
-        Placeholders.pop();
-        return GetVariable<T>(PHIdentifier);
-    }
+    if (Params.size() > Index && Params[Index].Type == "WTF")
+        return GetVariable<T>(Params[Index].Value);
     return GetVariable<T>(pLine->Params[Index]);
 }
 

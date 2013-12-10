@@ -122,7 +122,7 @@ private:
     void RegisterCallback();
     void ArrayRead();
     void Set();
-    void SetPlaceholder();
+    void Negative();
     void PlaceholderParam();
     void CreateArray();
     void UNK5();
@@ -188,7 +188,6 @@ private:
     std::map<string, ArrayVariable> Arrays;
     std::vector<Variable> Params;
     std::vector<ArrayVariable*> ArrayParams;
-    std::queue<Variable> Placeholders;
     std::vector<BuiltinFunc> Builtins;
 };
 
