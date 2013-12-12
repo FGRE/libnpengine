@@ -87,9 +87,9 @@ pBlur(nullptr)
 Drawable::~Drawable()
 {
     if (Type == DRAWABLE_MOVIE)
-        static_cast<sfe::Movie*>(pDrawable)->stop();
+        ToMovie()->stop();
     else if (Type == DRAWABLE_TEXTURE)
-        delete static_cast<sf::Sprite*>(pDrawable)->getTexture();
+        delete ToSprite()->getTexture();
     delete pDrawable;
     delete pMask;
 }
@@ -98,20 +98,19 @@ void Drawable::Update()
 {
     if (Lerps[LERP_ZOOM])
     {
-        sf::Sprite* pSprite = static_cast<sf::Sprite*>(Get());
-        pSprite->setScale(UpdateLerp(LERP_ZOOM));
-        pSprite->setPosition(-(sf::Vector2f(pSprite->getGlobalBounds().width,
-                                            pSprite->getGlobalBounds().height) -
-                               sf::Vector2f(pSprite->getLocalBounds().width,
-                                            pSprite->getLocalBounds().height)) / 2.f);
+        ToSprite()->setScale(UpdateLerp(LERP_ZOOM));
+        ToSprite()->setPosition(-(sf::Vector2f(ToSprite()->getGlobalBounds().width,
+                                               ToSprite()->getGlobalBounds().height) -
+                                  sf::Vector2f(ToSprite()->getLocalBounds().width,
+                                               ToSprite()->getLocalBounds().height)) / 2.f);
     }
     if (Lerps[LERP_ANIM])
     {
         sf::Vector2f NewPos = UpdateLerp(LERP_ANIM);
         if (Type == DRAWABLE_TEXTURE)
-            ((sf::Sprite*)pDrawable)->setPosition(NewPos);
+            ToSprite()->setPosition(NewPos);
         else if (Type == DRAWABLE_MOVIE)
-            ((sfe::Movie*)pDrawable)->setPosition(NewPos);
+            ToMovie()->setPosition(NewPos);
     }
     for (uint8_t i = 0; i < FADE_MAX; ++i)
         UpdateFade(i);
@@ -181,15 +180,12 @@ void Drawable::UpdateFade(uint8_t Index)
     if (Index == FADE_MASK)
         Shader.setParameter("Alpha", Alpha);
     else
-        SetAlpha(Alpha);
-}
-
-void Drawable::SetAlpha(sf::Uint8 Alpha)
-{
-    if (Type == DRAWABLE_TEXTURE)
-        static_cast<sf::Sprite*>(pDrawable)->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
-    else if (Type == DRAWABLE_MOVIE)
-        static_cast<sfe::Movie*>(pDrawable)->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
+    {
+        if (Type == DRAWABLE_TEXTURE)
+            ToSprite()->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
+        else if (Type == DRAWABLE_MOVIE)
+            ToMovie()->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
+    }
 }
 
 void Drawable::SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index)
@@ -229,40 +225,23 @@ void Drawable::SetBlur(const std::string& Heaviness)
     Shader.setParameter("Texture", sf::Shader::CurrentTexture);
 }
 
-void Drawable::Animate(int32_t x, int32_t y, int32_t Time)
+void Drawable::AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Time)
 {
-    if (Lerps[LERP_ANIM])
-        delete Lerps[LERP_ANIM];
+    if (Lerps[EffIndex])
+        delete Lerps[EffIndex];
 
-    LerpEffect* pAnimation = new LerpEffect;
-    sf::Vector2f CurrPos = (Type == DRAWABLE_TEXTURE ? static_cast<sf::Sprite*>(pDrawable)->getPosition() :
-                                                       static_cast<sfe::Movie*>(pDrawable)->getPosition());
-    pAnimation->OldX = CurrPos.x;
-    pAnimation->OldY = CurrPos.y;
-    pAnimation->NewX = x;
-    pAnimation->NewY = y;
-    pAnimation->Time = Time;
-    Lerps[LERP_ANIM] = pAnimation;
-}
+    LerpEffect* pEffect = new LerpEffect;
 
-void Drawable::Zoom(float x, float y, int32_t Time)
-{
-    LerpEffect* pZoom = new LerpEffect;
-    sf::Vector2f CurrScale = static_cast<sf::Sprite*>(pDrawable)->getScale();
-    pZoom->OldX = CurrScale.x;
-    pZoom->OldY = CurrScale.y;
-    pZoom->NewX = x / 1000.0f;
-    pZoom->NewY = y / 1000.0f;
-    pZoom->Time = Time;
-    Lerps[LERP_ZOOM] = pZoom;
-}
+    sf::Vector2f CurrVal;
+    if (EffIndex == LERP_ANIM)
+        CurrVal = (Type == DRAWABLE_TEXTURE ? ToSprite()->getPosition() : ToMovie()->getPosition());
+    else
+        CurrVal = ToSprite()->getScale();
 
-int32_t Drawable::GetPriority() const
-{
-    return Priority;
-}
-
-sf::Drawable* Drawable::Get() const
-{
-    return pDrawable;
+    pEffect->OldX = CurrVal.x;
+    pEffect->OldY = CurrVal.y;
+    pEffect->NewX = x;
+    pEffect->NewY = y;
+    pEffect->Time = Time;
+    Lerps[EffIndex] = pEffect;
 }

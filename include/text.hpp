@@ -32,7 +32,7 @@ struct Voice
     sf::String String;
 };
 
-struct Text : sf::Text, Drawable
+struct Text : Drawable
 {
     Text(const std::string& XML);
     ~Text();
@@ -42,7 +42,6 @@ struct Text : sf::Text, Drawable
     size_t LineIter;
 
     void StopMusic();
-    virtual void Animate(int32_t x, int32_t y, int32_t Time);
     sf::Music* pCurrentMusic;
     static void Initialize(const std::string& FontFile);
     static sf::Font Font;

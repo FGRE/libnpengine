@@ -88,8 +88,8 @@ pCurrentMusic(nullptr)
         }
     }
 
-    setFont(Font);
-    setString(Voices[0].String);
+    ToText()->setFont(Font);
+    ToText()->setString(Voices[0].String);
 }
 
 Text::~Text()
@@ -109,7 +109,7 @@ bool Text::NextLine()
     if (++LineIter >= Voices.size())
         return false;
 
-    setString(Voices[LineIter].String);
+    ToText()->setString(Voices[LineIter].String);
     if (sf::Music* pMusic = Voices[LineIter].pMusic)
     {
         StopMusic();
@@ -122,10 +122,4 @@ bool Text::NextLine()
 void Text::Initialize(const std::string& FontFile)
 {
     assert(Font.loadFromFile(FontFile));
-}
-
-void Text::Animate(int32_t x, int32_t y, int32_t Time)
-{
-    assert(Time == 0);
-    setPosition(x, y);
 }
