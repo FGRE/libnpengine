@@ -85,7 +85,7 @@ void Game::Run()
             ++d;
         }
         if (pText)
-            draw(*pText);
+            draw(*pText->ToText());
         display();
 
         GLMutex.lock();

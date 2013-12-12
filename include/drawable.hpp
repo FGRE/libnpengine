@@ -45,10 +45,17 @@ enum
 
 namespace sf
 {
+    class Sprite;
+    class Text;
     class Drawable;
     class Texture;
     class RenderWindow;
     class RenderTexture;
+};
+
+namespace sfe
+{
+    class Movie;
 };
 
 struct FadeEffect // TODO: Also LerpEffect
@@ -78,13 +85,15 @@ public:
 
     void Draw(sf::RenderWindow* pWindow);
     void Update();
-    void Zoom(float x, float y, int32_t Time);
     void SetBlur(const std::string& Heaviness);
     void SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index);
     void SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time);
-    virtual void Animate(int32_t x, int32_t y, int32_t Time);
-    int32_t GetPriority() const;
-    sf::Drawable* Get() const;
+    void AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Time);
+
+    int32_t GetPriority() const { return Priority; }
+    sf::Sprite* ToSprite() const { return (sf::Sprite*)pDrawable; }
+    sf::Text* ToText() const { return (sf::Text*)pDrawable; }
+    sfe::Movie* ToMovie() const { return (sfe::Movie*)pDrawable; }
 
     uint8_t Type;
 protected:
@@ -95,7 +104,6 @@ protected:
     int32_t Priority;
 private:
     void UpdateFade(uint8_t Index);
-    void SetAlpha(sf::Uint8 Alpha);
     sf::Shader Shader;
     sf::Texture* pMask;
     sf::RenderTexture* pBlur;

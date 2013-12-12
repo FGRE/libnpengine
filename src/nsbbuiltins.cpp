@@ -240,22 +240,22 @@ void NsbInterpreter::NSBSetState(const string& State)
     {
         if (State == "Play")
         {
-            if (sfe::Movie* pMovie = dynamic_cast<sfe::Movie*>(pDrawable->Get()))
+            if (pDrawable->Type == DRAWABLE_MOVIE)
             {
                 pGame->AddDrawable(pDrawable);
-                pMovie->play();
+                pDrawable->ToMovie()->play();
             }
             else
-                NsbAssert(false, "Attempted to Play non-movie object %", HandleName);
+                NsbAssert(false, "Attempted to Play non-movie drawable %", HandleName);
         }
         else if (State == "Smoothing")
         {
             if (NsbAssert(pDrawable->Type == DRAWABLE_TEXTURE, "Smoothing non-texture drawable %", HandleName))
                 return;
+
             pGame->GLCallback([pDrawable]()
             {
-                sf::Sprite* pSprite = static_cast<sf::Sprite*>(pDrawable->Get());
-                sf::Texture* pTexture = const_cast<sf::Texture*>(pSprite->getTexture());
+                sf::Texture* pTexture = const_cast<sf::Texture*>(pDrawable->ToSprite()->getTexture());
                 pTexture->setSmooth(true);
             });
         }
@@ -293,10 +293,11 @@ void NsbInterpreter::NSBGetMovieTime()
     Params.clear();
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
-        if (sfe::Movie* pMovie = dynamic_cast<sfe::Movie*>(pDrawable->Get()))
-            Params.push_back({"INT", boost::lexical_cast<string>(pMovie->getDuration().asMilliseconds())});
-        else
-            std::cout << "Failed to get movie duration because Drawable is not movie" << std::endl;
+        if (NsbAssert(pDrawable->Type == DRAWABLE_MOVIE, "Failed to get movie duration because Drawable is not movie"))
+            return;
+
+        sfe::Movie* pMovie = pDrawable->ToMovie();
+        Params.push_back({"INT", boost::lexical_cast<string>(pMovie->getDuration().asMilliseconds())});
     }
     else
         std::cout << "Failed to get movie time because there is no Drawable " << HandleName << std::endl;
@@ -304,13 +305,13 @@ void NsbInterpreter::NSBGetMovieTime()
 
 void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
 {
-    if (/*Text* pText = */dynamic_cast<Text*>(pDrawable))
+    if (pDrawable->Type == DRAWABLE_TEXT)
     {
-        if (Opacity == 0)
-        {
-            pGame->GLCallback(std::bind(&Game::ClearText, pGame));
-            CacheHolder<Drawable>::Write(HandleName, nullptr); // hack: see Game::ClearText
-        }
+        if (NsbAssert(Opacity == 0, "There is no support for text fade out effect"))
+            return;
+
+        pGame->GLCallback(std::bind(&Game::ClearText, pGame));
+        CacheHolder<Drawable>::Write(HandleName, nullptr); // hack: see Game::ClearText
     }
     else
         pDrawable->SetOpacity(Opacity, Time, FADE_TEX);
@@ -349,7 +350,14 @@ void NsbInterpreter::NSBSetAudioLoop(Music* pMusic, bool Loop)
 
 void NsbInterpreter::NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait)
 {
-    pDrawable->Animate(x, y, Time);
+    if (pDrawable->Type == DRAWABLE_TEXT)
+    {
+        if (!NsbAssert(Time == 0, "There is currently no support for moving text"))
+            pDrawable->ToText()->setPosition(x, y);
+    }
+    else
+        pDrawable->AddLerpEffect(LERP_ANIM, x, y, Time);
+
     if (Wait)
         WaitTime = Time;
 }
@@ -367,7 +375,7 @@ void NsbInterpreter::NSBSetAudioState(Music* pMusic, int32_t NumSeconds, int32_t
 
 void NsbInterpreter::NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait)
 {
-    pDrawable->Zoom(x, y, Time);
+    pDrawable->AddLerpEffect(LERP_ZOOM, x / 1000.0f, y / 1000.0f, Time);
     if (Wait)
         WaitTime = Time;
 }
