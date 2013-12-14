@@ -69,8 +69,7 @@ struct FadeEffect // TODO: Also LerpEffect
 
 struct LerpEffect
 {
-    float OldX;
-    float OldY;
+    sf::Vector2f Old;
     float NewX;
     float NewY;
     int32_t Time;

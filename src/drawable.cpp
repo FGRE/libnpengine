@@ -104,6 +104,7 @@ void Drawable::Update()
                                   sf::Vector2f(ToSprite()->getLocalBounds().width,
                                                ToSprite()->getLocalBounds().height)) / 2.f);
     }
+
     if (Lerps[LERP_ANIM])
     {
         sf::Vector2f NewPos = UpdateLerp(LERP_ANIM);
@@ -112,6 +113,7 @@ void Drawable::Update()
         else if (Type == DRAWABLE_MOVIE)
             ToMovie()->setPosition(NewPos);
     }
+
     for (uint8_t i = 0; i < FADE_MAX; ++i)
         UpdateFade(i);
 }
@@ -124,15 +126,14 @@ sf::Vector2f Drawable::UpdateLerp(uint8_t i)
     if (Progress > 1.0f)
         Progress = 1.0f;
 
-    float NewX = Lerp(pLerp->OldX, pLerp->NewX, Progress);
-    float NewY = Lerp(pLerp->OldY, pLerp->NewY, Progress);
-
     if (pLerp->Clock.getElapsedTime().asMilliseconds() >= pLerp->Time)
     {
         delete pLerp;
         Lerps[i] = nullptr;
     }
-    return sf::Vector2f(NewX, NewY);
+
+    return sf::Vector2f(Lerp(pLerp->Old.x, pLerp->NewX, Progress),
+                        Lerp(pLerp->Old.y, pLerp->NewY, Progress));
 }
 
 void Drawable::Draw(sf::RenderWindow* pWindow)
@@ -232,14 +233,16 @@ void Drawable::AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Tim
 
     LerpEffect* pEffect = new LerpEffect;
 
-    sf::Vector2f CurrVal;
     if (EffIndex == LERP_ANIM)
-        CurrVal = (Type == DRAWABLE_TEXTURE ? ToSprite()->getPosition() : ToMovie()->getPosition());
+    {
+        if (Type == DRAWABLE_TEXTURE)
+            pEffect->Old = ToSprite()->getPosition();
+        else if (Type == DRAWABLE_MOVIE)
+            pEffect->Old = ToMovie()->getPosition();
+    }
     else
-        CurrVal = ToSprite()->getScale();
+        pEffect->Old = ToSprite()->getScale();
 
-    pEffect->OldX = CurrVal.x;
-    pEffect->OldY = CurrVal.y;
     pEffect->NewX = x;
     pEffect->NewY = y;
     pEffect->Time = Time;
