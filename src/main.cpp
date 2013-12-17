@@ -36,6 +36,9 @@ void NitroscriptMain(NsbInterpreter* pInterpreter)
 
 extern "C"
 {
+
+void gst_init (int* argc, char** argv[]);
+
 int
 #ifdef _WIN32
 __declspec(dllexport)
@@ -47,6 +50,7 @@ NitroplusMain()
     ofstream log("log.txt");
     cout.rdbuf(log.rdbuf());
 #endif
+    gst_init(nullptr, nullptr);
     // Note that scripts call .nss files, NOT nsb. This is a hack
     Game* pGame = new Game({"cg.npa", "nss.npa", "voice.npa", "sound.npa"});
     pGame->Run();

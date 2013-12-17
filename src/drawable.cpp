@@ -17,7 +17,6 @@
  * */
 #include "drawable.hpp"
 
-#include <sfeMovie/Movie.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
@@ -86,9 +85,7 @@ pBlur(nullptr)
 
 Drawable::~Drawable()
 {
-    if (Type == DRAWABLE_MOVIE)
-        ToMovie()->stop();
-    else if (Type == DRAWABLE_TEXTURE)
+    if (Type == DRAWABLE_TEXTURE)
         delete ToSprite()->getTexture();
     delete pDrawable;
     delete pMask;
@@ -110,8 +107,6 @@ void Drawable::Update()
         sf::Vector2f NewPos = UpdateLerp(LERP_ANIM);
         if (Type == DRAWABLE_TEXTURE)
             ToSprite()->setPosition(NewPos);
-        else if (Type == DRAWABLE_MOVIE)
-            ToMovie()->setPosition(NewPos);
     }
 
     for (uint8_t i = 0; i < FADE_MAX; ++i)
@@ -184,8 +179,6 @@ void Drawable::UpdateFade(uint8_t Index)
     {
         if (Type == DRAWABLE_TEXTURE)
             ToSprite()->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
-        else if (Type == DRAWABLE_MOVIE)
-            ToMovie()->setColor(sf::Color(0xFF, 0xFF, 0xFF, Alpha));
     }
 }
 
@@ -237,8 +230,6 @@ void Drawable::AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Tim
     {
         if (Type == DRAWABLE_TEXTURE)
             pEffect->Old = ToSprite()->getPosition();
-        else if (Type == DRAWABLE_MOVIE)
-            pEffect->Old = ToMovie()->getPosition();
     }
     else
         pEffect->Old = ToSprite()->getScale();

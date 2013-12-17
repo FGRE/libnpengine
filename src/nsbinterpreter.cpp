@@ -21,14 +21,13 @@
 #include "resourcemgr.hpp"
 #include "nsbmagic.hpp"
 #include "text.hpp"
-#include "music.hpp"
+#include "playable.hpp"
 
 #include <iostream>
 #include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/thread/thread.hpp>
-#include <sfeMovie/Movie.hpp>
 
 static const std::string SpecialPos[SPECIAL_POS_NUM] =
 {
@@ -80,7 +79,7 @@ BranchCondition(true)
     Builtins[MAGIC_CREATE_COLOR] = &NsbInterpreter::CreateColor;
     Builtins[MAGIC_LOAD_TEXTURE] = &NsbInterpreter::LoadTexture;
     Builtins[MAGIC_CALL] = &NsbInterpreter::Call;
-    Builtins[MAGIC_CONCAT] = &NsbInterpreter::Concat;
+    Builtins[MAGIC_ADD] = &NsbInterpreter::Add;
     Builtins[MAGIC_DESTROY] = &NsbInterpreter::Destroy;
     Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
     Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
@@ -271,7 +270,7 @@ void NsbInterpreter::ParseText()
 
 void NsbInterpreter::SetAudioLoop()
 {
-    if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
+    if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
         NSBSetAudioLoop(pMusic, GetParam<bool>(1));
 }
 
@@ -298,18 +297,18 @@ void NsbInterpreter::SetAudioState()
     HandleName = GetParam<string>(0);
     if (HandleName.back() == '*' && HandleName.size() > 2)
     {
-        WildcardCall<Music>(HandleName, [this] (Music* pMusic)
+        WildcardCall<Playable>(HandleName, [this] (Playable* pMusic)
         {
             NSBSetAudioState(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
         });
     }
-    else if (Music* pMusic = CacheHolder<Music>::Read(HandleName))
+    else if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
         NSBSetAudioState(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
 }
 
 void NsbInterpreter::SetAudioRange()
 {
-    if (Music* pMusic = CacheHolder<Music>::Read(GetParam<string>(0)))
+    if (Playable* pMusic = CacheHolder<Playable>::Read(GetParam<string>(0)))
         NSBSetAudioRange(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2));
 }
 
@@ -485,6 +484,12 @@ void NsbInterpreter::Destroy()
             pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
             CacheHolder<Drawable>::Write(HandleName, nullptr);
         });
+        WildcardCall<Playable>(HandleName, [this](Playable* pMovie)
+        {
+            delete pMovie;
+            pGame->AddDrawable((Movie*)nullptr);
+            CacheHolder<Playable>::Write(HandleName, nullptr);
+        });
     }
     else
     {
@@ -530,8 +535,7 @@ void NsbInterpreter::Format()
     Params[0].Value = Fmt.str();
 }
 
-// TODO: Rename to Add
-void NsbInterpreter::Concat()
+void NsbInterpreter::Add()
 {
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
     NsbAssert(Params[First].Type == Params[Second].Type,

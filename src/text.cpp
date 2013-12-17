@@ -17,12 +17,12 @@
  * */
 #include "text.hpp"
 #include "resourcemgr.hpp"
+#include "playable.hpp"
 
 #include <cassert>
 #include <sstream>
 #include <string>
 #include <memory>
-#include <SFML/Audio/Music.hpp>
 
 sf::Font Text::Font;
 
@@ -33,7 +33,7 @@ pCurrentMusic(nullptr)
 {
     std::istringstream ss(XML);
     std::string TextLine;
-    sf::Music* pMusic = nullptr;
+    Playable* pMusic = nullptr;
 
     while (std::getline(ss, TextLine))
     {
@@ -59,12 +59,11 @@ pCurrentMusic(nullptr)
                         break;
                     case 2: // voice/MAY_0001
                     {
-                        // TODO: Move to resourcemgr and reuse in interpreter
-                        pMusic = new sf::Music;
+                        pMusic = new Playable(0);
                         uint32_t Size;
                         char* pMusicData = sResourceMgr->Read(Attr + ".ogg", &Size);
                         assert(pMusicData);
-                        pMusic->openFromMemory(pMusicData, Size);
+                        // TODO
                         break;
                     }
                     case 3: // on
@@ -101,7 +100,7 @@ Text::~Text()
 void Text::StopMusic()
 {
     if (pCurrentMusic)
-        pCurrentMusic->stop();
+        pCurrentMusic->Stop();
 }
 
 bool Text::NextLine()
@@ -110,10 +109,10 @@ bool Text::NextLine()
         return false;
 
     ToText()->setString(Voices[LineIter].String);
-    if (sf::Music* pMusic = Voices[LineIter].pMusic)
+    if (Playable* pMusic = Voices[LineIter].pMusic)
     {
         StopMusic();
-        pMusic->play();
+        pMusic->Play();
         pCurrentMusic = pMusic;
     }
     return true;

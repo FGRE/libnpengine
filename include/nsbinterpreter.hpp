@@ -41,7 +41,7 @@ class Line;
 class Drawable;
 class ArrayVariable;
 class Text;
-class Music;
+class Playable;
 
 typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 
@@ -98,7 +98,7 @@ private:
     void LoadTexture();
     void Destroy();
     void Call();
-    void Concat();
+    void Add();
     void Format();
     void BindIdentifier();
     void LoadMovie();
@@ -136,11 +136,11 @@ private:
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void NSBArrayRead(int32_t Depth);
     void NSBSetState(const string& State);
-    void NSBSetAudioLoop(Music* pMusic, bool Loop);
+    void NSBSetAudioLoop(Playable* pMusic, bool Loop);
     void NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void NSBDisplayText(Text* pText, const string& unk);
-    void NSBSetAudioState(Music* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
-    void NSBSetAudioRange(Music* pMusic, int32_t Begin, int32_t End);
+    void NSBSetAudioState(Playable* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
+    void NSBSetAudioRange(Playable* pMusic, int32_t Begin, int32_t End);
     void NSBSetFontAttributes(const string& Font, int32_t Size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
     void NSBLoadAudio(const string& Type, const string& File);
     void NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
@@ -150,7 +150,7 @@ private:
     void GLDestroy(Drawable* pDrawable);
     void GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
     void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
-    void GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool unk0, const string& File, bool unk1);
+    void GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio);
     void GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait);
     void GLCreateTexture(int32_t Width, int32_t Height, const string& Color);
     void GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File);

@@ -31,6 +31,7 @@
 
 class Text;
 class Drawable;
+class Movie;
 
 struct Callback
 {
@@ -51,14 +52,16 @@ private:
     void ClearText();
     void SetText(Text* pText);
     void AddDrawable(Drawable* pDrawable);
+    void AddDrawable(Movie* pMovie);
     void RemoveDrawable(Drawable* pDrawable);
     void RegisterCallback(sf::Keyboard::Key Key, const std::string& Script);
     void GLCallback(const std::function<void()>& Func);
 
     boost::mutex GLMutex;
-    std::queue<std::function<void()>> GLCallbacks; // TODO: Only one is actually possible in practice
+    std::queue<std::function<void()>> GLCallbacks; // TODO: Only one is (probably?) actually possible in practice
     std::vector<Callback> Callbacks;
     std::list<Drawable*> Drawables;
+    Movie* pMovie;
     bool IsRunning;
     bool IgnoreText;
     Text* pText;

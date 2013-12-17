@@ -15,16 +15,34 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef MUSIC_HPP
-#define MUSIC_HPP
+#ifndef PLAYABLE_HPP
+#define PLAYABLE_HPP
 
-#include <SFML/Audio/Music.hpp>
+#include <gst/gst.h>
 
-struct Music : public sf::Music
+class Playable
 {
-    std::string File;
-    std::string Type; // TODO: Enumify? Currently unused
-    bool Loaded; // For debugging
+    friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
+public:
+    Playable(const char* FileName);
+    ~Playable();
+
+    void Update();
+    void SetVolume(double Volume);
+    void SetRange(int32_t Begin, int32_t End);
+    void SetLoop(bool Loop);
+    void Stop();
+    void Play();
+    int32_t GetDuration();
+
+    void InitAudio();
+protected:
+    GstElement* Pipeline;
+
+private:
+    GstElement* AudioBin;
+    bool Loop;
+    int32_t Begin, End;
 };
 
 #endif

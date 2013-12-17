@@ -1,0 +1,121 @@
+/* 
+ * libnpengine: Nitroplus script interpreter
+ * Copyright (C) 2013 Mislav Blažević <krofnica996@gmail.com>
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * */
+#include "movie.hpp"
+#include <boost/thread/thread.hpp>
+#include <boost/chrono.hpp>
+
+void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
+{
+    GstCaps* Caps = gst_pad_query_caps(SourcePad, NULL);
+    GstStructure* Struct = gst_caps_get_structure(Caps, 0);
+
+    GstPad* SinkPad;
+    if (g_strrstr(gst_structure_get_name(Struct), "video"))
+        SinkPad = gst_element_get_static_pad(((Movie*)Data)->VideoBin, "sink");
+    else if (g_strrstr(gst_structure_get_name(Struct), "audio"))
+        SinkPad = gst_element_get_static_pad(((Playable*)Data)->AudioBin, "sink");
+    else
+        SinkPad = nullptr;
+
+    if (SinkPad && !GST_PAD_IS_LINKED(SinkPad))
+        gst_pad_link(SourcePad, SinkPad);
+
+    g_object_unref(SinkPad);
+    gst_caps_unref(Caps);
+}
+
+Playable::Playable(const char* FileName) :
+Loop(false),
+AudioBin(nullptr),
+Begin(0),
+End(0)
+{
+    Pipeline = gst_pipeline_new("pipeline");
+    GstElement* Filesrc = gst_element_factory_make("filesrc", "source");
+    g_object_set(G_OBJECT(Filesrc), "location", FileName, NULL);
+    GstElement* Decodebin = gst_element_factory_make("decodebin", "decoder");
+    g_signal_connect(Decodebin, "pad-added", G_CALLBACK(LinkPad), this);
+    gst_bin_add_many(GST_BIN(Pipeline), Filesrc, Decodebin, NULL);
+    gst_element_link(Filesrc, Decodebin);
+}
+
+Playable::~Playable()
+{
+    Stop();
+}
+
+void Playable::InitAudio()
+{
+    AudioBin = gst_bin_new("audiobin");
+    GstElement* AudioConv = gst_element_factory_make("audioconvert", "aconv");
+    GstPad* AudioPad = gst_element_get_static_pad(AudioConv, "sink");
+    GstElement* AudioSink = gst_element_factory_make("autoaudiosink", "sink");
+    gst_bin_add_many(GST_BIN(AudioBin), AudioConv, AudioSink, NULL);
+    gst_element_link(AudioConv, AudioSink);
+    gst_element_add_pad(AudioBin, gst_ghost_pad_new("sink", AudioPad));
+    gst_object_unref(AudioPad);
+    gst_bin_add(GST_BIN(Pipeline), AudioBin);
+}
+
+int32_t Playable::GetDuration()
+{
+    gint64 Length;
+    gst_element_get_state(Pipeline, NULL, NULL, GST_CLOCK_TIME_NONE);
+    gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length);
+    return Length / 1000000;
+}
+
+void Playable::SetLoop(bool Loop)
+{
+    this->Loop = Loop;
+}
+
+void Playable::Stop()
+{
+    gst_element_set_state(Pipeline, GST_STATE_NULL);
+    gst_object_unref(GST_OBJECT(Pipeline));
+}
+
+void Playable::Play()
+{
+    gst_element_set_state(Pipeline, GST_STATE_PLAYING);
+}
+
+void Playable::Update()
+{
+    gint64 Position, Length;
+    if (!gst_element_query_position(Pipeline, GST_FORMAT_TIME, &Position) ||
+        !gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length))
+        return;
+
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+    g_print ("Time: %u / %u\r", Position / 1000000, Length / 1000000);
+    if (Position >= Length && Loop)
+        gst_element_seek(Pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
+                         GST_SEEK_TYPE_SET, Begin, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
+}
+
+void Playable::SetVolume(double Volume)
+{
+}
+
+void Playable::SetRange(int32_t Begin, int32_t End)
+{
+    this->Begin = Begin;
+    this->End = End;
+}
