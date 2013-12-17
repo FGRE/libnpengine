@@ -15,33 +15,26 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef TEXT_HPP
-#define TEXT_HPP
+#ifndef MOVIE_HPP
+#define MOVIE_HPP
 
-#include <SFML/Graphics/Text.hpp>
-#include "drawable.hpp"
+#include <string>
+#include <SFML/Window/WindowHandle.hpp>
+#include <SFML/Graphics/Rect.hpp>
+#include "playable.hpp"
 
-class Playable;
-
-struct Voice
+class Movie : public Playable
 {
-    Playable* pMusic;
-    sf::String String;
-};
+    friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
+public:
+    Movie(const std::string& FileName, sf::WindowHandle Handle, int32_t Priority, bool Alpha, bool Audio);
+    ~Movie();
 
-struct Text : Drawable
-{
-    Text(const std::string& XML);
-    ~Text();
-
-    bool NextLine();
-    std::vector<Voice> Voices;
-    size_t LineIter;
-
-    void StopMusic();
-    Playable* pCurrentMusic;
-    static void Initialize(const std::string& FontFile);
-    static sf::Font Font;
+    int32_t GetPriority() { return Priority; }
+    void SetBox(sf::IntRect Box);
+private:
+    int32_t Priority;
+    GstElement* VideoBin;
 };
 
 #endif

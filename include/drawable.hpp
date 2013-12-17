@@ -53,11 +53,6 @@ namespace sf
     class RenderTexture;
 };
 
-namespace sfe
-{
-    class Movie;
-};
-
 struct FadeEffect // TODO: Also LerpEffect
 {
     FadeEffect() : TargetOpacity(0), Opacity(0), FadeTime(0) { }
@@ -92,7 +87,6 @@ public:
     int32_t GetPriority() const { return Priority; }
     sf::Sprite* ToSprite() const { return (sf::Sprite*)pDrawable; }
     sf::Text* ToText() const { return (sf::Text*)pDrawable; }
-    sfe::Movie* ToMovie() const { return (sfe::Movie*)pDrawable; }
 
     uint8_t Type;
 protected:

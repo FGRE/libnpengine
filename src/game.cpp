@@ -19,9 +19,9 @@
 #include "resourcemgr.hpp"
 #include "drawable.hpp"
 #include "text.hpp"
+#include "movie.hpp"
 
 #include <SFML/Window/Event.hpp>
-#include <sfeMovie/Movie.hpp>
 #include <boost/thread/thread.hpp>
 
 void NitroscriptMain(NsbInterpreter* pInterpreter);
@@ -30,7 +30,8 @@ Game::Game(const std::vector<std::string>& AchieveFileNames) :
 sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "steins-gate", sf::Style::Close),
 IsRunning(true),
 IgnoreText(false),
-pText(nullptr)
+pText(nullptr),
+pMovie(nullptr)
 {
     setFramerateLimit(60);
     sf::Vector2i WindowPos(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height);
@@ -86,7 +87,14 @@ void Game::Run()
         }
         if (pText)
             draw(*pText->ToText());
-        display();
+        if (pMovie)
+        {
+            pushGLStates();
+            pMovie->Update();
+            popGLStates();
+        }
+        else
+            display();
 
         GLMutex.lock();
         while (!GLCallbacks.empty())
@@ -132,6 +140,11 @@ void Game::AddDrawable(Drawable* pDrawable)
         ++Spot;
     }
     Drawables.insert(Spot, pDrawable);
+}
+
+void Game::AddDrawable(Movie* pMovie)
+{
+    this->pMovie = pMovie;
 }
 
 void Game::RemoveDrawable(Drawable* pDrawable)
