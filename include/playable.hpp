@@ -42,7 +42,7 @@ protected:
 private:
     GstElement* AudioBin;
     bool Loop;
-    int32_t Begin, End;
+    gint64 Begin, End;
 };
 
 #endif

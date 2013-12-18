@@ -57,6 +57,7 @@ End(0)
 Playable::~Playable()
 {
     Stop();
+    gst_object_unref(GST_OBJECT(Pipeline));
 }
 
 void Playable::InitAudio()
@@ -88,26 +89,34 @@ void Playable::SetLoop(bool Loop)
 void Playable::Stop()
 {
     gst_element_set_state(Pipeline, GST_STATE_NULL);
-    gst_object_unref(GST_OBJECT(Pipeline));
 }
 
 void Playable::Play()
 {
     gst_element_set_state(Pipeline, GST_STATE_PLAYING);
+    if (gst_element_get_state(Pipeline, NULL, NULL, GST_CLOCK_TIME_NONE) == GST_STATE_CHANGE_SUCCESS)
+        gst_element_seek_simple(Pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, Begin);
 }
 
 void Playable::Update()
 {
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+
     gint64 Position, Length;
     if (!gst_element_query_position(Pipeline, GST_FORMAT_TIME, &Position) ||
         !gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length))
         return;
 
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-    g_print ("Time: %u / %u\r", Position / 1000000, Length / 1000000);
-    if (Position >= Length && Loop)
-        gst_element_seek(Pipeline, 1.0, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH,
-                         GST_SEEK_TYPE_SET, Begin, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
+    if (End > 0)
+        Length = End;
+
+    if (Position >= Length)
+    {
+        if (Loop)
+            gst_element_seek_simple(Pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, Begin);
+        else
+            Stop();
+    }
 }
 
 void Playable::SetVolume(double Volume)
@@ -116,6 +125,6 @@ void Playable::SetVolume(double Volume)
 
 void Playable::SetRange(int32_t Begin, int32_t End)
 {
-    this->Begin = Begin;
-    this->End = End;
+    this->Begin = gint64(Begin) * 1000000;
+    this->End = gint64(End) * 1000000;
 }
