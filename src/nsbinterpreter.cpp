@@ -491,10 +491,16 @@ void NsbInterpreter::Destroy()
             CacheHolder<Playable>::Write(HandleName, nullptr);
         });
     }
-    else
+    else if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
-        pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, CacheHolder<Drawable>::Read(HandleName)));
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
         CacheHolder<Drawable>::Write(HandleName, nullptr);
+    }
+    else if (Playable* pMovie = CacheHolder<Playable>::Read(HandleName))
+    {
+        delete pMovie;
+        pGame->AddDrawable((Movie*)nullptr);
+        CacheHolder<Playable>::Write(HandleName, nullptr);
     }
 }
 

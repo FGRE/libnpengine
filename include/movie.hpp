@@ -27,11 +27,10 @@ class Movie : public Playable
 {
     friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
 public:
-    Movie(const std::string& FileName, sf::WindowHandle Handle, int32_t Priority, bool Alpha, bool Audio);
+    Movie(const std::string& FileName, sf::WindowHandle Handle, int32_t Priority, bool Alpha, bool Audio, sf::IntRect* pBox);
     ~Movie();
 
     int32_t GetPriority() { return Priority; }
-    void SetBox(sf::IntRect Box);
 private:
     int32_t Priority;
     GstElement* VideoBin;
