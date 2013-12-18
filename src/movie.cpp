@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "movie.hpp"
+#include "game.hpp"
 #include <gst/video/videooverlay.h>
 
 static GstBusSyncReply CreateWindow(GstBus* bus, GstMessage* msg, gpointer Handle)
@@ -28,7 +29,7 @@ static GstBusSyncReply CreateWindow(GstBus* bus, GstMessage* msg, gpointer Handl
     return GST_BUS_DROP;
 }
 
-Movie::Movie(const std::string& FileName, sf::WindowHandle Handle, int32_t Priority, bool Alpha, bool Audio) :
+Movie::Movie(const std::string& FileName, sf::WindowHandle Handle, int32_t Priority, bool Alpha, bool Audio, sf::IntRect* pBox) :
 Playable(FileName.c_str()),
 Priority(Priority)
 {
@@ -40,8 +41,25 @@ Priority(Priority)
     GstElement* VideoConv = gst_element_factory_make("videoconvert", "vconv");
     GstPad* VideoPad = gst_element_get_static_pad(VideoConv, "sink");
     GstElement* VideoSink = gst_element_factory_make("autovideosink", "sink");
-    gst_bin_add_many(GST_BIN(VideoBin), VideoConv, VideoSink, NULL);
-    gst_element_link(VideoConv, VideoSink);
+
+    GstElement* VideoBox = nullptr;
+    if (pBox)
+    {
+        gint top = pBox->top;
+        gint bottom = WINDOW_HEIGHT - top - pBox->height;
+        gint left = pBox->left;
+        gint right = WINDOW_WIDTH - left - pBox->width;
+        VideoBox = gst_element_factory_make("videobox", "vfilter");
+        g_object_set(G_OBJECT(VideoBox), "bottom", bottom, "top", top, "left", left, "right", right, NULL);
+    }
+
+    gst_bin_add(GST_BIN(VideoBin), VideoConv);
+    if (VideoBox)
+        gst_bin_add(GST_BIN(VideoBin), VideoBox);
+    gst_bin_add(GST_BIN(VideoBin), VideoSink);
+
+    gst_element_link_many(VideoConv, VideoBox ? VideoBox : VideoSink, VideoBox ? VideoSink : nullptr, nullptr);
+
     gst_element_add_pad(VideoBin, gst_ghost_pad_new("sink", VideoPad));
     gst_object_unref(VideoPad);
     gst_bin_add(GST_BIN(Pipeline), VideoBin);
@@ -54,6 +72,3 @@ Movie::~Movie()
 {
 }
 
-void Movie::SetBox(sf::IntRect Box)
-{
-}

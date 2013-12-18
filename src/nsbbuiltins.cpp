@@ -137,12 +137,10 @@ void NsbInterpreter::GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Lo
         delete pMovie;
     }
 
-    Movie* pMovie = new Movie(File, pGame->getSystemHandle(), Priority, Alpha, Audio);
-    pMovie->SetLoop(Loop);
-
     string BoxHandle(HandleName, 0, HandleName.find_first_of("/"));
-    if (sf::IntRect* pRect = CacheHolder<sf::IntRect>::Read(BoxHandle))
-        pMovie->SetBox(*pRect);
+    sf::IntRect* pRect = CacheHolder<sf::IntRect>::Read(BoxHandle);
+    Movie* pMovie = new Movie(File, pGame->getSystemHandle(), Priority, Alpha, Audio, pRect);
+    pMovie->SetLoop(Loop);
 
     // Probably unused
     //pMovie->SetPosition(x, y);
