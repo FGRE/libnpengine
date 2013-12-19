@@ -72,6 +72,9 @@ void Game::Run()
                     if (pText)
                         if (!pText->NextLine())
                             pInterpreter->Start();
+                    break;
+                case sf::Event::Closed:
+                    // TODO: make interpreter (really) stop
                 default:
                     break;
             }

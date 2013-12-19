@@ -30,7 +30,7 @@ static GstBusSyncReply CreateWindow(GstBus* bus, GstMessage* msg, gpointer Handl
 }
 
 Movie::Movie(const std::string& FileName, sf::WindowHandle Handle, int32_t Priority, bool Alpha, bool Audio, sf::IntRect* pBox) :
-Playable(FileName.c_str()),
+Playable(FileName),
 Priority(Priority)
 {
     GstBus* Bus = gst_pipeline_get_bus(GST_PIPELINE(Pipeline));

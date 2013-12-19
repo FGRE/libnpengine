@@ -30,5 +30,5 @@ ${CMAKE_SOURCE_DIR}/../libnpa/
 )
 
 add_library(npengine SHARED ${LIBNPENGINE_SRC})
-target_link_libraries(npengine ${Boost_LIBRARIES} ${SFML_LIBRARIES} ${GSTREAMER_VIDEO_LIBRARIES} npa)
+target_link_libraries(npengine ${Boost_LIBRARIES} ${SFML_LIBRARIES} ${GSTREAMER_APP_LIBRARIES} ${GSTREAMER_VIDEO_LIBRARIES} npa)
 set_target_properties(npengine PROPERTIES LINKER_LANGUAGE CXX)

@@ -19,12 +19,22 @@
 #define PLAYABLE_HPP
 
 #include <gst/gst.h>
+#include <gst/app/gstappsrc.h>
+#include "npaiterator.hpp"
+
+struct AppSrc
+{
+    GstAppSrc* Appsrc;
+    NpaIterator File;
+    gsize Offset;
+};
 
 class Playable
 {
     friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
 public:
-    Playable(const char* FileName);
+    Playable(const std::string& FileName);
+    Playable(NpaIterator File);
     ~Playable();
 
     void Update();
@@ -35,10 +45,12 @@ public:
     void Play();
     int32_t GetDuration();
 
-    void InitAudio();
+    AppSrc* Appsrc;
 protected:
-    GstElement* Pipeline;
+    void InitAudio();
+    void InitPipeline(GstElement* Source);
 
+    GstElement* Pipeline;
 private:
     GstElement* AudioBin;
     bool Loop;
