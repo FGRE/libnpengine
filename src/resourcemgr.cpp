@@ -48,13 +48,21 @@ void ResourceMgr::ClearCache()
 
 char* ResourceMgr::Read(std::string Path, uint32_t* Size)
 {
-    std::transform(Path.begin(), Path.end(), Path.begin(), ::tolower);
-    auto iter = FileRegistry.find(Path);
-    if (iter != FileRegistry.end())
+    NpaIterator File = GetFile(Path);
+    if (File)
     {
-        *Size = iter->second.GetFileSize();
-        return iter->second.GetFileData();
+        *Size = File.GetFileSize();
+        return File.GetFileData();
     }
     *Size = 0;
     return nullptr;
+}
+
+NpaIterator ResourceMgr::GetFile(std::string Path)
+{
+    std::transform(Path.begin(), Path.end(), Path.begin(), ::tolower);
+    auto iter = FileRegistry.find(Path);
+    if (iter != FileRegistry.end())
+        return iter->second;
+    return NpaIterator();
 }

@@ -39,25 +39,65 @@ void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
     gst_caps_unref(Caps);
 }
 
-Playable::Playable(const char* FileName) :
+static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
+{
+    GstFlowReturn ret;
+    char* Data = pAppsrc->File.GetFileData(pAppsrc->Offset, 1024);
+    gsize Size = 1024;
+    if (pAppsrc->Offset + 1024 > pAppsrc->File.GetFileSize())
+    {
+        if (pAppsrc->Offset > pAppsrc->File.GetFileSize())
+        {
+            g_signal_emit_by_name(pAppsrc->Appsrc, "end-of-stream", &ret);
+            return;
+        }
+        Size = pAppsrc->File.GetFileSize() - pAppsrc->Offset;
+    }
+    GstBuffer* Buffer = gst_buffer_new_wrapped(Data, Size);
+    g_signal_emit_by_name(pAppsrc->Appsrc, "push-buffer", Buffer, &ret);
+    gst_buffer_unref(Buffer);
+    pAppsrc->Offset += 1024;
+}
+
+Playable::Playable(const std::string& FileName) :
 Loop(false),
 AudioBin(nullptr),
+Appsrc(nullptr),
 Begin(0),
 End(0)
 {
-    Pipeline = gst_pipeline_new("pipeline");
     GstElement* Filesrc = gst_element_factory_make("filesrc", "source");
-    g_object_set(G_OBJECT(Filesrc), "location", FileName, NULL);
-    GstElement* Decodebin = gst_element_factory_make("decodebin", "decoder");
-    g_signal_connect(Decodebin, "pad-added", G_CALLBACK(LinkPad), this);
-    gst_bin_add_many(GST_BIN(Pipeline), Filesrc, Decodebin, NULL);
-    gst_element_link(Filesrc, Decodebin);
+    g_object_set(G_OBJECT(Filesrc), "location", FileName.c_str(), NULL);
+    InitPipeline(Filesrc);
+}
+
+Playable::Playable(NpaIterator File) :
+Loop(false),
+Begin(0)
+{
+    Appsrc = new AppSrc;
+    Appsrc->Appsrc = (GstAppSrc*)gst_element_factory_make("appsrc", "source");
+    Appsrc->File = File;
+    Appsrc->Offset = 0;
+    g_signal_connect(Appsrc->Appsrc, "need-data", G_CALLBACK(FeedData), Appsrc);
+
+    InitPipeline((GstElement*)Appsrc->Appsrc);
+    InitAudio();
 }
 
 Playable::~Playable()
 {
     Stop();
     gst_object_unref(GST_OBJECT(Pipeline));
+}
+
+void Playable::InitPipeline(GstElement* Source)
+{
+    Pipeline = gst_pipeline_new("pipeline");
+    GstElement* Decodebin = gst_element_factory_make("decodebin", "decoder");
+    g_signal_connect(Decodebin, "pad-added", G_CALLBACK(LinkPad), this);
+    gst_bin_add_many(GST_BIN(Pipeline), Source, Decodebin, NULL);
+    gst_element_link(Source, Decodebin);
 }
 
 void Playable::InitAudio()

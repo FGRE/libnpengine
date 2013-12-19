@@ -58,14 +58,8 @@ pCurrentMusic(nullptr)
                     case 1: // VID_MAY
                         break;
                     case 2: // voice/MAY_0001
-                    {
-                        pMusic = new Playable(0);
-                        uint32_t Size;
-                        char* pMusicData = sResourceMgr->Read(Attr + ".ogg", &Size);
-                        assert(pMusicData);
-                        // TODO
+                        pMusic = new Playable(sResourceMgr->GetFile(Attr + ".ogg"));
                         break;
-                    }
                     case 3: // on
                         break;
                 }

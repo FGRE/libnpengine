@@ -101,6 +101,7 @@ public:
 
     void ClearCache();
 
+    NpaIterator GetFile(std::string Path);
     char* Read(std::string Path, uint32_t* Size);
     template <class T> T* GetResource(const std::string& Path);
 
