@@ -86,7 +86,7 @@ BranchCondition(true)
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
-    Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
+    //Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
     Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NsbInterpreter::LogicalNotEqual;
     Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
