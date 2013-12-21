@@ -42,17 +42,17 @@ void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
 static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
 {
     GstFlowReturn ret;
-    char* Data = pAppsrc->File.GetFileData(pAppsrc->Offset, 1024);
     gsize Size = 1024;
     if (pAppsrc->Offset + 1024 > pAppsrc->File.GetFileSize())
     {
-        if (pAppsrc->Offset > pAppsrc->File.GetFileSize())
+        if (pAppsrc->Offset >= pAppsrc->File.GetFileSize())
         {
             g_signal_emit_by_name(pAppsrc->Appsrc, "end-of-stream", &ret);
             return;
         }
         Size = pAppsrc->File.GetFileSize() - pAppsrc->Offset;
     }
+    char* Data = pAppsrc->File.GetFileData(pAppsrc->Offset, 1024);
     GstBuffer* Buffer = gst_buffer_new_wrapped(Data, Size);
     g_signal_emit_by_name(pAppsrc->Appsrc, "push-buffer", Buffer, &ret);
     gst_buffer_unref(Buffer);
