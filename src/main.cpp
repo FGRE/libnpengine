@@ -46,12 +46,10 @@ __declspec(dllexport)
 NitroplusMain()
 {
 #ifdef _WIN32
-    using namespace std;
-    ofstream log("log.txt");
-    cout.rdbuf(log.rdbuf());
+    std::ofstream log("log.txt");
+    std::cout.rdbuf(log.rdbuf());
 #endif
     gst_init(nullptr, nullptr);
-    // Note that scripts call .nss files, NOT nsb. This is a hack
     Game* pGame = new Game({"cg.npa", "nss.npa", "voice.npa", "sound.npa"});
     pGame->Run();
     delete pGame;
