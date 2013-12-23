@@ -53,6 +53,7 @@ protected:
     GstElement* Pipeline;
 private:
     GstElement* AudioBin;
+    GstElement* VolumeFilter;
     bool Loop;
     gint64 Begin, End;
 };
