@@ -80,7 +80,6 @@ Begin(0)
     Appsrc->File = File;
     Appsrc->Offset = 0;
     g_signal_connect(Appsrc->Appsrc, "need-data", G_CALLBACK(FeedData), Appsrc);
-
     InitPipeline((GstElement*)Appsrc->Appsrc);
     InitAudio();
 }
@@ -106,8 +105,9 @@ void Playable::InitAudio()
     GstElement* AudioConv = gst_element_factory_make("audioconvert", "aconv");
     GstPad* AudioPad = gst_element_get_static_pad(AudioConv, "sink");
     GstElement* AudioSink = gst_element_factory_make("autoaudiosink", "sink");
-    gst_bin_add_many(GST_BIN(AudioBin), AudioConv, AudioSink, NULL);
-    gst_element_link(AudioConv, AudioSink);
+    VolumeFilter = gst_element_factory_make("volume", "afilter");
+    gst_bin_add_many(GST_BIN(AudioBin), AudioConv, VolumeFilter, AudioSink, NULL);
+    gst_element_link_many(AudioConv, VolumeFilter, AudioSink);
     gst_element_add_pad(AudioBin, gst_ghost_pad_new("sink", AudioPad));
     gst_object_unref(AudioPad);
     gst_bin_add(GST_BIN(Pipeline), AudioBin);
@@ -141,26 +141,11 @@ void Playable::Play()
 void Playable::Update()
 {
     boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-
-    gint64 Position, Length;
-    if (!gst_element_query_position(Pipeline, GST_FORMAT_TIME, &Position) ||
-        !gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length))
-        return;
-
-    if (End > 0)
-        Length = End;
-
-    if (Position >= Length)
-    {
-        if (Loop)
-            gst_element_seek_simple(Pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, Begin);
-        else
-            Stop();
-    }
 }
 
 void Playable::SetVolume(double Volume)
 {
+    g_object_set(G_OBJECT(VolumeFilter), "volume", Volume, NULL);
 }
 
 void Playable::SetRange(int32_t Begin, int32_t End)
