@@ -45,7 +45,7 @@ BranchCondition(true)
 #ifdef _WIN32
     Text::Initialize("fonts-japanese-gothic.ttf");
 #else
-    Text::Initialize("/etc/alternatives/fonts-japanese-gothic.ttf");
+    Text::Initialize("/usr/share/fonts/cjkuni-uming/uming.ttc");
 #endif
 
     Builtins.resize(0xFF, nullptr);
@@ -654,7 +654,7 @@ bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
 
 bool NsbInterpreter::JumpTo(uint16_t Magic)
 {
-    // TODO: remove ret val, its a hack for If hack
+#warning Remove return value. Its a hack for If() hack
     while (pLine = pScript->GetNextLine())
     {
         if (pLine->Magic == MAGIC_FUNCTION_END)
@@ -755,6 +755,7 @@ bool NsbInterpreter::NsbAssert(bool expr, const char* fmt)
 // Because fuck you krofna, that's why
 template <> bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, std::string value)
 {
+#warning This is workaround for possible gcc bug
     if (expr)
         return false;
     std::cout << fmt << " " << value << std::endl; // I don't even care enough to format it anymore...
