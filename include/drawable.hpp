@@ -24,9 +24,8 @@
 
 enum
 {
-    DRAWABLE_MOVIE      = 0,
-    DRAWABLE_TEXTURE    = 1,
-    DRAWABLE_TEXT       = 2
+    DRAWABLE_TEXTURE    = 0,
+    DRAWABLE_TEXT       = 1
 };
 
 enum
@@ -38,9 +37,10 @@ enum
 
 enum
 {
-    LERP_ZOOM   = 0,
-    LERP_ANIM   = 1,
-    LERP_MAX    = 2
+    LERP_ZOOM       = 0,
+    LERP_ANIM       = 1,
+    LERP_ZOOM_ANIM  = 2,
+    LERP_MAX        = 3
 };
 
 namespace sf
