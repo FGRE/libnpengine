@@ -49,6 +49,7 @@ BranchCondition(true)
 #endif
 
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_CENTER] = &NsbInterpreter::Center;
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
     Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
     Builtins[MAGIC_NEGATIVE] = &NsbInterpreter::Negative;
@@ -193,6 +194,12 @@ void NsbInterpreter::While()
 void NsbInterpreter::UNK65()
 {
     //ReverseJumpTo(MAGIC_WHILE);
+}
+
+void NsbInterpreter::Center()
+{
+    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+        pDrawable->SetCenter(GetParam<int32_t>(1), GetParam<int32_t>(2));
 }
 
 void NsbInterpreter::CallScript()

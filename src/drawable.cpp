@@ -80,7 +80,7 @@ pBlur(nullptr)
             Fades[i] = new FadeEffect; // TODO: allocate on demand
         else
             Fades[i] = nullptr;
-    Lerps[0] = Lerps[1] = nullptr;
+    Lerps[LERP_ANIM] = Lerps[LERP_ZOOM] = nullptr;
 }
 
 Drawable::~Drawable()
@@ -93,22 +93,24 @@ Drawable::~Drawable()
 
 void Drawable::Update()
 {
+    sf::Vector2f NewPosition;
+
     if (Lerps[LERP_ZOOM])
     {
         ToSprite()->setScale(UpdateLerp(LERP_ZOOM));
-        sf::Vector2f NewPosition = (sf::Vector2f(ToSprite()->getGlobalBounds().width,
-                                                 ToSprite()->getGlobalBounds().height) -
-                                    sf::Vector2f(ToSprite()->getLocalBounds().width,
-                                                 ToSprite()->getLocalBounds().height));
+        NewPosition = sf::Vector2f(ToSprite()->getGlobalBounds().width,
+                                   ToSprite()->getGlobalBounds().height) -
+                      sf::Vector2f(ToSprite()->getLocalBounds().width,
+                                   ToSprite()->getLocalBounds().height);
         NewPosition /= -2.0f;
         ToSprite()->setPosition(NewPosition);
     }
 
     if (Lerps[LERP_ANIM])
     {
-        sf::Vector2f NewPos = UpdateLerp(LERP_ANIM);
+        Position = UpdateLerp(LERP_ANIM);
         if (Type == DRAWABLE_TEXTURE)
-            ToSprite()->setPosition(NewPos);
+            ToSprite()->setPosition(NewPosition + Position);
     }
 
     for (uint8_t i = 0; i < FADE_MAX; ++i)
@@ -121,7 +123,6 @@ sf::Vector2f Drawable::UpdateLerp(uint8_t i)
     sf::Vector2f RetVal;
     float Progress = float(pLerp->Clock.getElapsedTime().asMilliseconds()) /
                      float(pLerp->Time);
-
 
     if (Progress > 1.0f)
         Progress = 1.0f;
@@ -236,7 +237,7 @@ void Drawable::AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Tim
     if (EffIndex == LERP_ANIM)
     {
         if (Type == DRAWABLE_TEXTURE)
-            pEffect->Old = ToSprite()->getPosition();
+            pEffect->Old = Position;
     }
     else
         pEffect->Old = ToSprite()->getScale();
@@ -245,4 +246,8 @@ void Drawable::AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Tim
     pEffect->NewY = y;
     pEffect->Time = Time;
     Lerps[EffIndex] = pEffect;
+}
+
+void Drawable::SetCenter(int32_t x, int32_t y)
+{
 }
