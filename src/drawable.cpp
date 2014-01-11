@@ -96,10 +96,12 @@ void Drawable::Update()
     if (Lerps[LERP_ZOOM])
     {
         ToSprite()->setScale(UpdateLerp(LERP_ZOOM));
-        ToSprite()->setPosition(-(sf::Vector2f(ToSprite()->getGlobalBounds().width,
-                                               ToSprite()->getGlobalBounds().height) -
-                                  sf::Vector2f(ToSprite()->getLocalBounds().width,
-                                               ToSprite()->getLocalBounds().height)) / 2.f);
+        sf::Vector2f NewPosition = (sf::Vector2f(ToSprite()->getGlobalBounds().width,
+                                                 ToSprite()->getGlobalBounds().height) -
+                                    sf::Vector2f(ToSprite()->getLocalBounds().width,
+                                                 ToSprite()->getLocalBounds().height));
+        NewPosition /= -2.0f;
+        ToSprite()->setPosition(NewPosition);
     }
 
     if (Lerps[LERP_ANIM])
@@ -116,10 +118,16 @@ void Drawable::Update()
 sf::Vector2f Drawable::UpdateLerp(uint8_t i)
 {
     LerpEffect* pLerp = Lerps[i];
+    sf::Vector2f RetVal;
     float Progress = float(pLerp->Clock.getElapsedTime().asMilliseconds()) /
                      float(pLerp->Time);
+
+
     if (Progress > 1.0f)
         Progress = 1.0f;
+
+    RetVal = sf::Vector2f(Lerp(pLerp->Old.x, pLerp->NewX, Progress),
+                          Lerp(pLerp->Old.y, pLerp->NewY, Progress));
 
     if (pLerp->Clock.getElapsedTime().asMilliseconds() >= pLerp->Time)
     {
@@ -127,8 +135,7 @@ sf::Vector2f Drawable::UpdateLerp(uint8_t i)
         Lerps[i] = nullptr;
     }
 
-    return sf::Vector2f(Lerp(pLerp->Old.x, pLerp->NewX, Progress),
-                        Lerp(pLerp->Old.y, pLerp->NewY, Progress));
+    return RetVal;
 }
 
 void Drawable::Draw(sf::RenderWindow* pWindow)
