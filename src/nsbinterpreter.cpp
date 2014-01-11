@@ -84,7 +84,9 @@ BranchCondition(true)
     Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
     Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
+    Builtins[MAGIC_CALL_SCRIPT] = &NsbInterpreter::CallScript;
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
+    Builtins[MAGIC_WHILE] = &NsbInterpreter::While;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
     //Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
     Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NsbInterpreter::LogicalNotEqual;
@@ -93,6 +95,7 @@ BranchCondition(true)
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
     Builtins[MAGIC_UNK3] = &NsbInterpreter::ClearParams; // Unknown if this hack is still needed
     Builtins[MAGIC_UNK5] = &NsbInterpreter::UNK5;
+    Builtins[MAGIC_UNK65] = &NsbInterpreter::UNK65;
     //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
 
     // TODO: include.nss/herpderp.nss from .map files instead
@@ -157,18 +160,33 @@ void NsbInterpreter::Start()
 
 void NsbInterpreter::If()
 {
-    if (!BranchCondition)
+    if (BranchCondition)
+        return;
+
+    string Label = GetParam<string>(0);
+    Label.pop_back();
+    Label.insert(Label.find_last_of('.') + 1, "end");
+    do
     {
-        string Label = GetParam<string>(0);
-        Label.pop_back();
-        Label.insert(Label.find_last_of('.') + 1, "end");
-        do
-        {
-            // TODO: This can be done faster with symbol lookup table (.map)
-            if (!JumpTo(MAGIC_ENDIF))
-                return;
-        } while (pLine->Params[0] != Label);
-    }
+        // TODO: This can be done faster with symbol lookup table (.map)
+        if (!JumpTo(MAGIC_LABEL))
+            return;
+    } while (pLine->Params[0] != Label);
+}
+
+void NsbInterpreter::While()
+{
+    If();
+}
+
+void NsbInterpreter::UNK65()
+{
+    //ReverseJumpTo(MAGIC_WHILE);
+}
+
+void NsbInterpreter::CallScript()
+{
+    CallScript(GetParam<string>(0));
 }
 
 void NsbInterpreter::LogicalNotEqual()
@@ -637,7 +655,8 @@ void NsbInterpreter::LoadScript(const string& FileName)
 
 void NsbInterpreter::CallScript(const string& FileName)
 {
-    pScript = sResourceMgr->GetResource<NsbFile>(FileName);
+    if (NsbFile* pScript = sResourceMgr->GetResource<NsbFile>(FileName))
+        this->pScript = pScript;
 }
 
 bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
@@ -664,6 +683,17 @@ bool NsbInterpreter::JumpTo(uint16_t Magic)
             return true;
     }
     return false;
+}
+
+void NsbInterpreter::ReverseJumpTo(uint16_t Magic)
+{
+    while (pLine = pScript->GetPrevLine())
+    {
+        if (pLine->Magic == MAGIC_FUNCTION_BEGIN ||
+            pLine->Magic == MAGIC_CHAPTER_BEGIN ||
+            pLine->Magic == Magic)
+            return;
+    }
 }
 
 void NsbInterpreter::WriteTrace(std::ostream& Stream)
