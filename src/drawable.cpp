@@ -76,11 +76,13 @@ pMask(nullptr),
 pBlur(nullptr)
 {
     for (uint8_t i = 0; i < FADE_MAX; ++i)
-        if (Type == DRAWABLE_TEXTURE || Type == DRAWABLE_MOVIE)
+        if (Type == DRAWABLE_TEXTURE)
             Fades[i] = new FadeEffect; // TODO: allocate on demand
         else
             Fades[i] = nullptr;
-    Lerps[LERP_ANIM] = Lerps[LERP_ZOOM] = nullptr;
+
+    for (uint8_t i = 0; i < LERP_MAX; ++i)
+        Lerps[i] = nullptr;
 }
 
 Drawable::~Drawable()
@@ -234,13 +236,16 @@ void Drawable::AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Tim
 
     LerpEffect* pEffect = new LerpEffect;
 
-    if (EffIndex == LERP_ANIM)
+    switch (EffIndex)
     {
-        if (Type == DRAWABLE_TEXTURE)
-            pEffect->Old = Position;
+        case LERP_ANIM:
+            if (Type == DRAWABLE_TEXTURE)
+                pEffect->Old = Position;
+            break;
+        case LERP_ZOOM:
+            pEffect->Old = ToSprite()->getScale();
+            break;
     }
-    else
-        pEffect->Old = ToSprite()->getScale();
 
     pEffect->NewX = x;
     pEffect->NewY = y;
