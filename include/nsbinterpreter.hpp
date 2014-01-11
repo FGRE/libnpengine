@@ -136,6 +136,7 @@ private:
     void LogicalEqual();
     void LogicalNotEqual();
     void CallScript();
+    void Center();
 
     // Builtins
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);

@@ -83,6 +83,7 @@ public:
     void SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index);
     void SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time);
     void AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Time);
+    void SetCenter(int32_t x, int32_t y);
 
     int32_t GetPriority() const { return Priority; }
     sf::Sprite* ToSprite() const { return (sf::Sprite*)pDrawable; }
@@ -100,6 +101,7 @@ private:
     sf::Shader Shader;
     sf::Texture* pMask;
     sf::RenderTexture* pBlur;
+    sf::Vector2f Position;
 };
 
 extern const float FadeConvert;
