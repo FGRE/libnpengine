@@ -21,9 +21,10 @@
 #include <fstream>
 #endif
 
+static string ScriptName;
+
 void NitroscriptMain(NsbInterpreter* pInterpreter)
 {
-    string ScriptName = "nss/sg00_01.nsb";
     do
     {
         pInterpreter->Start();
@@ -43,13 +44,14 @@ int
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-NitroplusMain()
+NitroplusMain(const char* ScriptName)
 {
 #ifdef _WIN32
     std::ofstream log("log.txt");
     std::cout.rdbuf(log.rdbuf());
 #endif
     gst_init(nullptr, nullptr);
+    ::ScriptName = ScriptName;
     Game* pGame = new Game({"cg.npa", "nss.npa", "voice.npa", "sound.npa"});
     pGame->Run();
     delete pGame;
