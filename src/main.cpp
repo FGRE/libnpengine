@@ -22,29 +22,34 @@
 #endif
 
 static string ScriptName;
+static bool IsLocal;
 
 void NitroscriptMain(NsbInterpreter* pInterpreter)
 {
     do
     {
         pInterpreter->Start();
-        pInterpreter->ExecuteScript(ScriptName);
-        ScriptName = "nss/" + pInterpreter->GetVariable<std::string>("$GameName");
-        ScriptName.back() = 'b';
-        std::cout << "Switching to: " << ScriptName << std::endl;
-    } while (true);
+        if (!IsLocal)
+        {
+            pInterpreter->ExecuteScript(ScriptName);
+            ScriptName = "nss/" + pInterpreter->GetVariable<std::string>("$GameName");
+            ScriptName.back() = 'b';
+            std::cout << "Switching to: " << ScriptName << std::endl;
+        }
+        else
+            pInterpreter->ExecuteScriptLocal(ScriptName);
+    } while (true && !IsLocal);
 }
 
 extern "C"
 {
-
-void gst_init (int* argc, char** argv[]);
+void gst_init(int* argc, char** argv[]);
 
 int
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-NitroplusMain(const char* ScriptName)
+NitroplusMain(const char* ScriptName, bool IsLocal)
 {
 #ifdef _WIN32
     std::ofstream log("log.txt");
@@ -52,6 +57,7 @@ NitroplusMain(const char* ScriptName)
 #endif
     gst_init(nullptr, nullptr);
     ::ScriptName = ScriptName;
+    ::IsLocal = IsLocal;
     Game* pGame = new Game({"cg.npa", "nss.npa", "voice.npa", "sound.npa"});
     pGame->Run();
     delete pGame;

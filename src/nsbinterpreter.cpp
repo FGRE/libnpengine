@@ -110,9 +110,20 @@ NsbInterpreter::~NsbInterpreter()
 {
 }
 
-void NsbInterpreter::ExecuteScript(const string& InitScript)
+void NsbInterpreter::ExecuteScript(const string& ScriptName)
 {
-    pScript = sResourceMgr->GetResource<NsbFile>(InitScript);
+    pScript = sResourceMgr->GetResource<NsbFile>(ScriptName);
+    Run();
+}
+
+void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
+{
+    pScript = new NsbFile(ScriptName);
+    Run();
+}
+
+void NsbInterpreter::Run()
+{
     do
     {
         while (!RunInterpreter)

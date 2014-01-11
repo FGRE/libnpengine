@@ -83,9 +83,11 @@ public:
     void DumpState();
 
 private:
+    void Run();
     void Sleep(int32_t ms);
     void LoadScript(const string& FileName);
     void ExecuteScript(const string& InitScript);
+    void ExecuteScriptLocal(const string& InitScript);
 
     // Magic handlers
     void SetParam();
