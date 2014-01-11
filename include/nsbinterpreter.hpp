@@ -79,7 +79,7 @@ public:
     void Pause();
     void Start();
 
-    void CallScript(const string& FileName); // Deprecated/Incorrect
+    void CallScript(const string& FileName);
     void DumpState();
 
 private:
@@ -126,11 +126,14 @@ private:
     void PlaceholderParam();
     void CreateArray();
     void UNK5();
+    void UNK65();
     void Zoom();
     void If();
+    void While();
     void LogicalNot();
     void LogicalEqual();
     void LogicalNotEqual();
+    void CallScript();
 
     // Builtins
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
@@ -162,6 +165,7 @@ private:
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func);
     bool CallFunction(NsbFile* pDestScript, const char* FuncName);
     bool JumpTo(uint16_t Magic);
+    void ReverseJumpTo(uint16_t Magic);
     void SetVariable(const string& Identifier, const Variable& Var);
     sf::Texture* LoadTextureFromFile(const string& File);
 
