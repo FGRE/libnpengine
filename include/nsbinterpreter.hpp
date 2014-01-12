@@ -90,6 +90,10 @@ private:
     void ExecuteScriptLocal(const string& InitScript);
 
     // Magic handlers
+    void Increment();
+    void LogicalGreater();
+    void LogicalLess();
+    void ArraySize();
     void SetParam();
     void Get();
     void DrawToTexture();
