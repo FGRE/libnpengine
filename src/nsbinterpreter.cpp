@@ -49,6 +49,10 @@ BranchCondition(true)
 #endif
 
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_INCREMENT] = &NsbInterpreter::Increment;
+    Builtins[MAGIC_LOGICAL_GREATER] = &NsbInterpreter::LogicalGreater;
+    Builtins[MAGIC_LOGICAL_LESS] = &NsbInterpreter::LogicalLess;
+    Builtins[MAGIC_ARRAY_SIZE] = &NsbInterpreter::ArraySize;
     Builtins[MAGIC_CENTER] = &NsbInterpreter::Center;
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
     Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
@@ -170,6 +174,38 @@ void NsbInterpreter::Start()
     RunInterpreter = true;
 }
 
+void NsbInterpreter::Increment()
+{
+    uint32_t Index = Params.size() - 1;
+    if (NsbAssert(Params[Index].Type == "INT", "Incrementing non-integer type"))
+        return;
+
+    Params[Index].Value = boost::lexical_cast<string>(boost::lexical_cast<int32_t>(Params[Index].Value) + 1);
+}
+
+void NsbInterpreter::LogicalGreater()
+{
+    if (NsbAssert(Params[0].Type == Params[1].Type && Params[0].Type == "INT",
+        "Comparing variables of different or non-integer types"))
+        return;
+
+    BranchCondition = GetVariable<int32_t>(Params[0].Value) > GetVariable<int32_t>(Params[1].Value);
+}
+
+void NsbInterpreter::LogicalLess()
+{
+    if (NsbAssert(Params[0].Type == Params[1].Type && Params[0].Type == "INT",
+        "Comparing variables of different or non-integer types"))
+        return;
+
+    BranchCondition = GetVariable<int32_t>(Params[0].Value) < GetVariable<int32_t>(Params[1].Value);
+}
+
+void NsbInterpreter::ArraySize()
+{
+    Params.push_back(Variable("INT", boost::lexical_cast<string>(Arrays[GetParam<string>(0)].Members.size())));
+}
+
 void NsbInterpreter::If()
 {
     if (BranchCondition)
@@ -212,13 +248,7 @@ void NsbInterpreter::LogicalNotEqual()
     if (NsbAssert(Params[0].Type == Params[1].Type, "Comparing variables of different types for non-equality"))
         return;
 
-    if (Params[0].Type == "INT")
-        BranchCondition = (GetVariable<int32_t>(Params[0].Value) !=
-                           GetVariable<int32_t>(Params[1].Value));
-    else
-        BranchCondition = (GetVariable<string>(Params[0].Value) !=
-                           GetVariable<string>(Params[1].Value));
-
+    BranchCondition = GetVariable<string>(Params[0].Value) != GetVariable<string>(Params[1].Value);
 }
 
 void NsbInterpreter::LogicalEqual()
@@ -226,12 +256,7 @@ void NsbInterpreter::LogicalEqual()
     if (NsbAssert(Params[0].Type == Params[1].Type, "Comparing variables of different types for equality"))
         return;
 
-    if (Params[0].Type == "INT")
-        BranchCondition = (GetVariable<int32_t>(Params[0].Value) ==
-                           GetVariable<int32_t>(Params[1].Value));
-    else
-        BranchCondition = (GetVariable<string>(Params[0].Value) ==
-                           GetVariable<string>(Params[1].Value));
+    BranchCondition = GetVariable<string>(Params[0].Value) == GetVariable<string>(Params[1].Value);
 }
 
 void NsbInterpreter::LogicalNot()
