@@ -49,6 +49,7 @@ BranchCondition(true)
 #endif
 
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_LOAD_TEXTURE_CLIP] = &NsbInterpreter::LoadTextureClip;
     Builtins[MAGIC_INCREMENT] = &NsbInterpreter::Increment;
     Builtins[MAGIC_LOGICAL_GREATER] = &NsbInterpreter::LogicalGreater;
     Builtins[MAGIC_LOGICAL_LESS] = &NsbInterpreter::LogicalLess;
@@ -172,6 +173,10 @@ void NsbInterpreter::Pause()
 void NsbInterpreter::Start()
 {
     RunInterpreter = true;
+}
+
+void NsbInterpreter::LoadTextureClip()
+{
 }
 
 void NsbInterpreter::Increment()
