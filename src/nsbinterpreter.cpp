@@ -542,32 +542,7 @@ void NsbInterpreter::LoadTexture()
 void NsbInterpreter::Destroy()
 {
     HandleName = GetParam<string>(0);
-    // Hack: Do not destroy * (aka everything)
-    if (HandleName.back() == '*' && HandleName.size() != 1)
-    {
-        WildcardCall<Drawable>(HandleName, [this](Drawable* pDrawable)
-        {
-            pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
-            CacheHolder<Drawable>::Write(HandleName, nullptr);
-        });
-        WildcardCall<Playable>(HandleName, [this](Playable* pMovie)
-        {
-            delete pMovie;
-            pGame->AddDrawable((Movie*)nullptr);
-            CacheHolder<Playable>::Write(HandleName, nullptr);
-        });
-    }
-    else if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
-    {
-        pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
-        CacheHolder<Drawable>::Write(HandleName, nullptr);
-    }
-    else if (Playable* pMovie = CacheHolder<Playable>::Read(HandleName))
-    {
-        delete pMovie;
-        pGame->AddDrawable((Movie*)nullptr);
-        CacheHolder<Playable>::Write(HandleName, nullptr);
-    }
+    NSBDestroy();
 }
 
 void NsbInterpreter::Call()
