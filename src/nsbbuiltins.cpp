@@ -202,18 +202,15 @@ void NsbInterpreter::GLDestroy(Drawable* pDrawable)
 
 void NsbInterpreter::NSBArrayRead(int32_t Depth)
 {
-    const string* MemberName = &HandleName;
-    ArrayVariable* pVariable = nullptr;
+    ArrayVariable* pVariable = &Arrays[HandleName];
 
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
-        // TODO: check if exists
-        ArrayMembers& Members = Arrays[*MemberName].Members;
+        ArrayMembers& Members = pVariable->Members;
         for (uint32_t i = 0; i < Members.size(); ++i)
         {
-            if (Members[i].first == Params[Params.size() - Depth - 2].Value)
+            if (Members[i].first == Params[Params.size() - Depth - 1].Value)
             {
-                MemberName = &Members[i].first;
                 pVariable = &Members[i].second;
                 break;
             }
