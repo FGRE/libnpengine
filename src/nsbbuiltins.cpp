@@ -337,6 +337,36 @@ void NsbInterpreter::NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y
         WaitTime = Time;
 }
 
+void NsbInterpreter::NSBDestroy()
+{
+    // Hack: Do not destroy * (aka everything)
+    if (HandleName.back() == '*' && HandleName.size() != 1)
+    {
+        WildcardCall<Drawable>(HandleName, [this](Drawable* pDrawable)
+        {
+            pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
+            CacheHolder<Drawable>::Write(HandleName, nullptr);
+        });
+        WildcardCall<Playable>(HandleName, [this](Playable* pMovie)
+        {
+            delete pMovie;
+            pGame->AddDrawable((Movie*)nullptr);
+            CacheHolder<Playable>::Write(HandleName, nullptr);
+        });
+    }
+    else if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    {
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
+        CacheHolder<Drawable>::Write(HandleName, nullptr);
+    }
+    else if (Playable* pMovie = CacheHolder<Playable>::Read(HandleName))
+    {
+        delete pMovie;
+        pGame->AddDrawable((Movie*)nullptr);
+        CacheHolder<Playable>::Write(HandleName, nullptr);
+    }
+}
+
 void NsbInterpreter::NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1,
                                              const string& Color1, const string& Color2,
                                              int32_t unk2, const string& unk3)

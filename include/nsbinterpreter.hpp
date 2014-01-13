@@ -144,6 +144,7 @@ private:
     void Center();
 
     // Builtins
+    void NSBDestroy();
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void NSBArrayRead(int32_t Depth);
     void NSBSetState(const string& State);
