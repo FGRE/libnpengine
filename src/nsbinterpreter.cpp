@@ -620,7 +620,7 @@ void NsbInterpreter::Add()
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
     if (NsbAssert(Params[First].Type == Params[Second].Type,
                   "Concating params of different types (% and %)",
-                  Params[First].Type, Params[Second].Type));
+                  Params[First].Type, Params[Second].Type))
         return;
 
     // If parameters are integers, perform addition instead of string concat
