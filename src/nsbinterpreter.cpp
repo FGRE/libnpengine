@@ -693,10 +693,14 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
 
 void NsbInterpreter::BindIdentifier()
 {
-    HandleName = pLine->Params[0];
-    ArrayVariable* Var = &Arrays[HandleName];
-    for (uint32_t i = 1; i < Params.size(); ++i)
-        Var->Members[i - 1].first = Params[i].Value;
+    // Bind to first level of tree
+    if (ArrayParams.empty())
+        for (uint32_t i = 1; i < Params.size(); ++i)
+            Arrays[pLine->Params[0]].Members[i - 1].first = Params[i].Value;
+    // Bind to subtree
+    else
+        for (uint32_t i = 1; i < Params.size(); ++i)
+            ArrayParams.back()->Members[i - 1].first = Params[i].Value;
 }
 
 void NsbInterpreter::Sleep(int32_t ms)
