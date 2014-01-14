@@ -200,6 +200,7 @@ void NsbInterpreter::GLDestroy(Drawable* pDrawable)
     delete pDrawable;
 }
 
+// Reads data from tree at specified depth
 void NsbInterpreter::NSBArrayRead(int32_t Depth)
 {
     ArrayVariable* pVariable = &Arrays[HandleName];
@@ -207,13 +208,17 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
         ArrayMembers& Members = pVariable->Members;
+        // Parameters contain identifiers of child nodes
+        // for each level specifying which path to take
         for (uint32_t i = 0; i < Members.size(); ++i)
         {
+            // Node is found
             if (Members[i].first == Params[Params.size() - Depth - 1].Value)
             {
                 pVariable = &Members[i].second;
-                break;
+                break; // Go to next level (if needed)
             }
+            // TODO: Handle case when Identifier is not found
         }
     }
 
