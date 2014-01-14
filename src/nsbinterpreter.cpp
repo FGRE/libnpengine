@@ -521,6 +521,8 @@ void NsbInterpreter::End()
 
 void NsbInterpreter::LoadTexture()
 {
+    // Represent special position as negative index to function
+    // in SpecialPosTable. See: NsbInterpreter::GLLoadTexture
     int32_t Pos[2];
     for (int32_t i = 2; i <= 3; ++i)
     {
