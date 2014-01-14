@@ -305,6 +305,8 @@ void NsbInterpreter::PlaceholderParam()
 void NsbInterpreter::Negative()
 {
     Params.back().Value = boost::lexical_cast<string>(-GetVariable<int32_t>(Params.back().Value));
+    // Negative integers are incorrectly compiled by Nitroplus
+    // This works around the issue: See: NsbInterpreter::GetParam<T>
     Params.back().Type = "WTF";
 }
 
@@ -486,7 +488,7 @@ void NsbInterpreter::ClearParams()
 
 void NsbInterpreter::Begin()
 {
-    // Turn params into variables
+    // Turn params into global variables
     // TODO: Scope should be respected instead
     for (uint32_t i = 1; i < pLine->Params.size(); ++i)
         SetVariable(pLine->Params[i], Params[i - 1]);
@@ -675,6 +677,8 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 
 template <class T> T NsbInterpreter::GetParam(int32_t Index)
 {
+    // "WTF" is workaround for Nitroplus bug
+    // See: NsbInterpreter::Negative
     if (Params.size() > Index && Params[Index].Type == "WTF")
         return GetVariable<T>(Params[Index].Value);
     return GetVariable<T>(pLine->Params[Index]);
