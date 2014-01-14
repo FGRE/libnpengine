@@ -283,7 +283,7 @@ void NsbInterpreter::Zoom()
 
 void NsbInterpreter::UNK5()
 {
-    Params[0] = {"STRING", string()};
+    Params.push_back(Variable("STRING", string()));
 }
 
 void NsbInterpreter::PlaceholderParam()
