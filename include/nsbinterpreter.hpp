@@ -148,7 +148,7 @@ private:
     void CallScript();
     void Center();
 
-    // Builtins
+    // Builtin functions
     void NSBDestroy();
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void NSBArrayRead(int32_t Depth);
@@ -164,6 +164,9 @@ private:
     void NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void NSBGetMovieTime();
     void NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
+
+    // GL functions are builtins like NSB, but need to be called from OpenGL thread
+    // See: Game::GLCallback
     void GLDestroy(Drawable* pDrawable);
     void GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
     void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
@@ -198,15 +201,15 @@ private:
     volatile bool StopInterpreter;
     volatile int32_t WaitTime;
 
-    string HandleName;
-    bool BranchCondition;
-    std::stack<FuncReturn> Returns;
-    std::vector<NsbFile*> LoadedScripts;
-    std::map<string, Variable> Variables;
+    string HandleName; // Identifier of current Drawable/Playable used by NSB and GL functions
+    bool BranchCondition; // If false, code block after If/While is not executed
+    std::stack<FuncReturn> Returns; // Call stack
+    std::vector<NsbFile*> LoadedScripts; // Scripts considered in symbol lookup
+    std::map<string, Variable> Variables; // All local and global variables (TODO: respect scope)
     std::map<string, ArrayVariable> Arrays;
-    std::vector<Variable> Params;
+    std::vector<Variable> Params; // Builtin function parameters
     std::vector<ArrayVariable*> ArrayParams;
-    std::vector<BuiltinFunc> Builtins;
+    std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
 };
 
 template <> bool NsbInterpreter::GetParam(int32_t Index);
