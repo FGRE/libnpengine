@@ -310,8 +310,14 @@ void NsbInterpreter::Negative()
 
 void NsbInterpreter::CreateArray()
 {
-    for (uint32_t i = 1; i < Params.size(); ++i)
-        Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+    // Create new tree
+    if (ArrayParams.empty())
+        for (uint32_t i = 1; i < Params.size(); ++i)
+            Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+    // Create subtree
+    else
+        for (uint32_t i = 1; i < Params.size(); ++i)
+            ArrayParams.back()->Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
 }
 
 void NsbInterpreter::Set()
