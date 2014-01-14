@@ -206,7 +206,7 @@ private:
     std::stack<FuncReturn> Returns; // Call stack
     std::vector<NsbFile*> LoadedScripts; // Scripts considered in symbol lookup
     std::map<string, Variable> Variables; // All local and global variables (TODO: respect scope)
-    std::map<string, ArrayVariable> Arrays;
+    std::map<string, ArrayVariable> Arrays; // Same as above, except these are trees
     std::vector<Variable> Params; // Builtin function parameters
     std::vector<ArrayVariable*> ArrayParams;
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
