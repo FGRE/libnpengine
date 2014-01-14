@@ -45,6 +45,7 @@ class Playable;
 
 typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 
+// Represents Nitroscript variable
 struct Variable
 {
     Variable() : Type("STRING") {}
@@ -54,6 +55,7 @@ struct Variable
     string Value;
 };
 
+// Note that this structure is actually a tree. See: ArrayMembers typedef
 struct ArrayVariable : Variable
 {
     ArrayVariable() : Variable() {}
@@ -61,6 +63,8 @@ struct ArrayVariable : Variable
     ArrayMembers Members;
 };
 
+// Element of call stack
+// Contains script and line to which function will return upon ending
 struct FuncReturn
 {
     NsbFile* pScript;

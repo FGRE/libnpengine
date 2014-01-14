@@ -62,6 +62,7 @@ struct FadeEffect // TODO: Also LerpEffect
     sf::Clock FadeClock;
 };
 
+// Any effect which can be represented as smooth transition
 struct LerpEffect
 {
     sf::Vector2f Old;
