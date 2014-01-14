@@ -309,14 +309,19 @@ void NsbInterpreter::CreateArray()
 
 void NsbInterpreter::Set()
 {
-    // Probably bug in script or not yet implemented builtin
-    if (Params.empty())
-        return;
-
     if (pLine->Params.back() == "__array_variable__")
-        ;//*ArrayParams[ArrayParams.size() - 1] = Params[0];
+    {
+        if (ArrayParams.empty())
+            return;
+
+        ArrayParams.back()->Type = Params.back().Type;
+        ArrayParams.back()->Value = Params.back().Value;
+    }
     else
     {
+        if (Params.empty())
+            return;
+
         // SetParam(STRING, value1)
         // SetParam(STRING, value2); <- Take last param
         // Set($var); <- Put it into first argument
