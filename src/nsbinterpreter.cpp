@@ -136,6 +136,7 @@ void NsbInterpreter::Run()
         while (!RunInterpreter)
             Sleep(10);
 
+        // Some operations require interpreter to wait before continuing
         if (WaitTime > 0)
         {
             Sleep(WaitTime);
@@ -218,6 +219,7 @@ void NsbInterpreter::ArraySize()
 
 void NsbInterpreter::If()
 {
+    // Jump to end of block only if condition is not met
     if (BranchCondition)
         return;
 
@@ -474,6 +476,7 @@ void NsbInterpreter::ClearParams()
 void NsbInterpreter::Begin()
 {
     // Turn params into variables
+    // TODO: Scope should be respected instead
     for (uint32_t i = 1; i < pLine->Params.size(); ++i)
         SetVariable(pLine->Params[i], Params[i - 1]);
 }
@@ -604,10 +607,13 @@ void NsbInterpreter::Format()
 void NsbInterpreter::Add()
 {
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
-    NsbAssert(Params[First].Type == Params[Second].Type,
-              "Concating params of different types (% and %)",
-              Params[First].Type, Params[Second].Type);
-    if (Params[First].Type == "INT" && Params[Second].Type == "INT")
+    if (NsbAssert(Params[First].Type == Params[Second].Type,
+                  "Concating params of different types (% and %)",
+                  Params[First].Type, Params[Second].Type));
+        return;
+
+    // If parameters are integers, perform addition instead of string concat
+    if (Params[First].Type == "INT")
         Params[First].Value = boost::lexical_cast<string>(
                               boost::lexical_cast<int32_t>(Params[First].Value) +
                               boost::lexical_cast<int32_t>(Params[Second].Value));
@@ -699,6 +705,7 @@ void NsbInterpreter::LoadScript(const string& FileName)
 
 void NsbInterpreter::CallScript(const string& FileName)
 {
+    // TODO: This is incorrect. Calling scripts should respect call stack as well
     if (NsbFile* pScript = sResourceMgr->GetResource<NsbFile>(FileName))
         this->pScript = pScript;
 }
@@ -720,6 +727,7 @@ bool NsbInterpreter::JumpTo(uint16_t Magic)
 #warning Remove return value. Its a hack for If() hack
     while (pLine = pScript->GetNextLine())
     {
+        // Just in case, jumping beyond function end can be very bad
         if (pLine->Magic == MAGIC_FUNCTION_END)
             return false;
 
@@ -775,6 +783,7 @@ void NsbInterpreter::Crash()
 
 void NsbInterpreter::Recover()
 {
+    // It is generally segfault-safe to jump to next ClearParams()
     if (pScript)
         JumpTo(MAGIC_CLEAR_PARAMS);
 }
