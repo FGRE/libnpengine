@@ -179,6 +179,11 @@ void NsbInterpreter::Start()
 
 void NsbInterpreter::LoadTextureClip()
 {
+    HandleName = GetParam<string>(0);
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTextureClip, this,
+                      GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
+                      GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<int32_t>(6),
+                      GetParam<int32_t>(7), GetParam<string>(8)));
 }
 
 void NsbInterpreter::CreateThread()

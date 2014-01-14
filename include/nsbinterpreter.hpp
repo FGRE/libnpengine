@@ -176,6 +176,7 @@ private:
     void GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File);
     void GLApplyBlur(Drawable* pDrawable, const string& Heaviness);
     void GLParseText(const string& Box, const string& XML);
+    void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, string File);
 
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);

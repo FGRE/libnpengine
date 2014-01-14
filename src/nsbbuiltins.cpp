@@ -183,6 +183,10 @@ void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const
     pGame->AddDrawable(pDrawable);
 }
 
+void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, string File)
+{
+}
+
 void NsbInterpreter::GLParseText(const string& Box, const string& XML)
 {
     string NewHandle = Box + "/" + HandleName;
