@@ -94,6 +94,7 @@ private:
     void ExecuteScriptLocal(const string& InitScript);
 
     // Magic handlers
+    void CreateThread();
     void LoadTextureClip();
     void Increment();
     void LogicalGreater();
