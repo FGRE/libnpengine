@@ -49,6 +49,7 @@ BranchCondition(true)
 #endif
 
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_CREATE_THREAD] = &NsbInterpreter::CreateThread;
     Builtins[MAGIC_LOAD_TEXTURE_CLIP] = &NsbInterpreter::LoadTextureClip;
     Builtins[MAGIC_INCREMENT] = &NsbInterpreter::Increment;
     Builtins[MAGIC_LOGICAL_GREATER] = &NsbInterpreter::LogicalGreater;
@@ -176,6 +177,10 @@ void NsbInterpreter::Start()
 }
 
 void NsbInterpreter::LoadTextureClip()
+{
+}
+
+void NsbInterpreter::CreateThread()
 {
 }
 
