@@ -23,8 +23,12 @@
 #include <sstream>
 #include <string>
 #include <memory>
+#include <fstream>
 
 sf::Font Text::Font;
+bool Text::Fuwanovel;
+
+static const char* lf = "\n";
 
 Text::Text(const std::string& XML) :
 ::Drawable(new sf::Text, 0xFFFFFF, DRAWABLE_TEXT),
@@ -70,12 +74,29 @@ pCurrentMusic(nullptr)
         {
             Voices.push_back({pMusic, sf::String::fromUtf8(TextLine.begin(), TextLine.end())});
             sf::String* Str = &Voices[Voices.size() - 1].String;
-            size_t i = 28;
-            while (i < Str->getSize())
+            if (Fuwanovel)
             {
-                const char* lf = "\n";
-                Str->insert(i, sf::String::fromUtf8(lf, lf + 1));
-                i += 29;
+                size_t i = 0, j, k = 1;
+                do
+                {
+                do
+                {
+                    j = i;
+                    i = Str->find(" ", i + 1);
+                } while (i < 52 * k && i < Str->getSize());
+                if (j+1 < Str->getSize() && i != sf::String::InvalidPos)
+                    Str->insert(j + 1, sf::String::fromUtf8(lf, lf + 1));
+                ++k;
+                } while (i != sf::String::InvalidPos);
+            }
+            else
+            {
+                size_t i = 28;
+                while (i < Str->getSize())
+                {
+                    Str->insert(i, sf::String::fromUtf8(lf, lf + 1));
+                    i += 29;
+                }
             }
             pMusic = nullptr;
         }
@@ -114,5 +135,9 @@ bool Text::NextLine()
 
 void Text::Initialize(const std::string& FontFile)
 {
+    if (std::ifstream("FUWANOVEL"))
+        Fuwanovel = true;
+    else
+        Fuwanovel = false;
     assert(Font.loadFromFile(FontFile));
 }
