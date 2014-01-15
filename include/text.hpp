@@ -42,6 +42,7 @@ struct Text : Drawable
     Playable* pCurrentMusic;
     static void Initialize(const std::string& FontFile);
     static sf::Font Font;
+    static bool Fuwanovel;
 };
 
 #endif
