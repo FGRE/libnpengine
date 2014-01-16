@@ -152,6 +152,7 @@ private:
     void System();
     void CreateScrollbar();
     void CallScene();
+    void Time();
 
     // Stubs
     void UNK1();
