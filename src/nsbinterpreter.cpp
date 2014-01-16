@@ -49,6 +49,7 @@ BranchCondition(true)
 #endif
 
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_SYSTEM] = &NsbInterpreter::System;
     Builtins[MAGIC_CREATE_THREAD] = &NsbInterpreter::CreateThread;
     Builtins[MAGIC_LOAD_TEXTURE_CLIP] = &NsbInterpreter::LoadTextureClip;
     Builtins[MAGIC_INCREMENT] = &NsbInterpreter::Increment;
@@ -192,8 +193,11 @@ void NsbInterpreter::LoadTextureClip()
                       GetParam<int32_t>(7), GetParam<string>(8)));
 }
 
+// CreateProcess in Chaos;Head
 void NsbInterpreter::CreateThread()
 {
+    HandleName = GetParam<string>(0);
+    NSBCreateThread(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3), GetParam<string>(4));
 }
 
 void NsbInterpreter::Increment()
@@ -289,7 +293,7 @@ void NsbInterpreter::LogicalNot()
     else if (Params.back().Value == "false")
         BranchCondition = true;
     else
-       NsbAssert(false, "LogicalNot(): Applying to %",  Params.back().Value.c_str());
+        NsbAssert(false, "LogicalNot(): Applying to %",  Params.back().Value.c_str());
 }
 
 void NsbInterpreter::Zoom()
@@ -328,6 +332,12 @@ void NsbInterpreter::UNK5()
 // CreateDialog, see: cg/sys/dialog/
 void NsbInterpreter::UNK77()
 {
+}
+
+// WinAPI ShellExecute: Only OPEN:https://www.somewhere.derp is actually used
+void NsbInterpreter::System()
+{
+    NSBSystem(GetParam<string>(0), GetParam<string>(1), GetParam<string>(2));
 }
 
 void NsbInterpreter::PlaceholderParam()

@@ -377,6 +377,10 @@ void NsbInterpreter::NSBDestroy()
     }
 }
 
+void NsbInterpreter::NSBSystem(string Command, string Parameters, string Directory)
+{
+}
+
 void NsbInterpreter::NSBCreateArray()
 {
     // Create new tree
@@ -400,6 +404,18 @@ void NsbInterpreter::NSBBindIdentifier()
     else
         for (uint32_t i = 1; i < Params.size(); ++i)
             ArrayParams.back()->Members[i - 1].first = Params[i].Value;
+}
+
+void NsbInterpreter::NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, string Function)
+{
+    if (Thread* pThread = CacheHolder<Thread>::Read(HandleName))
+    {
+        // TODO: Cleanup
+    }
+
+    Thread* pThread = new Thread;
+    pThread->FuncSymbol = Function;
+    CacheHolder<Thread>::Write(HandleName, pThread);
 }
 
 void NsbInterpreter::NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1,
