@@ -49,6 +49,7 @@ BranchCondition(true)
 #endif
 
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
+    Builtins[MAGIC_CALL_SCENE] = &NsbInterpreter::CallScene;
     Builtins[MAGIC_CREATE_SCROLLBAR] = &NsbInterpreter::CreateScrollbar;
     Builtins[MAGIC_SYSTEM] = &NsbInterpreter::System;
     Builtins[MAGIC_CREATE_THREAD] = &NsbInterpreter::CreateThread;
@@ -268,6 +269,10 @@ void NsbInterpreter::Center()
 {
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
         pDrawable->SetCenter(GetParam<int32_t>(1), GetParam<int32_t>(2));
+}
+
+void NsbInterpreter::CallScene()
+{
 }
 
 void NsbInterpreter::CallChapter()

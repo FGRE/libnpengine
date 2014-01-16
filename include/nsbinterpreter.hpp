@@ -151,6 +151,7 @@ private:
     void Center();
     void System();
     void CreateScrollbar();
+    void CallScene();
 
     // Stubs
     void UNK1();
