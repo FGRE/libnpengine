@@ -48,7 +48,7 @@ BranchCondition(true)
     Text::Initialize("/usr/share/fonts/cjkuni-uming/uming.ttc");
 #endif
 
-    Builtins.resize(0xFF, nullptr);
+    Builtins.resize(MAGIC_UNK119 + 1, nullptr);
     Builtins[MAGIC_CREATE_SCROLLBAR] = &NsbInterpreter::CreateScrollbar;
     Builtins[MAGIC_SYSTEM] = &NsbInterpreter::System;
     Builtins[MAGIC_CREATE_THREAD] = &NsbInterpreter::CreateThread;
