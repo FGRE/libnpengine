@@ -112,7 +112,6 @@ private:
     void Call();
     void Add();
     void Format();
-    void BindIdentifier();
     void LoadMovie();
     void ApplyMask();
     void ClearParams();
@@ -136,17 +135,23 @@ private:
     void Set();
     void Negative();
     void PlaceholderParam();
-    void CreateArray();
-    void UNK5();
-    void UNK65();
     void Zoom();
     void If();
     void While();
     void LogicalNot();
     void LogicalEqual();
     void LogicalNotEqual();
-    void CallScript();
+    void CallChapter();
     void Center();
+
+    // Stubs
+    void UNK1();
+    void UNK2();
+    void UNK3();
+    void UNK4();
+    void UNK5();
+    void UNK65();
+    void UNK77();
 
     // Builtin functions
     void NSBDestroy();
@@ -164,6 +169,8 @@ private:
     void NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void NSBGetMovieTime();
     void NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
+    void NSBBindIdentifier();
+    void NSBCreateArray();
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
     // See: Game::GLCallback
