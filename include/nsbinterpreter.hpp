@@ -71,6 +71,12 @@ struct FuncReturn
     uint32_t SourceLine;
 };
 
+// Concurrently running function created by CreateThread
+struct Thread
+{
+    string FuncSymbol;
+};
+
 class NsbInterpreter
 {
     typedef void (NsbInterpreter::*BuiltinFunc)();
@@ -143,6 +149,7 @@ private:
     void LogicalNotEqual();
     void CallChapter();
     void Center();
+    void System();
 
     // Stubs
     void UNK1();
@@ -171,6 +178,8 @@ private:
     void NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void NSBBindIdentifier();
     void NSBCreateArray();
+    void NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, string Function);
+    void NSBSystem(string Command, string Parameters, string Directory);
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
     // See: Game::GLCallback
