@@ -49,6 +49,7 @@ BranchCondition(true)
 #endif
 
     Builtins.resize(0xFF, nullptr);
+    Builtins[MAGIC_CREATE_SCROLLBAR] = &NsbInterpreter::CreateScrollbar;
     Builtins[MAGIC_SYSTEM] = &NsbInterpreter::System;
     Builtins[MAGIC_CREATE_THREAD] = &NsbInterpreter::CreateThread;
     Builtins[MAGIC_LOAD_TEXTURE_CLIP] = &NsbInterpreter::LoadTextureClip;
@@ -182,6 +183,10 @@ void NsbInterpreter::Pause()
 void NsbInterpreter::Start()
 {
     RunInterpreter = true;
+}
+
+void NsbInterpreter::CreateScrollbar()
+{
 }
 
 void NsbInterpreter::LoadTextureClip()

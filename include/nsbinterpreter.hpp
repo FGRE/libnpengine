@@ -150,6 +150,7 @@ private:
     void CallChapter();
     void Center();
     void System();
+    void CreateScrollbar();
 
     // Stubs
     void UNK1();
