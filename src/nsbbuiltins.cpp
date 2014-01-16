@@ -20,6 +20,7 @@
 #include "resourcemgr.hpp"
 #include "text.hpp"
 #include "movie.hpp"
+#include "nsbfile.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
@@ -374,6 +375,31 @@ void NsbInterpreter::NSBDestroy()
         pGame->AddDrawable((Movie*)nullptr);
         CacheHolder<Playable>::Write(HandleName, nullptr);
     }
+}
+
+void NsbInterpreter::NSBCreateArray()
+{
+    // Create new tree
+    if (ArrayParams.empty())
+        for (uint32_t i = 1; i < Params.size(); ++i)
+            Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+    // Create subtree
+    else
+        for (uint32_t i = 1; i < Params.size(); ++i)
+            ArrayParams.back()->Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+}
+
+
+void NsbInterpreter::NSBBindIdentifier()
+{
+    // Bind to first level of tree
+    if (ArrayParams.empty())
+        for (uint32_t i = 1; i < Params.size(); ++i)
+            Arrays[pLine->Params[0]].Members[i - 1].first = Params[i].Value;
+    // Bind to subtree
+    else
+        for (uint32_t i = 1; i < Params.size(); ++i)
+            ArrayParams.back()->Members[i - 1].first = Params[i].Value;
 }
 
 void NsbInterpreter::NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1,

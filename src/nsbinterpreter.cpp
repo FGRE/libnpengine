@@ -59,7 +59,7 @@ BranchCondition(true)
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
     Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
     Builtins[MAGIC_NEGATIVE] = &NsbInterpreter::Negative;
-    Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::CreateArray;
+    Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::NSBCreateArray;
     Builtins[MAGIC_SET] = &NsbInterpreter::Set;
     Builtins[MAGIC_ARRAY_READ] = &NsbInterpreter::ArrayRead;
     Builtins[MAGIC_REGISTER_CALLBACK] = &NsbInterpreter::RegisterCallback;
@@ -89,9 +89,9 @@ BranchCondition(true)
     Builtins[MAGIC_ADD] = &NsbInterpreter::Add;
     Builtins[MAGIC_DESTROY] = &NsbInterpreter::Destroy;
     Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
-    Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
+    Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::NSBBindIdentifier;
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
-    Builtins[MAGIC_CALL_SCRIPT] = &NsbInterpreter::CallScript;
+    Builtins[MAGIC_CALL_CHAPTER] = &NsbInterpreter::CallChapter;
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
     //Builtins[MAGIC_WHILE] = &NsbInterpreter::While;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
@@ -100,10 +100,16 @@ BranchCondition(true)
     Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
-    Builtins[MAGIC_UNK3] = &NsbInterpreter::ClearParams; // Unknown if this hack is still needed
+    //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
+
+    // Stubs
+    Builtins[MAGIC_UNK1] = &NsbInterpreter::UNK1;
+    Builtins[MAGIC_UNK2] = &NsbInterpreter::UNK2;
+    Builtins[MAGIC_UNK3] = &NsbInterpreter::UNK3;
+    Builtins[MAGIC_UNK3] = &NsbInterpreter::UNK4;
     Builtins[MAGIC_UNK5] = &NsbInterpreter::UNK5;
     Builtins[MAGIC_UNK65] = &NsbInterpreter::UNK65;
-    //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
+    Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
 
     // TODO: include.nss/herpderp.nss from .map files instead
     LoadScript("nss/function_steinsgate.nsb");
@@ -255,7 +261,7 @@ void NsbInterpreter::Center()
         pDrawable->SetCenter(GetParam<int32_t>(1), GetParam<int32_t>(2));
 }
 
-void NsbInterpreter::CallScript()
+void NsbInterpreter::CallChapter()
 {
     CallScript(GetParam<string>(0));
 }
@@ -283,7 +289,7 @@ void NsbInterpreter::LogicalNot()
     else if (Params.back().Value == "false")
         BranchCondition = true;
     else
-        std::cout << "LogicalNot(): Applying to " << Params.back().Value << std::endl;
+       NsbAssert(false, "LogicalNot(): Applying to %",  Params.back().Value.c_str());
 }
 
 void NsbInterpreter::Zoom()
@@ -293,9 +299,35 @@ void NsbInterpreter::Zoom()
                 GetParam<float>(3), GetParam<string>(4), GetParam<bool>(5));
 }
 
+void NsbInterpreter::UNK1()
+{
+}
+
+// LogicalOr, probably
+void NsbInterpreter::UNK2()
+{
+}
+
+// BlockBegin, called after Function/Chapter/Scene begin or If
+void NsbInterpreter::UNK3()
+{
+    ClearParams();
+}
+
+// BlockEnd, called before Function/Chapter/Scene end or Label
+void NsbInterpreter::UNK4()
+{
+}
+
+// GetScriptName, file name without nss/ or .nsb
 void NsbInterpreter::UNK5()
 {
     Params.push_back(Variable("STRING", string()));
+}
+
+// CreateDialog, see: cg/sys/dialog/
+void NsbInterpreter::UNK77()
+{
 }
 
 void NsbInterpreter::PlaceholderParam()
@@ -308,18 +340,6 @@ void NsbInterpreter::Negative()
     // Negative integers are incorrectly compiled by Nitroplus
     // This works around the issue: See: NsbInterpreter::GetParam<T>
     Params.back().Type = "WTF";
-}
-
-void NsbInterpreter::CreateArray()
-{
-    // Create new tree
-    if (ArrayParams.empty())
-        for (uint32_t i = 1; i < Params.size(); ++i)
-            Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
-    // Create subtree
-    else
-        for (uint32_t i = 1; i < Params.size(); ++i)
-            ArrayParams.back()->Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
 }
 
 void NsbInterpreter::Set()
@@ -695,18 +715,6 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
     return false; // Silence gcc
 }
 
-void NsbInterpreter::BindIdentifier()
-{
-    // Bind to first level of tree
-    if (ArrayParams.empty())
-        for (uint32_t i = 1; i < Params.size(); ++i)
-            Arrays[pLine->Params[0]].Members[i - 1].first = Params[i].Value;
-    // Bind to subtree
-    else
-        for (uint32_t i = 1; i < Params.size(); ++i)
-            ArrayParams.back()->Members[i - 1].first = Params[i].Value;
-}
-
 void NsbInterpreter::Sleep(int32_t ms)
 {
     boost::this_thread::sleep_for(boost::chrono::milliseconds(ms));
@@ -724,9 +732,11 @@ void NsbInterpreter::LoadScript(const string& FileName)
 
 void NsbInterpreter::CallScript(const string& FileName)
 {
-    // TODO: This is incorrect. Calling scripts should respect call stack as well
-    if (NsbFile* pScript = sResourceMgr->GetResource<NsbFile>(FileName))
-        this->pScript = pScript;
+    if (NsbFile* pDestScript = sResourceMgr->GetResource<NsbFile>(FileName))
+    {
+        Returns.push({pScript, pScript->GetNextLineEntry()});
+        pScript = pDestScript;
+    }
 }
 
 bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
