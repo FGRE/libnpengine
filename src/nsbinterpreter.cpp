@@ -587,7 +587,7 @@ void NsbInterpreter::Call()
     const char* FuncName = pLine->Params[0].c_str();
 
     // Find function override
-    if (std::strcmp(FuncName, "MovieWaitSG") == 0)
+    if (std::strcmp(FuncName, "MovieWaitSG") == 0 && pGame->pMovie)
     {
         HandleName = "ムービー";
         NSBGetMovieTime();
