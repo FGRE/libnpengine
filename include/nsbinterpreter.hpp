@@ -153,6 +153,7 @@ private:
     void CreateScrollbar();
     void CallScene();
     void Time();
+    void Shake();
 
     // Stubs
     void UNK1();
