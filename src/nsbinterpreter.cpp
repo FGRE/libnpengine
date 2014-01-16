@@ -49,6 +49,7 @@ BranchCondition(true)
 #endif
 
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
+    Builtins[MAGIC_SHAKE] = &NsbInterpreter::Shake;
     Builtins[MAGIC_TIME] = &NsbInterpreter::Time;
     Builtins[MAGIC_CALL_SCENE] = &NsbInterpreter::CallScene;
     Builtins[MAGIC_CREATE_SCROLLBAR] = &NsbInterpreter::CreateScrollbar;
@@ -188,6 +189,10 @@ void NsbInterpreter::Start()
 }
 
 void NsbInterpreter::Time()
+{
+}
+
+void NsbInterpreter::Shake()
 {
 }
 
