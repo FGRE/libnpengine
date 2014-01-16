@@ -108,7 +108,7 @@ BranchCondition(true)
     Builtins[MAGIC_UNK1] = &NsbInterpreter::UNK1;
     Builtins[MAGIC_UNK2] = &NsbInterpreter::UNK2;
     Builtins[MAGIC_UNK3] = &NsbInterpreter::UNK3;
-    Builtins[MAGIC_UNK3] = &NsbInterpreter::UNK4;
+    Builtins[MAGIC_UNK4] = &NsbInterpreter::UNK4;
     Builtins[MAGIC_UNK5] = &NsbInterpreter::UNK5;
     Builtins[MAGIC_UNK65] = &NsbInterpreter::UNK65;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
