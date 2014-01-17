@@ -212,6 +212,11 @@ void NsbInterpreter::GLDestroy(Drawable* pDrawable)
 void NsbInterpreter::NSBArrayRead(int32_t Depth)
 {
     ArrayVariable* pVariable = &Arrays[HandleName];
+    int32_t Size = Params.size() - Depth;
+
+    // Not enough parameters provided
+    if (Size < 0)
+        return;
 
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
@@ -229,6 +234,9 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
             // TODO: Handle case when Identifier is not found
         }
     }
+
+    // Remove ArrayRead arguments from parameter list
+    Params.resize(Size);
 
     if (!pVariable)
         return;

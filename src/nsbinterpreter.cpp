@@ -49,6 +49,8 @@ BranchCondition(true)
 #endif
 
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
+    //Builtins[MAGIC_TEXTURE_WIDTH] = &NsbInterpreter::TextureWidth;
+    //Builtins[MAGIC_TEXTURE_HEIGHT] = &NsbInterpreter::TextureHeight;
     Builtins[MAGIC_SHAKE] = &NsbInterpreter::Shake;
     Builtins[MAGIC_TIME] = &NsbInterpreter::Time;
     Builtins[MAGIC_CALL_SCENE] = &NsbInterpreter::CallScene;
