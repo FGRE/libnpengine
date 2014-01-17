@@ -207,6 +207,7 @@ private:
     bool JumpTo(uint16_t Magic);
     void ReverseJumpTo(uint16_t Magic);
     void SetVariable(const string& Identifier, const Variable& Var);
+    void CallScriptSymbol(SymbolType Type);
     sf::Texture* LoadTextureFromFile(const string& File);
 
     void Recover();
