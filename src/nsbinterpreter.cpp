@@ -289,7 +289,13 @@ void NsbInterpreter::CallScene()
 
 void NsbInterpreter::CallChapter()
 {
-    CallScript(GetParam<string>(0));
+    string ScriptName = GetParam<string>(0), Symbol;
+    if (size_t i = ScriptName.find("->"))
+    {
+        Symbol = ScriptName.substr(i + 2);
+        ScriptName.erase(i);
+    }
+    CallScript(ScriptName, Symbol, SYMBOL_CHAPTER);
 }
 
 void NsbInterpreter::LogicalNotEqual()
@@ -743,7 +749,7 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
         return true;
     else if (String == "false")
         return false;
-    NsbAssert(false, "Invalid boolification of string: ", String.c_str());
+    NsbAssert(false, "Invalid boolification of string: ", String);
     return false; // Silence gcc
 }
 
@@ -762,18 +768,19 @@ void NsbInterpreter::LoadScript(const string& FileName)
     LoadedScripts.push_back(sResourceMgr->GetResource<NsbFile>(FileName));
 }
 
-void NsbInterpreter::CallScript(const string& FileName)
+void NsbInterpreter::CallScript(const string& FileName, const string& Symbol, SymbolType Type)
 {
     if (NsbFile* pDestScript = sResourceMgr->GetResource<NsbFile>(FileName))
     {
         Returns.push({pScript, pScript->GetNextLineEntry()});
         pScript = pDestScript;
+        pScript->SetSourceIter(pScript->GetSymbol(Symbol, Type));
     }
 }
 
 bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
 {
-    if (uint32_t FuncLine = pDestScript->GetFunctionLine(FuncName))
+    if (uint32_t FuncLine = pDestScript->GetSymbol(FuncName, SYMBOL_FUNCTION))
     {
         Returns.push({pScript, pScript->GetNextLineEntry()});
         pScript = pDestScript;
