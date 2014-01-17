@@ -108,13 +108,13 @@ BranchCondition(true)
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
     Builtins[MAGIC_GET_SCRIPT_NAME] = &NsbInterpreter::GetScriptName;
+    Builtins[MAGIC_SCOPE_BEGIN] = &NsbInterpreter::ScopeBegin;
+    Builtins[MAGIC_SCOPE_END] = &NsbInterpreter::ScopeEnd;
     //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
 
     // Stubs
     Builtins[MAGIC_UNK1] = &NsbInterpreter::UNK1;
     Builtins[MAGIC_UNK2] = &NsbInterpreter::UNK2;
-    Builtins[MAGIC_UNK3] = &NsbInterpreter::UNK3;
-    Builtins[MAGIC_UNK4] = &NsbInterpreter::UNK4;
     Builtins[MAGIC_UNK65] = &NsbInterpreter::UNK65;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
 
@@ -348,13 +348,13 @@ void NsbInterpreter::UNK2()
 }
 
 // BlockBegin, called after Function/Chapter/Scene begin or If
-void NsbInterpreter::UNK3()
+void NsbInterpreter::ScopeBegin()
 {
     ClearParams();
 }
 
 // BlockEnd, called before Function/Chapter/Scene end or Label
-void NsbInterpreter::UNK4()
+void NsbInterpreter::ScopeEnd()
 {
 }
 
