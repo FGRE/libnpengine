@@ -262,8 +262,15 @@ void NsbInterpreter::NSBSetState(const string& State)
         }
     }
     else if (Playable* pPlayable = CacheHolder<Playable>::Read(HandleName))
+    {
         if (State == "Play")
             pPlayable->Play();
+    }
+    else if (Thread* pThread = CacheHolder<Thread>::Read(HandleName))
+    {
+        if (State == "Start")
+            ;
+    }
 }
 
 void NsbInterpreter::NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
@@ -419,6 +426,7 @@ void NsbInterpreter::NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, s
     if (Thread* pThread = CacheHolder<Thread>::Read(HandleName))
     {
         // TODO: Cleanup
+        delete pThread;
     }
 
     Thread* pThread = new Thread;
