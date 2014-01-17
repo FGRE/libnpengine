@@ -124,6 +124,9 @@ BranchCondition(true)
     LoadScript("nss/extra_achievements.nsb");
     LoadScript("nss/function_select.nsb");
     LoadScript("nss/function_stand.nsb");
+
+    // Hack
+    SetVariable("#SYSTEM_cosplay_patch", Variable{"STRING", "false"});
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -253,6 +256,14 @@ void NsbInterpreter::ArraySize()
 
 void NsbInterpreter::If()
 {
+    // TODO: Check if Params evaluate to true
+    //      (Set BranchCondition before check)
+    // Hack: Propertly implementing If breaks a lot of stuff
+    //       because of other bugs, however this check is essential
+    // See:  #SYSTEM_cosplay_patch in constructor
+    if (Params.size() == 1 && Params[0].Value == "false")
+        BranchCondition = false;
+
     // Jump to end of block only if condition is not met
     if (BranchCondition)
         return;
