@@ -18,6 +18,8 @@
 #ifndef NSB_INTERPRETER_HPP
 #define NSB_INTERPRETER_HPP
 
+#include "nsbfile.hpp"
+
 #include <stack>
 #include <cstdint>
 #include <map>
@@ -89,7 +91,7 @@ public:
     void Pause();
     void Start();
 
-    void CallScript(const string& FileName);
+    void CallScript(const string& FileName, const string& Symbol, SymbolType Type);
     void DumpState();
 
 private:

@@ -62,7 +62,7 @@ void Game::Run()
                 case sf::Event::KeyPressed:
                     for (uint32_t i = 0; i < Callbacks.size(); ++i)
                         if (Callbacks[i].Key == Event.key.code)
-                            pInterpreter->CallScript(Callbacks[i].Script);
+                            pInterpreter->CallScript(Callbacks[i].Script, "", SYMBOL_CHAPTER);
                     if (Event.key.code == sf::Keyboard::F8)
                         pInterpreter->DumpState();
                     else if (Event.key.code == sf::Keyboard::LControl)

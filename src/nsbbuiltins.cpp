@@ -20,7 +20,6 @@
 #include "resourcemgr.hpp"
 #include "text.hpp"
 #include "movie.hpp"
-#include "nsbfile.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
