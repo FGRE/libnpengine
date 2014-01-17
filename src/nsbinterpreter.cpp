@@ -315,7 +315,7 @@ void NsbInterpreter::LogicalNot()
     else if (Params.back().Value == "false")
         BranchCondition = true;
     else
-        NsbAssert(false, "LogicalNot(): Applying to %",  Params.back().Value.c_str());
+        std::cout << "LogicalNot(): Applying to " << Params.back().Value << std::endl;
 }
 
 void NsbInterpreter::Zoom()
