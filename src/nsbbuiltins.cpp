@@ -397,15 +397,18 @@ void NsbInterpreter::NSBSystem(string Command, string Parameters, string Directo
 
 void NsbInterpreter::NSBCreateArray()
 {
-    // Check if tree already exists
-    auto iter = Arrays.find(pLine->Params[0]);
-    if (NsbAssert(iter == Arrays.end(), "Cannot create tree % as it already exists", pLine->Params[0]))
-        return;
-
     // Create new tree
     if (ArrayParams.empty())
+    {
+        // Check if tree already exists
+        auto iter = Arrays.find(pLine->Params[0]);
+        if (NsbAssert(iter == Arrays.end(),
+            "Cannot create tree % as it already exists", pLine->Params[0]))
+            return;
+
         for (uint32_t i = 1; i < Params.size(); ++i)
             Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+    }
     // Create subtree
     else
         for (uint32_t i = 1; i < Params.size(); ++i)
@@ -415,15 +418,17 @@ void NsbInterpreter::NSBCreateArray()
 
 void NsbInterpreter::NSBBindIdentifier()
 {
-    // Check if identifiers are already bound
-    if (NsbAssert(Arrays[pLine->Params[0]].Members[0].first.empty(),
-        "Cannot bind identifiers to tree as they are already bound"))
-        return;
-
     // Bind to first level of tree
     if (ArrayParams.empty())
+    {
+        // Check if identifiers are already bound
+        if (NsbAssert(Arrays[pLine->Params[0]].Members[0].first.empty(),
+            "Cannot bind identifiers to tree as they are already bound"))
+            return;
+
         for (uint32_t i = 1; i < Params.size(); ++i)
             Arrays[pLine->Params[0]].Members[i - 1].first = Params[i].Value;
+    }
     // Bind to subtree
     else
         for (uint32_t i = 1; i < Params.size(); ++i)
