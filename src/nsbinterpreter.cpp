@@ -107,6 +107,7 @@ BranchCondition(true)
     Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
+    Builtins[MAGIC_GET_SCRIPT_NAME] = &NsbInterpreter::GetScriptName;
     //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
 
     // Stubs
@@ -114,7 +115,6 @@ BranchCondition(true)
     Builtins[MAGIC_UNK2] = &NsbInterpreter::UNK2;
     Builtins[MAGIC_UNK3] = &NsbInterpreter::UNK3;
     Builtins[MAGIC_UNK4] = &NsbInterpreter::UNK4;
-    Builtins[MAGIC_UNK5] = &NsbInterpreter::UNK5;
     Builtins[MAGIC_UNK65] = &NsbInterpreter::UNK65;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
 
@@ -358,10 +358,11 @@ void NsbInterpreter::UNK4()
 {
 }
 
-// GetScriptName, file name without nss/ or .nsb
-void NsbInterpreter::UNK5()
+void NsbInterpreter::GetScriptName()
 {
-    Params.push_back(Variable("STRING", string()));
+    string Name = pScript->GetName();
+    Name = Name.substr(4, Name.size() - 8); // Remove nss/ and .nsb
+    Params.push_back(Variable("STRING", Name));
 }
 
 // CreateDialog, see: cg/sys/dialog/
