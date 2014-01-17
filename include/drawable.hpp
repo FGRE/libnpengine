@@ -105,6 +105,4 @@ private:
     sf::Vector2f Position;
 };
 
-extern const float FadeConvert;
-
 #endif
