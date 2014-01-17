@@ -157,12 +157,12 @@ private:
     void Time();
     void Shake();
     void GetScriptName();
+    void ScopeBegin();
+    void ScopeEnd();
 
     // Stubs
     void UNK1();
     void UNK2();
-    void UNK3();
-    void UNK4();
     void UNK65();
     void UNK77();
 
