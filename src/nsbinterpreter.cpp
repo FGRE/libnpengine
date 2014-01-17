@@ -138,6 +138,7 @@ void NsbInterpreter::ExecuteScript(const string& ScriptName)
 
 void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 {
+    // This leaks memory but nobody really cares
     pScript = new NsbFile(ScriptName);
     Run();
 }
