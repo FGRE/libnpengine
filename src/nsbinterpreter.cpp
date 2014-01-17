@@ -285,9 +285,15 @@ void NsbInterpreter::Center()
 
 void NsbInterpreter::CallScene()
 {
+    CallScriptSymbol(SYMBOL_SCENE);
 }
 
 void NsbInterpreter::CallChapter()
+{
+    CallScriptSymbol(SYMBOL_CHAPTER);
+}
+
+void NsbInterpreter::CallScriptSymbol(SymbolType Type)
 {
     string ScriptName = GetParam<string>(0), Symbol;
     if (size_t i = ScriptName.find("->"))
@@ -295,7 +301,8 @@ void NsbInterpreter::CallChapter()
         Symbol = ScriptName.substr(i + 2);
         ScriptName.erase(i);
     }
-    CallScript(ScriptName, Symbol, SYMBOL_CHAPTER);
+    ScriptName.back() = 'b';
+    CallScript(ScriptName, Symbol, Type);
 }
 
 void NsbInterpreter::LogicalNotEqual()
