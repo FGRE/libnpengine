@@ -156,13 +156,13 @@ private:
     void CallScene();
     void Time();
     void Shake();
+    void GetScriptName();
 
     // Stubs
     void UNK1();
     void UNK2();
     void UNK3();
     void UNK4();
-    void UNK5();
     void UNK65();
     void UNK77();
 
