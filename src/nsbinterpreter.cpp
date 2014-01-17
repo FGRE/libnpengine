@@ -896,13 +896,7 @@ bool NsbInterpreter::NsbAssert(bool expr, const char* fmt)
     return true;
 }
 
-// Because fuck you krofna, that's why
-template <> bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, std::string value)
+template <> bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, string value)
 {
-#warning This is workaround for possible gcc bug
-    if (expr)
-        return false;
-    std::cout << fmt << " " << value << std::endl; // I don't even care enough to format it anymore...
-    Crash();
-    return true;
+    return NsbAssert(expr, fmt, value.c_str());
 }
