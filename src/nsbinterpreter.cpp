@@ -281,7 +281,18 @@ void NsbInterpreter::If()
 
 void NsbInterpreter::While()
 {
-    If();
+    if (BranchCondition)
+        return;
+
+    string Label = GetParam<string>(0);
+    size_t i = Label.find("begin");
+    Label.erase(i, 5);
+    Label.insert(i, "end");
+    do
+    {
+        if (!JumpTo(MAGIC_LABEL))
+            return;
+    } while(pLine->Params[0] != Label);
 }
 
 void NsbInterpreter::LoopJump()
