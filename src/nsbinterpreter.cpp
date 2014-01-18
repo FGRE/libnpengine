@@ -148,6 +148,11 @@ void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 
 void NsbInterpreter::Run()
 {
+    // Hack: boot script should call StArray()
+    for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
+        if (CallFunction(LoadedScripts[i], "StArray"))
+            break;
+
     do
     {
         while (!RunInterpreter)
@@ -676,7 +681,7 @@ void NsbInterpreter::Call()
 {
     const char* FuncName = pLine->Params[0].c_str();
 
-    // Find function override
+    // Find function override (i.e. a hack)
     if (std::strcmp(FuncName, "MovieWaitSG") == 0 && pGame->pMovie)
     {
         HandleName = "ムービー";
@@ -686,6 +691,10 @@ void NsbInterpreter::Call()
                           CacheHolder<Drawable>::Read("ムービー")));
         return;
     }
+    else if (std::strcmp(FuncName, "St") == 0 ||
+             std::strcmp(FuncName, "PosSt") == 0 ||
+             std::strcmp(FuncName, "FadeSt") == 0)
+        Params[0].Value = "STBUF1";
 
     // Find function locally
     if (CallFunction(pScript, FuncName))
