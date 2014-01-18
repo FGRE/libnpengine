@@ -368,6 +368,13 @@ void NsbInterpreter::NSBSetAudioState(Playable* pMusic, int32_t NumSeconds, int3
 
 void NsbInterpreter::NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait)
 {
+    if (x == 0 || y == 0)
+    {
+        std::cout << "Script attempted to Zoom with x or y scale value 0" << std::endl;
+        WriteTrace(std::cout);
+        return;
+    }
+
     pDrawable->AddLerpEffect(LERP_ZOOM, x / 1000.0f, y / 1000.0f, Time);
     if (Wait)
         WaitTime = Time;
