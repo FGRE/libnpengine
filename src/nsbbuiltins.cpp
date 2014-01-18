@@ -220,17 +220,29 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
         ArrayMembers& Members = pVariable->Members;
-        // Parameters contain identifiers of child nodes
-        // for each level specifying which path to take
-        for (uint32_t i = 0; i < Members.size(); ++i)
+        Variable Index = Params[Params.size() - Depth - 1];
+
+        if (Index.Type == "STRING")
         {
-            // Node is found
-            if (Members[i].first == Params[Params.size() - Depth - 1].Value)
+            // Parameters contain identifiers of child nodes
+            // for each level specifying which path to take
+            for (uint32_t i = 0; i < Members.size(); ++i)
             {
-                pVariable = &Members[i].second;
-                break; // Go to next level (if needed)
+                // Node is found
+                if (Members[i].first == Index.Value)
+                {
+                    pVariable = &Members[i].second;
+                    break; // Go to next level (if needed)
+                }
+                // TODO: Handle case when Identifier is not found
             }
-            // TODO: Handle case when Identifier is not found
+        }
+        else if (Index.Type == "INT")
+        {
+            int32_t i = boost::lexical_cast<int32_t>(Index.Value);
+            if (i >= Members.size())
+                return;
+            pVariable = &Members[i].second;
         }
     }
 
