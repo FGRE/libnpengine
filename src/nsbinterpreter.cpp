@@ -691,8 +691,13 @@ void NsbInterpreter::Call()
 void NsbInterpreter::Format()
 {
     boost::format Fmt(Params[0].Value);
-    for (uint8_t i = 1; i < Params.size(); ++i)
+
+    // Don't format more Params than specified by argument list (pLine->Params)
+    for (uint8_t i = Params.size() - (pLine->Params.size() - 1); i < Params.size(); ++i)
         Fmt % Params[i].Value;
+
+    // Remove arguments used by Format
+    Params.resize(Params.size() - (pLine->Params.size() - 1));
     Params.back().Value = Fmt.str();
 }
 
