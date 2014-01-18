@@ -163,7 +163,7 @@ private:
     // Stubs
     void UNK1();
     void UNK2();
-    void UNK65();
+    void LoopJump();
     void UNK77();
 
     // Builtin functions

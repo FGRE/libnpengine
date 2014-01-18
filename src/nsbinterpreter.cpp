@@ -111,11 +111,11 @@ BranchCondition(true)
     Builtins[MAGIC_SCOPE_BEGIN] = &NsbInterpreter::ScopeBegin;
     Builtins[MAGIC_SCOPE_END] = &NsbInterpreter::ScopeEnd;
     Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format;
+    //Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
 
     // Stubs
     Builtins[MAGIC_UNK1] = &NsbInterpreter::UNK1;
     Builtins[MAGIC_UNK2] = &NsbInterpreter::UNK2;
-    //Builtins[MAGIC_UNK65] = &NsbInterpreter::UNK65;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
 
     // TODO: include.nss/herpderp.nss from .map files instead
@@ -284,7 +284,7 @@ void NsbInterpreter::While()
     If();
 }
 
-void NsbInterpreter::UNK65()
+void NsbInterpreter::LoopJump()
 {
     ReverseJumpTo(MAGIC_WHILE); // TODO: Incorrect when nesting. See: If
     ReverseJumpTo(MAGIC_CLEAR_PARAMS); // Jump before check is done
