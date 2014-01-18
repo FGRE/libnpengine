@@ -110,7 +110,7 @@ BranchCondition(true)
     Builtins[MAGIC_GET_SCRIPT_NAME] = &NsbInterpreter::GetScriptName;
     Builtins[MAGIC_SCOPE_BEGIN] = &NsbInterpreter::ScopeBegin;
     Builtins[MAGIC_SCOPE_END] = &NsbInterpreter::ScopeEnd;
-    //Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format; // Depends on ArrayRead
+    Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format;
 
     // Stubs
     Builtins[MAGIC_UNK1] = &NsbInterpreter::UNK1;
@@ -693,7 +693,7 @@ void NsbInterpreter::Format()
     boost::format Fmt(Params[0].Value);
     for (uint8_t i = 1; i < Params.size(); ++i)
         Fmt % Params[i].Value;
-    Params[0].Value = Fmt.str();
+    Params.back().Value = Fmt.str();
 }
 
 void NsbInterpreter::Add()
