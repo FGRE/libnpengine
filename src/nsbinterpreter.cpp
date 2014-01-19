@@ -289,21 +289,36 @@ void NsbInterpreter::While()
     if (BranchCondition)
         return;
 
+    // Use the fact that labels are consistently named
     string Label = GetParam<string>(0);
     size_t i = Label.find("begin");
     Label.erase(i, 5);
     Label.insert(i, "end");
+
     do
     {
         if (!JumpTo(MAGIC_LABEL))
             return;
-    } while(pLine->Params[0] != Label);
+    } while (pLine->Params[0] != Label);
 }
 
 void NsbInterpreter::LoopJump()
 {
-    ReverseJumpTo(MAGIC_WHILE); // TODO: Incorrect when nesting. See: If
-    ReverseJumpTo(MAGIC_CLEAR_PARAMS); // Jump before check is done
+    pLine = pScript->GetNextLine(); // MAGIC_LABEL
+
+    // Opposite of While()
+    string Label = GetParam<string>(0);
+    size_t i = Label.find("end");
+    Label.erase(i, 3);
+    Label.insert(i, "begin");
+
+    do
+    {
+        ReverseJumpTo(MAGIC_WHILE);
+    } while (pLine->Params[0] != Label);
+
+    // Jump before logical condition
+    ReverseJumpTo(MAGIC_CLEAR_PARAMS);
 }
 
 void NsbInterpreter::Center()
