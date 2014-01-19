@@ -36,7 +36,7 @@ const std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
   [] (int32_t x) { return 0; }
 };
 
-sf::Texture* NsbInterpreter::LoadTextureFromFile(const string& File)
+sf::Texture* NsbInterpreter::LoadTextureFromFile(const string& File, const sf::IntRect& Area = sf::IntRect())
 {
     uint32_t Size;
     char* pPixels = sResourceMgr->Read(File, &Size);
@@ -44,7 +44,7 @@ sf::Texture* NsbInterpreter::LoadTextureFromFile(const string& File)
         return nullptr;
 
     sf::Texture* pTexture = new sf::Texture;
-    if (NsbAssert(pTexture->loadFromMemory(pPixels, Size), "Failed to load pixels from % in memory", File))
+    if (NsbAssert(pTexture->loadFromMemory(pPixels, Size, Area), "Failed to load pixels from % in memory", File))
     {
         delete pTexture;
         return nullptr;
@@ -154,6 +154,11 @@ void NsbInterpreter::GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Lo
 
 void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File)
 {
+	GLLoadTextureClip(Priority, x, y, 0, 0, 0, 0, File);
+}
+
+void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File)
+{
     if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
     {
         pGame->RemoveDrawable(pDrawable);
@@ -166,7 +171,7 @@ void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const
     if (sf::RenderTexture* pRenderTexture = CacheHolder<sf::RenderTexture>::Read(File))
         pTexture = new sf::Texture(pRenderTexture->getTexture()); // TODO: Dont copy
     else
-        pTexture = LoadTextureFromFile(File);
+        pTexture = LoadTextureFromFile(File, sf::IntRect(tx, ty, width, height));
 
     if (!pTexture)
     {
@@ -184,10 +189,6 @@ void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const
     Drawable* pDrawable = new Drawable(pSprite, Priority, DRAWABLE_TEXTURE);
     CacheHolder<Drawable>::Write(HandleName, pDrawable);
     pGame->AddDrawable(pDrawable);
-}
-
-void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, string File)
-{
 }
 
 void NsbInterpreter::GLParseText(const string& Box, const string& XML)

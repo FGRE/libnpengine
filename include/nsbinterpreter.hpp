@@ -26,6 +26,7 @@
 #include <queue>
 #include <vector>
 #include <functional>
+#include <SFML/Graphics/Rect.hpp>
 using std::string;
 
 #define SPECIAL_POS_NUM 7
@@ -198,7 +199,7 @@ private:
     void GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File);
     void GLApplyBlur(Drawable* pDrawable, const string& Heaviness);
     void GLParseText(const string& Box, const string& XML);
-    void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, string File);
+    void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
 
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);
@@ -208,7 +209,7 @@ private:
     void ReverseJumpTo(uint16_t Magic);
     void SetVariable(const string& Identifier, const Variable& Var);
     void CallScriptSymbol(SymbolType Type);
-    sf::Texture* LoadTextureFromFile(const string& File);
+    sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
 
     void Recover();
     void WriteTrace(std::ostream& Stream);
