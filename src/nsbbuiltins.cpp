@@ -154,7 +154,7 @@ void NsbInterpreter::GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Lo
 
 void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File)
 {
-	GLLoadTextureClip(Priority, x, y, 0, 0, 0, 0, File);
+    GLLoadTextureClip(Priority, x, y, 0, 0, 0, 0, File);
 }
 
 void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File)
