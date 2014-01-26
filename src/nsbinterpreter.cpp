@@ -323,7 +323,7 @@ void NsbInterpreter::LoopJump()
 
 void NsbInterpreter::Center()
 {
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
         pDrawable->SetCenter(GetParam<int32_t>(1), GetParam<int32_t>(2));
 }
 
@@ -377,7 +377,7 @@ void NsbInterpreter::LogicalNot()
 
 void NsbInterpreter::Zoom()
 {
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
         NSBZoom(pDrawable, GetParam<int32_t>(1), GetParam<float>(2),
                 GetParam<float>(3), GetParam<string>(4), GetParam<bool>(5));
 }
@@ -452,6 +452,10 @@ void NsbInterpreter::Set()
         // Set($var); <- Put it into first argument
         SetVariable(pLine->Params[0], Params.back());
     }
+
+    // Handle hardcoded operations
+    if (pLine->Params[0] == "$SF_Phone_Open")
+        pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneOpen, this));
 }
 
 void NsbInterpreter::ArrayRead()
@@ -491,14 +495,14 @@ void NsbInterpreter::SleepMs()
 
 void NsbInterpreter::StartAnimation()
 {
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
         NSBStartAnimation(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
                           GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
 }
 
 void NsbInterpreter::DisplayText()
 {
-    if (Text* pText = (Text*)CacheHolder<Drawable>::Read(GetParam<string>(0)))
+    if (Text* pText = (Text*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
         NSBDisplayText(pText, GetParam<string>(1));
 }
 
@@ -550,7 +554,7 @@ void NsbInterpreter::CreateBox()
 
 void NsbInterpreter::ApplyBlur()
 {
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
         pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyBlur, this, pDrawable, GetParam<string>(1)));
     else
     {
@@ -606,7 +610,7 @@ void NsbInterpreter::Begin()
 
 void NsbInterpreter::ApplyMask()
 {
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(GetParam<string>(0)))
+    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
     {
         pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyMask, this, pDrawable,
                           GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
@@ -641,13 +645,13 @@ void NsbInterpreter::SetOpacity()
     HandleName = GetParam<string>(0);
     if (HandleName.back() == '*')
     {
-        WildcardCall<Drawable>(HandleName, [this] (Drawable* pDrawable)
+        WildcardCall<DrawableBase>(HandleName, [this] (DrawableBase* pDrawable)
         {
             NSBSetOpacity(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
                           GetParam<string>(3), GetParam<bool>(4));
         });
     }
-    else if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    else if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
         NSBSetOpacity(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
                       GetParam<string>(3), GetParam<bool>(4));
 }
@@ -701,9 +705,9 @@ void NsbInterpreter::Call()
     {
         HandleName = "ムービー";
         NSBGetMovieTime();
-        Sleep(GetVariable<int32_t>(Params[0].Value));
+        //Sleep(GetVariable<int32_t>(Params[0].Value));
         pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
-                          CacheHolder<Drawable>::Read("ムービー")));
+                          CacheHolder<DrawableBase>::Read("ムービー")));
         return;
     }
     else if (std::strcmp(FuncName, "St") == 0 ||

@@ -68,10 +68,24 @@ float Lerp(float Old, float New, float Progress)
         return Old - (Old - New) * Progress;
 }
 
-Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
+DrawableBase::DrawableBase(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
 Priority(Priority),
-Type(Type),
+Type(Type)
+{
+}
+
+DrawableBase::~DrawableBase()
+{
+}
+
+void DrawableBase::Draw(sf::RenderWindow* pWindow)
+{
+    pWindow->draw(*pDrawable);
+}
+
+Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
+DrawableBase(pDrawable, Priority, Type),
 pMask(nullptr),
 pBlur(nullptr)
 {

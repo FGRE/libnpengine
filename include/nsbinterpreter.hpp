@@ -42,6 +42,7 @@ class Game;
 class ResourceMgr;
 class Line;
 class Drawable;
+class DrawableBase;
 class ArrayVariable;
 class Text;
 class Playable;
@@ -173,7 +174,7 @@ private:
     void NSBArrayRead(int32_t Depth);
     void NSBSetState(const string& State);
     void NSBSetAudioLoop(Playable* pMusic, bool Loop);
-    void NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
+    void NSBStartAnimation(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void NSBDisplayText(Text* pText, const string& unk);
     void NSBSetAudioState(Playable* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
     void NSBSetAudioRange(Playable* pMusic, int32_t Begin, int32_t End);
@@ -182,7 +183,7 @@ private:
     void NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
     void NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void NSBGetMovieTime();
-    void NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
+    void NSBSetOpacity(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void NSBBindIdentifier();
     void NSBCreateArray();
     void NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, string Function);
@@ -190,7 +191,7 @@ private:
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
     // See: Game::GLCallback
-    void GLDestroy(Drawable* pDrawable);
+    void GLDestroy(DrawableBase* pDrawable);
     void GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
     void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
     void GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio);
@@ -200,6 +201,8 @@ private:
     void GLApplyBlur(Drawable* pDrawable, const string& Heaviness);
     void GLParseText(const string& Box, const string& XML);
     void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
+
+    void SGPhoneOpen();
 
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);

@@ -72,31 +72,43 @@ struct LerpEffect
     sf::Clock Clock;
 };
 
-class Drawable
+class DrawableBase
+{
+public:
+    DrawableBase(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type);
+    virtual ~DrawableBase() = 0;
+
+    virtual void Draw(sf::RenderWindow* pWindow);
+    virtual void Update() {}
+
+    int32_t GetPriority() const { return Priority; }
+    sf::Text* ToText() const { return (sf::Text*)pDrawable; }
+    sf::Sprite* ToSprite() const { return (sf::Sprite*)pDrawable; }
+
+    uint8_t Type;
+protected:
+    int32_t Priority;
+    sf::Drawable* pDrawable;
+};
+
+class Drawable : public DrawableBase
 {
 public:
     Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type);
     virtual ~Drawable();
 
-    void Draw(sf::RenderWindow* pWindow);
-    void Update();
+    virtual void Draw(sf::RenderWindow* pWindow);
+    virtual void Update();
     void SetBlur(const std::string& Heaviness);
     void SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index);
     void SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time);
     void AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Time);
     void SetCenter(int32_t x, int32_t y);
 
-    int32_t GetPriority() const { return Priority; }
-    sf::Sprite* ToSprite() const { return (sf::Sprite*)pDrawable; }
-    sf::Text* ToText() const { return (sf::Text*)pDrawable; }
-
-    uint8_t Type;
 protected:
     sf::Vector2f UpdateLerp(uint8_t i);
     LerpEffect* Lerps[LERP_MAX];
     FadeEffect* Fades[FADE_MAX];
-    sf::Drawable* pDrawable;
-    int32_t Priority;
 private:
     void UpdateFade(uint8_t Index);
     sf::Shader Shader;

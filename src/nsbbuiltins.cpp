@@ -93,7 +93,7 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
     if (HandleName == "クリア黒")
         return;
 
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
     {
         pGame->RemoveDrawable(pDrawable);
         delete pDrawable;
@@ -126,7 +126,7 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
     NsbAssert(pTexture->loadFromImage(ColorImage), "Failed to create color % texture to handle %.", Color, HandleName);
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
     pSprite->setPosition(x, y);
-    CacheHolder<Drawable>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
+    CacheHolder<DrawableBase>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
 }
 
 void NsbInterpreter::GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio)
@@ -159,7 +159,7 @@ void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const
 
 void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File)
 {
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
     {
         pGame->RemoveDrawable(pDrawable);
         delete pDrawable;
@@ -175,7 +175,7 @@ void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, i
 
     if (!pTexture)
     {
-        CacheHolder<Drawable>::Write(HandleName, nullptr);
+        CacheHolder<DrawableBase>::Write(HandleName, nullptr);
         return;
     }
 
@@ -187,7 +187,7 @@ void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, i
         y = SpecialPosTable[-(y + 1)](pTexture->getSize().y);
     pSprite->setPosition(x, y);
     Drawable* pDrawable = new Drawable(pSprite, Priority, DRAWABLE_TEXTURE);
-    CacheHolder<Drawable>::Write(HandleName, pDrawable);
+    CacheHolder<DrawableBase>::Write(HandleName, pDrawable);
     pGame->AddDrawable(pDrawable);
 }
 
@@ -195,13 +195,13 @@ void NsbInterpreter::GLParseText(const string& Box, const string& XML)
 {
     string NewHandle = Box + "/" + HandleName;
     SetVariable("$SYSTEM_present_text", { "STRING", NewHandle });
-    if (Drawable* pText = CacheHolder<Drawable>::Read(NewHandle))
+    if (DrawableBase* pText = CacheHolder<DrawableBase>::Read(NewHandle))
         delete pText;
     Text* pText = new Text(XML);
-    CacheHolder<Drawable>::Write(NewHandle, pText);
+    CacheHolder<DrawableBase>::Write(NewHandle, pText);
 }
 
-void NsbInterpreter::GLDestroy(Drawable* pDrawable)
+void NsbInterpreter::GLDestroy(DrawableBase* pDrawable)
 {
     if (pDrawable) // Not really needed?
         pGame->RemoveDrawable(pDrawable);
@@ -259,7 +259,7 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
 
 void NsbInterpreter::NSBSetState(const string& State)
 {
-    if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
     {
         if (State == "Smoothing")
         {
@@ -301,7 +301,7 @@ void NsbInterpreter::NSBGetMovieTime()
         std::cout << "Failed to get movie time because there is no Movie " << HandleName << std::endl;
 }
 
-void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
+void NsbInterpreter::NSBSetOpacity(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
 {
     if (pDrawable->Type == DRAWABLE_TEXT)
     {
@@ -309,10 +309,10 @@ void NsbInterpreter::NSBSetOpacity(Drawable* pDrawable, int32_t Time, int32_t Op
             return;
 
         pGame->GLCallback(std::bind(&Game::ClearText, pGame));
-        CacheHolder<Drawable>::Write(HandleName, nullptr); // hack: see Game::ClearText
+        CacheHolder<DrawableBase>::Write(HandleName, nullptr); // hack: see Game::ClearText
     }
     else
-        pDrawable->SetOpacity(Opacity, Time, FADE_TEX);
+        ((Drawable*)pDrawable)->SetOpacity(Opacity, Time, FADE_TEX);
 
     if (Wait)
         WaitTime = Time;
@@ -342,7 +342,7 @@ void NsbInterpreter::NSBSetAudioLoop(Playable* pMusic, bool Loop)
     pMusic->SetLoop(Loop);
 }
 
-void NsbInterpreter::NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait)
+void NsbInterpreter::NSBStartAnimation(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait)
 {
     if (pDrawable->Type == DRAWABLE_TEXT)
     {
@@ -350,7 +350,7 @@ void NsbInterpreter::NSBStartAnimation(Drawable* pDrawable, int32_t Time, int32_
             pDrawable->ToText()->setPosition(x, y);
     }
     else
-        pDrawable->AddLerpEffect(LERP_ANIM, x, y, Time);
+        ((Drawable*)pDrawable)->AddLerpEffect(LERP_ANIM, x, y, Time);
 
     if (Wait)
         WaitTime = Time;
@@ -386,10 +386,10 @@ void NsbInterpreter::NSBDestroy()
     // Hack: Do not destroy * (aka everything)
     if (HandleName.back() == '*' && HandleName.size() != 1)
     {
-        WildcardCall<Drawable>(HandleName, [this](Drawable* pDrawable)
+        WildcardCall<DrawableBase>(HandleName, [this](DrawableBase* pDrawable)
         {
             pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
-            CacheHolder<Drawable>::Write(HandleName, nullptr);
+            CacheHolder<DrawableBase>::Write(HandleName, nullptr);
         });
         WildcardCall<Playable>(HandleName, [this](Playable* pMovie)
         {
@@ -398,10 +398,10 @@ void NsbInterpreter::NSBDestroy()
             CacheHolder<Playable>::Write(HandleName, nullptr);
         });
     }
-    else if (Drawable* pDrawable = CacheHolder<Drawable>::Read(HandleName))
+    else if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
     {
         pGame->GLCallback(std::bind(&NsbInterpreter::GLDestroy, this, pDrawable));
-        CacheHolder<Drawable>::Write(HandleName, nullptr);
+        CacheHolder<DrawableBase>::Write(HandleName, nullptr);
     }
     else if (Playable* pMovie = CacheHolder<Playable>::Read(HandleName))
     {
