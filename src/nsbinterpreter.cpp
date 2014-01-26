@@ -703,9 +703,10 @@ void NsbInterpreter::Call()
     // Find function override (i.e. a hack)
     if (std::strcmp(FuncName, "MovieWaitSG") == 0 && pGame->pMovie)
     {
+        ClearParams();
         HandleName = "ムービー";
         NSBGetMovieTime();
-        //Sleep(GetVariable<int32_t>(Params[0].Value));
+        Sleep(GetVariable<int32_t>(Params[0].Value));
         pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                           CacheHolder<DrawableBase>::Read("ムービー")));
         return;
