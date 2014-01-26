@@ -1,6 +1,6 @@
 /* 
  * libnpengine: Nitroplus script interpreter
- * Copyright (C) 2013-2014 Mislav Blažević <krofnica996@gmail.com>
+ * Copyright (C) 2014 Mislav Blažević <krofnica996@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
@@ -15,34 +15,29 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef TEXT_HPP
-#define TEXT_HPP
-
-#include <SFML/Graphics/Text.hpp>
 #include "drawable.hpp"
 
-class Playable;
-
-struct Voice
+enum PhoneState
 {
-    Playable* pMusic;
-    sf::String String;
+    PHONE_CLOSING = 0,
+    PHONE_OPENING = 1,
+    PHONE_NONE,
 };
 
-struct Text : DrawableBase
+class Phone : public DrawableBase
 {
-    Text(const std::string& XML);
-    virtual ~Text();
+public:
+    Phone(sf::Drawable* pDrawable);
+    virtual ~Phone();
 
-    bool NextLine();
-    std::vector<Voice> Voices;
-    size_t LineIter;
+    virtual void Update();
+    void UpdateOpenMode(int32_t OpenMode);
 
-    void StopMusic();
-    Playable* pCurrentMusic;
-    static void Initialize(const std::string& FontFile);
-    static sf::Font Font;
-    static bool Fuwanovel;
+private:
+    void UpdateAnim();
+
+    uint8_t State;
+    int8_t AnimRow;
+    int8_t AnimColumn;
+    sf::Clock AnimClock;
 };
-
-#endif

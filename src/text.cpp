@@ -24,6 +24,8 @@
 #include <string>
 #include <memory>
 #include <fstream>
+#include <limits>
+#include <SFML/Graphics/RenderWindow.hpp>
 
 sf::Font Text::Font;
 bool Text::Fuwanovel;
@@ -31,7 +33,7 @@ bool Text::Fuwanovel;
 static const char* lf = "\n";
 
 Text::Text(const std::string& XML) :
-::Drawable(new sf::Text, 0xFFFFFF, DRAWABLE_TEXT),
+::DrawableBase(new sf::Text, std::numeric_limits<int32_t>::max(), DRAWABLE_TEXT),
 LineIter(0),
 pCurrentMusic(nullptr)
 {

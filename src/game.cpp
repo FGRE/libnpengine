@@ -133,7 +133,7 @@ void Game::ClearText()
     pText = nullptr;
 }
 
-void Game::AddDrawable(Drawable* pDrawable)
+void Game::AddDrawable(DrawableBase* pDrawable)
 {
     auto Spot = Drawables.begin();
     while (Spot != Drawables.end())
@@ -150,7 +150,7 @@ void Game::AddDrawable(Movie* pMovie)
     this->pMovie = pMovie;
 }
 
-void Game::RemoveDrawable(Drawable* pDrawable)
+void Game::RemoveDrawable(DrawableBase* pDrawable)
 {
     Drawables.remove(pDrawable);
 }
