@@ -93,7 +93,7 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
     if (HandleName == "クリア黒")
         return;
 
-    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
+    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
     {
         pGame->RemoveDrawable(pDrawable);
         delete pDrawable;
@@ -159,7 +159,7 @@ void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const
 
 void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File)
 {
-    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
+    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
     {
         pGame->RemoveDrawable(pDrawable);
         delete pDrawable;
@@ -294,7 +294,6 @@ void NsbInterpreter::NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Wi
 // TODO: Rename; works for any playable
 void NsbInterpreter::NSBGetMovieTime()
 {
-    Params.clear();
     if (Playable* pPlayable = CacheHolder<Playable>::Read(HandleName))
         Params.push_back({"INT", boost::lexical_cast<string>(pPlayable->GetDuration())});
     else
