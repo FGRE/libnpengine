@@ -456,6 +456,8 @@ void NsbInterpreter::Set()
     // Handle hardcoded operations
     if (pLine->Params[0] == "$SF_Phone_Open")
         pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneOpen, this));
+    else if (pLine->Params[0] == "$SW_PHONE_MODE")
+        pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneMode, this));
 }
 
 void NsbInterpreter::ArrayRead()
