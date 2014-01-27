@@ -90,6 +90,8 @@ void Phone::UpdateAnim()
         delete pDrawable;
         pDrawable = new sf::Sprite;
         ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
+        State = PHONE_NONE;
+        return;
     }
 
     // Animation is not done: set next frame
