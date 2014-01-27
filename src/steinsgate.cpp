@@ -31,10 +31,16 @@ const int16_t PHONE_POS_X = 700; // TODO: guess
 const int16_t PHONE_POS_Y = PHONE_HEIGHT - WINDOW_HEIGHT;
 const int32_t PHONE_PRIORITY = 20000 - 1; // BoxImage01.Priority - 1 (function.nss)
 
-Phone::Phone(sf::Drawable* pDrawable) :
+// cg/sys/phone/phone_01.png
+const int16_t PHONE_TEX_X = 95; // TODO: guess
+const int16_t PHONE_TEX_Y = 0; // TODO: guess
+
+Phone::Phone(sf::Drawable* pDrawable, NsbInterpreter* pInterpreter) :
 DrawableBase(pDrawable, PHONE_PRIORITY, DRAWABLE_TEXTURE)
 {
     ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
+    pPhoneTex = pInterpreter->LoadTextureFromFile("cg/sys/phone/phone_01.png", sf::IntRect());
+    pPhoneOpenTex = pInterpreter->LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
 }
 
 Phone::~Phone()
@@ -44,6 +50,7 @@ Phone::~Phone()
 void Phone::UpdateOpenMode(int32_t OpenMode)
 {
     // TODO: Don't "jump" to end of animation if it didn't finish
+    ToSprite()->setTexture(*pPhoneOpenTex);
     State = OpenMode;
     switch (State)
     {
@@ -68,6 +75,24 @@ void Phone::UpdateAnim()
     //
     // See: cg/sys/phone/phone_open_anim.png
     //
+
+    // Animation finished in last call
+    if (State == PHONE_OPENING_DONE)
+    {
+        sf::IntRect ClipArea(PHONE_TEX_X, PHONE_TEX_Y, PHONE_WIDTH, PHONE_HEIGHT);
+        ToSprite()->setTexture(*pPhoneTex);
+        ToSprite()->setTextureRect(ClipArea);
+        State = PHONE_NONE;
+        return;
+    }
+    else if (State == PHONE_CLOSING_DONE)
+    {
+        delete pDrawable;
+        pDrawable = new sf::Sprite;
+        ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
+    }
+
+    // Animation is not done: set next frame
     sf::IntRect ClipArea(AnimColumn * PHONE_WIDTH, AnimRow * PHONE_HEIGHT, PHONE_WIDTH, PHONE_HEIGHT);
     ToSprite()->setTextureRect(ClipArea);
 
@@ -76,11 +101,11 @@ void Phone::UpdateAnim()
     {
         case PHONE_OPENING:
             if (AnimColumn == 0 && AnimRow == 0)
-                State = PHONE_NONE;
+                State = PHONE_OPENING_DONE;
             break;
         case PHONE_CLOSING:
             if (AnimColumn == PHONE_ANIM_COLUMN_MAX && AnimRow == PHONE_ANIM_ROW_MAX)
-                State = PHONE_NONE;
+                State = PHONE_CLOSING_DONE;
             break;
     }
 
@@ -89,7 +114,7 @@ void Phone::UpdateAnim()
     {
         case PHONE_OPENING: --AnimColumn; break;
         case PHONE_CLOSING: ++AnimColumn; break;
-        case PHONE_NONE: return;
+        case PHONE_OPENING_DONE: case PHONE_NONE: return;
     }
 
     // Go to previous row
@@ -109,13 +134,9 @@ void Phone::UpdateAnim()
 void NsbInterpreter::SGPhoneOpen()
 {
     static Phone* pPhone = nullptr;
-    static sf::Texture* pPhoneOpenTex = nullptr;
-    
-    if (!pPhoneOpenTex)
-        pPhoneOpenTex = LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
 
     if (!pPhone)
-        pPhone = new Phone(new sf::Sprite(*pPhoneOpenTex));
+        pPhone = new Phone(new sf::Sprite(), this);
 
     pPhone->UpdateOpenMode(GetVariable<int32_t>("$SF_Phone_Open"));
 
