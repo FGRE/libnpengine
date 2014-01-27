@@ -35,6 +35,30 @@ const int32_t PHONE_PRIORITY = 20000 - 1; // BoxImage01.Priority - 1 (function.n
 const int16_t PHONE_TEX_X = 95; // TODO: guess
 const int16_t PHONE_TEX_Y = 0; // TODO: guess
 
+const string PhoneMode[] =
+{
+    "PhoneMode_AddressBook",
+    "PhoneMode_AddressConfirmDial",
+    "PhoneMode_AddressConfirmMail",
+    "PhoneMode_Calling",
+    "PhoneMode_CompleteReceiveMail",
+    "PhoneMode_CompleteSendMail",
+    "PhoneMode_Default",
+    "PhoneMode_DefaultOperatable",
+    "PhoneMode_DialogSendMailEdit",
+    "PhoneMode_EngageNormal",
+    "PhoneMode_EngageVisual",
+    "PhoneMode_MailMenu",
+    "PhoneMode_MailSubMenu",
+    "PhoneMode_PowerOff",
+    "PhoneMode_ReceiveBox",
+    "PhoneMode_ReceivedMail",
+    "PhoneMode_ReceivingMail",
+    "PhoneMode_SendBox",
+    "PhoneMode_Sending",
+    "PhoneMode_SendMailEdit"
+};
+
 Phone::Phone(sf::Drawable* pDrawable, NsbInterpreter* pInterpreter) :
 DrawableBase(pDrawable, PHONE_PRIORITY, DRAWABLE_TEXTURE)
 {
@@ -144,4 +168,8 @@ void NsbInterpreter::SGPhoneOpen()
 
     pGame->RemoveDrawable(pPhone);
     pGame->AddDrawable(pPhone);
+}
+
+void NsbInterpreter::SGPhoneMode()
+{
 }
