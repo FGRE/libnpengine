@@ -131,6 +131,9 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
 
 void NsbInterpreter::GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio)
 {
+    if (std::ifstream("NOMOVIE"))
+        return;
+
     if (Playable* pMovie = CacheHolder<Playable>::Read(HandleName))
     {
         pGame->AddDrawable((Movie*)nullptr);
