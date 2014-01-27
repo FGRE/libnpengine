@@ -96,6 +96,8 @@ public:
     void CallScript(const string& FileName, const string& Symbol, SymbolType Type);
     void DumpState();
 
+    // Triggers NsbAssert upon failure; do *NOT* use outside interpreter
+    sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
 private:
     void Run();
     void Sleep(int32_t ms);
@@ -212,7 +214,6 @@ private:
     void ReverseJumpTo(uint16_t Magic);
     void SetVariable(const string& Identifier, const Variable& Var);
     void CallScriptSymbol(SymbolType Type);
-    sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
 
     void Recover();
     void WriteTrace(std::ostream& Stream);

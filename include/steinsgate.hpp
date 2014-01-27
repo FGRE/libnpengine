@@ -21,13 +21,15 @@ enum PhoneState
 {
     PHONE_CLOSING = 0,
     PHONE_OPENING = 1,
-    PHONE_NONE,
+    PHONE_OPENING_DONE, // Switch from last opening animation frame to open phone frame
+    PHONE_CLOSING_DONE, // Same as above, except that phone needs to be removed
+    PHONE_NONE, // Either fully open or closed
 };
 
 class Phone : public DrawableBase
 {
 public:
-    Phone(sf::Drawable* pDrawable);
+    Phone(sf::Drawable* pDrawable, NsbInterpreter* pInterpreter);
     virtual ~Phone();
 
     virtual void Update();
@@ -40,4 +42,6 @@ private:
     int8_t AnimRow;
     int8_t AnimColumn;
     sf::Clock AnimClock;
+    sf::Texture* pPhoneOpenTex; // Open/Close animation frames
+    sf::Texture* pPhoneTex;
 };
