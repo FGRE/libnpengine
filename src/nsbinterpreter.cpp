@@ -714,9 +714,15 @@ void NsbInterpreter::Call()
                           CacheHolder<DrawableBase>::Read("ムービー")));
         return;
     }
+    else if (std::strcmp(FuncName, "DeleteAllSt") == 0)
+    {
+        ClearParams();
+        HandleName = "StNameSTBUF1/STBUF100";
+        NSBDestroy();
+        return;
+    }
     else if (std::strcmp(FuncName, "St") == 0 ||
-             std::strcmp(FuncName, "PosSt") == 0 ||
-             std::strcmp(FuncName, "FadeSt") == 0)
+             std::strcmp(FuncName, "PosSt") == 0)
         Params[0].Value = "STBUF1";
 
     // Find function locally
