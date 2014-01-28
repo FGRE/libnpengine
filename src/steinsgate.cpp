@@ -20,6 +20,7 @@
 #include "game.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 const int16_t PHONE_ANIM_SPEED = 40; // TODO: guess
 const int8_t PHONE_ANIM_ROW_MAX = 1;
@@ -34,8 +35,43 @@ const int32_t PHONE_PRIORITY = 20000 - 1; // BoxImage01.Priority - 1 (function.n
 // cg/sys/phone/phone_01.png
 const int16_t PHONE_TEX_X = 95; // TODO: guess
 const int16_t PHONE_TEX_Y = 0; // TODO: guess
+const int16_t PHONE_HEADER_TEX_X = 670;
+const int16_t PHONE_HEADER_TEX_Y = 384;
+const int16_t PHONE_HEADER_WIDTH = 220;
+const int16_t PHONE_HEADER_HEIGHT = 24;
 
-const string PhoneMode[] =
+const int16_t PHONE_HEADER_POS_X = PHONE_POS_X + 50; // TODO: guess
+const int16_t PHONE_HEADER_POS_Y = PHONE_POS_Y + 83; // TODO: guess
+const int16_t PHONE_WALLPAPER_X = PHONE_HEADER_POS_X; // TODO: guess
+const int16_t PHONE_WALLPAPER_Y = PHONE_HEADER_POS_Y + PHONE_HEADER_HEIGHT; // TODO: guess
+
+enum PhoneMode
+{
+    MODE_ADDRESS_BOOK = 0,
+    MODE_ADDRESS_CONFIRM_DIAL,
+    MODE_ADDRESS_CONFIRM_MAIL,
+    MODE_CALLING,
+    MODE_COMPLETE_RECEIVE_MAIL,
+    MODE_COMPLETE_SEND_MAIL,
+    MODE_DEFAULT,
+    MODE_DEFAULT_OPERATABLE,
+    MODE_DIALOG_SEND_MAIL_EDIT,
+    MODE_ENGAGE_NORMAL,
+    MODE_ENGAGE_VISUAL,
+    MODE_MAIL_MENU,
+    MODE_MAIL_SUB_MENU,
+    MODE_POWER_OFF,
+    MODE_RECEIVE_BOX,
+    MODE_RECEIVED_MAIL,
+    MODE_RECEIVING_MAIL,
+    MODE_SEND_BOX,
+    MODE_SENDING,
+    MODE_SEND_MAIL_EDIT,
+
+    MODE_INVALID = 0xFF // Custom
+};
+
+const string PhoneModeString[] =
 {
     "PhoneMode_AddressBook",
     "PhoneMode_AddressConfirmDial",
@@ -59,12 +95,14 @@ const string PhoneMode[] =
     "PhoneMode_SendMailEdit"
 };
 
-Phone::Phone(sf::Drawable* pDrawable, NsbInterpreter* pInterpreter) :
+Phone::Phone(sf::Drawable* pDrawable) :
 DrawableBase(pDrawable, PHONE_PRIORITY, DRAWABLE_TEXTURE)
 {
+    Header.setPosition(PHONE_HEADER_POS_X, PHONE_HEADER_POS_Y);
+    Wallpaper.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
     ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
-    pPhoneTex = pInterpreter->LoadTextureFromFile("cg/sys/phone/phone_01.png", sf::IntRect());
-    pPhoneOpenTex = pInterpreter->LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
+    pPhoneTex = LoadTextureFromFile("cg/sys/phone/phone_01.png", sf::IntRect());
+    pPhoneOpenTex = LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
 }
 
 Phone::~Phone()
@@ -85,9 +123,20 @@ void Phone::UpdateOpenMode(int32_t OpenMode)
     AnimClock.restart();
 }
 
+void Phone::Draw(sf::RenderWindow* pWindow)
+{
+    DrawableBase::Draw(pWindow);
+    if (Mode != MODE_POWER_OFF && State == PHONE_OPEN)
+    {
+        pWindow->draw(Wallpaper);
+        pWindow->draw(Header);
+    }
+}
+
 void Phone::Update()
 {
-    if (AnimClock.getElapsedTime().asMilliseconds() < PHONE_ANIM_SPEED || State == PHONE_NONE)
+    if (AnimClock.getElapsedTime().asMilliseconds() < PHONE_ANIM_SPEED
+        || State == PHONE_OPEN || State == PHONE_CLOSED)
         return;
 
     UpdateAnim();
@@ -106,7 +155,7 @@ void Phone::UpdateAnim()
         sf::IntRect ClipArea(PHONE_TEX_X, PHONE_TEX_Y, PHONE_WIDTH, PHONE_HEIGHT);
         ToSprite()->setTexture(*pPhoneTex);
         ToSprite()->setTextureRect(ClipArea);
-        State = PHONE_NONE;
+        State = PHONE_OPEN;
         return;
     }
     else if (State == PHONE_CLOSING_DONE)
@@ -114,7 +163,7 @@ void Phone::UpdateAnim()
         delete pDrawable;
         pDrawable = new sf::Sprite;
         ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
-        State = PHONE_NONE;
+        State = PHONE_CLOSED;
         return;
     }
 
@@ -140,7 +189,7 @@ void Phone::UpdateAnim()
     {
         case PHONE_OPENING: --AnimColumn; break;
         case PHONE_CLOSING: ++AnimColumn; break;
-        case PHONE_OPENING_DONE: case PHONE_NONE: return;
+        case PHONE_OPENING_DONE: case PHONE_CLOSING_DONE: return;
     }
 
     // Go to previous row
@@ -157,19 +206,59 @@ void Phone::UpdateAnim()
     }
 }
 
+void Phone::UpdateMode(uint8_t NewMode)
+{
+    if (NewMode == Mode)
+        return;
+
+    Mode = NewMode;
+    switch (Mode)
+    {
+        case MODE_DEFAULT:
+            if (sf::Texture* pTexture = LoadTextureFromFile("cg/sys/phone/pwcg101.png", sf::IntRect()))
+                SetWallpaper(pTexture);
+
+            if (!Header.getTexture())
+            {
+                sf::IntRect ClipArea(PHONE_HEADER_TEX_X, PHONE_HEADER_TEX_Y, PHONE_HEADER_WIDTH, PHONE_HEADER_HEIGHT);
+                Header.setTexture(*pPhoneTex);
+                Header.setTextureRect(ClipArea);
+            }
+            break;
+        case MODE_POWER_OFF:
+            break;
+    }
+}
+
+void Phone::SetWallpaper(sf::Texture* pTexture)
+{
+    delete Wallpaper.getTexture();
+    Wallpaper.setTexture(*pTexture);
+}
+
 void NsbInterpreter::SGPhoneOpen()
 {
-    static Phone* pPhone = nullptr;
-
-    if (!pPhone)
-        pPhone = new Phone(new sf::Sprite(), this);
-
     pPhone->UpdateOpenMode(GetVariable<int32_t>("$SF_Phone_Open"));
-
     pGame->RemoveDrawable(pPhone);
     pGame->AddDrawable(pPhone);
 }
 
 void NsbInterpreter::SGPhoneMode()
 {
+    string StringMode = GetVariable<string>("$SW_PHONE_MODE");
+    uint8_t Mode = MODE_INVALID;
+
+    for (uint8_t i = 0; i <= MODE_SEND_MAIL_EDIT; ++i)
+    {
+        if (StringMode == PhoneModeString[i])
+        {
+            Mode = i;
+            break;
+        }
+    }
+
+    if (NsbAssert(Mode != MODE_INVALID, "Invalid phone mode specified: %", StringMode.c_str()))
+        return;
+
+    pPhone->UpdateMode(Mode);
 }
