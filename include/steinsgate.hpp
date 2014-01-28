@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "drawable.hpp"
+#include <SFML/Graphics/Sprite.hpp>
 
 enum PhoneState
 {
@@ -23,25 +24,32 @@ enum PhoneState
     PHONE_OPENING = 1,
     PHONE_OPENING_DONE, // Switch from last opening animation frame to open phone frame
     PHONE_CLOSING_DONE, // Same as above, except that phone needs to be removed
-    PHONE_NONE, // Either fully open or closed
+    PHONE_OPEN,
+    PHONE_CLOSED
 };
 
 class Phone : public DrawableBase
 {
 public:
-    Phone(sf::Drawable* pDrawable, NsbInterpreter* pInterpreter);
+    Phone(sf::Drawable* pDrawable);
     virtual ~Phone();
 
+    virtual void Draw(sf::RenderWindow* pWindow);
     virtual void Update();
     void UpdateOpenMode(int32_t OpenMode);
+    void UpdateMode(uint8_t NewMode);
+    void SetWallpaper(sf::Texture* pTexture);
 
 private:
     void UpdateAnim();
 
+    uint8_t Mode;
     uint8_t State;
     int8_t AnimRow;
     int8_t AnimColumn;
     sf::Clock AnimClock;
     sf::Texture* pPhoneOpenTex; // Open/Close animation frames
     sf::Texture* pPhoneTex;
+    sf::Sprite Wallpaper;
+    sf::Sprite Header;
 };

@@ -22,6 +22,7 @@
 #include "nsbmagic.hpp"
 #include "text.hpp"
 #include "playable.hpp"
+#include "steinsgate.hpp"
 
 #include <iostream>
 #include <boost/chrono.hpp>
@@ -37,6 +38,7 @@ static const std::string SpecialPos[SPECIAL_POS_NUM] =
 };
 
 NsbInterpreter::NsbInterpreter(Game* pGame) :
+pPhone(nullptr),
 pGame(pGame),
 StopInterpreter(false),
 WaitTime(0),
@@ -127,6 +129,9 @@ BranchCondition(true)
 
     // Hack
     SetVariable("#SYSTEM_cosplay_patch", Variable{"STRING", "false"});
+
+    // Steins gate
+    pPhone = new Phone(new sf::Sprite());
 }
 
 NsbInterpreter::~NsbInterpreter()

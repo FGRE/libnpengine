@@ -36,16 +36,20 @@ const std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
   [] (int32_t x) { return 0; }
 };
 
-sf::Texture* NsbInterpreter::LoadTextureFromFile(const string& File, const sf::IntRect& Area = sf::IntRect())
+sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area = sf::IntRect())
 {
     uint32_t Size;
     char* pPixels = sResourceMgr->Read(File, &Size);
-    if (NsbAssert(pPixels != nullptr, "Failed to load % pixels", File))
+    if (!pPixels)
+    {
+        std::cout << "Failed to load " << File << " pixels" << std::endl;
         return nullptr;
+    }
 
     sf::Texture* pTexture = new sf::Texture;
-    if (NsbAssert(pTexture->loadFromMemory(pPixels, Size, Area), "Failed to load pixels from % in memory", File))
+    if (!pTexture->loadFromMemory(pPixels, Size, Area))
     {
+        std::cout << "Failed to load pixels from " << File << " in memory" << std::endl;
         delete pTexture;
         return nullptr;
     }

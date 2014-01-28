@@ -46,6 +46,7 @@ class DrawableBase;
 class ArrayVariable;
 class Text;
 class Playable;
+class Phone;
 
 typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 
@@ -95,9 +96,6 @@ public:
 
     void CallScript(const string& FileName, const string& Symbol, SymbolType Type);
     void DumpState();
-
-    // Triggers NsbAssert upon failure; do *NOT* use outside interpreter
-    sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
 private:
     void Run();
     void Sleep(int32_t ms);
@@ -205,6 +203,7 @@ private:
     void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
 
     // Steins gate hardcoded functions
+    Phone* pPhone;
     void SGPhoneOpen();
     void SGPhoneMode();
 
@@ -245,5 +244,7 @@ private:
 
 template <> bool NsbInterpreter::GetParam(int32_t Index);
 template <> bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, string value);
+
+sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
 
 #endif
