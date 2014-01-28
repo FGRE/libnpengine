@@ -27,8 +27,8 @@ const int8_t PHONE_ANIM_COLUMN_MAX = 4;
 const int8_t PHONE_ANIM_UNDERFLOW = -1;
 const int16_t PHONE_WIDTH = 313;
 const int16_t PHONE_HEIGHT = 576;
-const int16_t PHONE_POS_X = 700; // TODO: guess
-const int16_t PHONE_POS_Y = 10;
+const int16_t PHONE_POS_X = 678;
+const int16_t PHONE_POS_Y = 8;
 const int32_t PHONE_PRIORITY = 20000 - 1; // BoxImage01.Priority - 1 (function.nss)
 
 // cg/sys/phone/phone_01.png
