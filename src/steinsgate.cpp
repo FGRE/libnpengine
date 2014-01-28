@@ -26,9 +26,9 @@ const int8_t PHONE_ANIM_ROW_MAX = 1;
 const int8_t PHONE_ANIM_COLUMN_MAX = 4;
 const int8_t PHONE_ANIM_UNDERFLOW = -1;
 const int16_t PHONE_WIDTH = 313;
-const int16_t PHONE_HEIGHT = 600;
+const int16_t PHONE_HEIGHT = 576;
 const int16_t PHONE_POS_X = 700; // TODO: guess
-const int16_t PHONE_POS_Y = PHONE_HEIGHT - WINDOW_HEIGHT;
+const int16_t PHONE_POS_Y = 10;
 const int32_t PHONE_PRIORITY = 20000 - 1; // BoxImage01.Priority - 1 (function.nss)
 
 // cg/sys/phone/phone_01.png
@@ -39,8 +39,8 @@ const int16_t PHONE_HEADER_TEX_Y = 384;
 const int16_t PHONE_HEADER_WIDTH = 220;
 const int16_t PHONE_HEADER_HEIGHT = 24;
 
-const int16_t PHONE_HEADER_POS_X = PHONE_POS_X + 50; // TODO: guess
-const int16_t PHONE_HEADER_POS_Y = PHONE_POS_Y + 83; // TODO: guess
+const int16_t PHONE_HEADER_POS_X = PHONE_POS_X + 48; // TODO: guess
+const int16_t PHONE_HEADER_POS_Y = PHONE_POS_Y + 87; // TODO: guess
 const int16_t PHONE_WALLPAPER_X = PHONE_HEADER_POS_X; // TODO: guess
 const int16_t PHONE_WALLPAPER_Y = PHONE_HEADER_POS_Y + PHONE_HEADER_HEIGHT; // TODO: guess
 
