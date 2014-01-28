@@ -136,6 +136,7 @@ BranchCondition(true)
 
 NsbInterpreter::~NsbInterpreter()
 {
+    delete pPhone;
 }
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)

@@ -19,7 +19,6 @@
 #include "steinsgate.hpp"
 #include "game.hpp"
 
-#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
 const int16_t PHONE_ANIM_SPEED = 40; // TODO: guess
@@ -107,6 +106,10 @@ DrawableBase(pDrawable, PHONE_PRIORITY, DRAWABLE_TEXTURE)
 
 Phone::~Phone()
 {
+    delete pPhoneTex;
+    delete pPhoneOpenTex;
+    delete Header.getTexture();
+    delete Wallpaper.getTexture();
 }
 
 void Phone::UpdateOpenMode(int32_t OpenMode)
