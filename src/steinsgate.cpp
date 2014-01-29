@@ -38,11 +38,17 @@ const int16_t PHONE_HEADER_TEX_X = 670;
 const int16_t PHONE_HEADER_TEX_Y = 384;
 const int16_t PHONE_HEADER_WIDTH = 220;
 const int16_t PHONE_HEADER_HEIGHT = 24;
+const int16_t PHONE_NEW_MAIL_TEX_X = 302;
+const int16_t PHONE_NEW_MAIL_TEX_Y = 576;
+const int16_t PHONE_NEW_MAIL_WIDTH = 220;
+const int16_t PHONE_NEW_MAIL_HEIGHT = 130;
 
 const int16_t PHONE_HEADER_POS_X = PHONE_POS_X + 48; // TODO: guess
 const int16_t PHONE_HEADER_POS_Y = PHONE_POS_Y + 87; // TODO: guess
 const int16_t PHONE_WALLPAPER_X = PHONE_HEADER_POS_X; // TODO: guess
 const int16_t PHONE_WALLPAPER_Y = PHONE_HEADER_POS_Y + PHONE_HEADER_HEIGHT; // TODO: guess
+const int16_t PHONE_OVERLAY_POS_X = PHONE_WALLPAPER_X;
+const int16_t PHONE_OVERLAY_POS_Y = 0; // TODO: NYI
 
 enum PhoneMode
 {
@@ -95,8 +101,10 @@ const string PhoneModeString[] =
 };
 
 Phone::Phone(sf::Drawable* pDrawable) :
-DrawableBase(pDrawable, PHONE_PRIORITY, DRAWABLE_TEXTURE)
+DrawableBase(pDrawable, PHONE_PRIORITY, DRAWABLE_TEXTURE),
+ShowOverlay(false)
 {
+    Overlay.setPosition(PHONE_OVERLAY_POS_X, PHONE_OVERLAY_POS_Y);
     Header.setPosition(PHONE_HEADER_POS_X, PHONE_HEADER_POS_Y);
     Wallpaper.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
     ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
@@ -134,6 +142,8 @@ void Phone::Draw(sf::RenderWindow* pWindow)
         pWindow->draw(Wallpaper);
         pWindow->draw(Header);
     }
+    if (ShowOverlay)
+        pWindow->draw(Overlay);
 }
 
 void Phone::Update()
@@ -237,6 +247,28 @@ void Phone::SetWallpaper(sf::Texture* pTexture)
 {
     delete Wallpaper.getTexture();
     Wallpaper.setTexture(*pTexture);
+}
+
+void Phone::MailReceive(int32_t Show)
+{
+    switch (Show)
+    {
+        case 0:
+            ShowOverlay = false;
+            break;
+        case 1:
+            if (!Overlay.getTexture())
+            {
+                sf::IntRect ClipArea(PHONE_NEW_MAIL_TEX_X, PHONE_NEW_MAIL_TEX_Y, PHONE_NEW_MAIL_WIDTH, PHONE_NEW_MAIL_HEIGHT);
+                Header.setTexture(*pPhoneTex);
+                Header.setTextureRect(ClipArea);
+            }
+            ShowOverlay = true;
+            break;
+        default:
+            std::cout << "Invalid value " << Show << " passed to MailReceive." << std::endl;
+            break;
+    }
 }
 
 void NsbInterpreter::SGPhoneOpen()

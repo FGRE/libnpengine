@@ -329,7 +329,11 @@ void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
     if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
         delete pMusic;
 
-    CacheHolder<Playable>::Write(HandleName, new Playable(sResourceMgr->GetFile(File)));
+    NpaIterator AudioFile = sResourceMgr->GetFile(File);
+    if (NsbAssert(AudioFile.GetFileSize() > 0, "Attempting to create Playable from empty file %", File.c_str()))
+        return;
+
+    CacheHolder<Playable>::Write(HandleName, new Playable(AudioFile));
 }
 
 void NsbInterpreter::NSBDisplayText(Text* pText, const string& unk)
