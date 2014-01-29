@@ -121,6 +121,7 @@ BranchCondition(true)
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
 
     // TODO: include.nss/herpderp.nss from .map files instead
+    LoadScript("nss/macrosys2.nsb");
     LoadScript("nss/function_steinsgate.nsb");
     LoadScript("nss/function.nsb");
     LoadScript("nss/extra_achievements.nsb");
@@ -464,6 +465,8 @@ void NsbInterpreter::Set()
         pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneOpen, this));
     else if (pLine->Params[0] == "$SW_PHONE_MODE")
         pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneMode, this));
+    else if (pLine->Params[0] == "$SF_PhoneMailReciveNew")
+        pGame->GLCallback(std::bind(&Phone::MailReceive, pPhone, GetVariable<int32_t>("$SF_PhoneMailReciveNew")));
 }
 
 void NsbInterpreter::ArrayRead()
@@ -846,7 +849,8 @@ void NsbInterpreter::SetVariable(const string& Identifier, const Variable& Var)
 
 void NsbInterpreter::LoadScript(const string& FileName)
 {
-    LoadedScripts.push_back(sResourceMgr->GetResource<NsbFile>(FileName));
+    if (NsbFile* pScript = sResourceMgr->GetResource<NsbFile>(FileName))
+        LoadedScripts.push_back(pScript);
 }
 
 void NsbInterpreter::CallScript(const string& FileName, const string& Symbol, SymbolType Type)

@@ -36,6 +36,7 @@ public:
 
     virtual void Draw(sf::RenderWindow* pWindow);
     virtual void Update();
+    void MailReceive(int32_t Show);
     void UpdateOpenMode(int32_t OpenMode);
     void UpdateMode(uint8_t NewMode);
     void SetWallpaper(sf::Texture* pTexture);
@@ -43,6 +44,7 @@ public:
 private:
     void UpdateAnim();
 
+    bool ShowOverlay;
     uint8_t Mode;
     uint8_t State;
     int8_t AnimRow;
@@ -52,4 +54,5 @@ private:
     sf::Texture* pPhoneTex;
     sf::Sprite Wallpaper;
     sf::Sprite Header;
+    sf::Sprite Overlay;
 };
