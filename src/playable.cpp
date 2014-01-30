@@ -42,8 +42,8 @@ void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
 static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
 {
     GstFlowReturn ret;
-    gsize Size = 1024;
-    if (pAppsrc->Offset + 1024 > pAppsrc->File.GetFileSize())
+    gsize Size = 4096;
+    if (pAppsrc->Offset + Size > pAppsrc->File.GetFileSize())
     {
         if (pAppsrc->Offset >= pAppsrc->File.GetFileSize())
         {
@@ -56,7 +56,7 @@ static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
     GstBuffer* Buffer = gst_buffer_new_wrapped(Data, Size);
     g_signal_emit_by_name(pAppsrc->Appsrc, "push-buffer", Buffer, &ret);
     gst_buffer_unref(Buffer);
-    pAppsrc->Offset += 1024;
+    pAppsrc->Offset += Size;
 }
 
 Playable::Playable(const std::string& FileName) :
@@ -134,7 +134,7 @@ void Playable::Stop()
 void Playable::Play()
 {
     gst_element_set_state(Pipeline, GST_STATE_PLAYING);
-    if (gst_element_get_state(Pipeline, NULL, NULL, GST_CLOCK_TIME_NONE) == GST_STATE_CHANGE_SUCCESS)
+    if (gst_element_get_state(Pipeline, NULL, NULL, GST_SECOND) == GST_STATE_CHANGE_SUCCESS)
         gst_element_seek_simple(Pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, Begin);
 }
 
