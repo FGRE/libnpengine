@@ -87,10 +87,7 @@ Begin(0)
 Playable::~Playable()
 {
     Stop();
-    if (gst_element_get_state(Pipeline, NULL, NULL, GST_SECOND) == GST_STATE_CHANGE_SUCCESS)
-        gst_object_unref(GST_OBJECT(Pipeline));
-    else
-        std::cout << "Failed to stop pipeline! Resource leak!" << std::endl;
+    gst_object_unref(GST_OBJECT(Pipeline));
 }
 
 void Playable::InitPipeline(GstElement* Source)
