@@ -372,6 +372,7 @@ void NsbInterpreter::NSBSetAudioRange(Playable* pMusic, int32_t Begin, int32_t E
 }
 
 // TODO: Actually audio fade out? Destroy after fade if Volume=0?
+// NumSeconds is actually milliseconds
 void NsbInterpreter::NSBSetAudioState(Playable* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo)
 {
     pMusic->SetVolume(Volume / 1000.0d);
