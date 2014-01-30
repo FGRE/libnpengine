@@ -50,6 +50,13 @@ const int16_t PHONE_WALLPAPER_Y = PHONE_HEADER_POS_Y + PHONE_HEADER_HEIGHT; // T
 const int16_t PHONE_OVERLAY_POS_X = PHONE_WALLPAPER_X;
 const int16_t PHONE_OVERLAY_POS_Y = 0; // TODO: NYI
 
+const int16_t PHONE_SD_POS_X = 20;
+const int16_t PHONE_SD_POS_Y = 20;
+const int16_t PHONE_SD_TEX_X = 794;
+const int16_t PHONE_SD_TEX_Y = 42;
+const int16_t PHONE_SD_WIDTH = 200;
+const int16_t PHONE_SD_HEIGHT = 50;
+
 enum PhoneMode
 {
     MODE_ADDRESS_BOOK = 0,
@@ -102,18 +109,22 @@ const string PhoneModeString[] =
 
 Phone::Phone(sf::Drawable* pDrawable) :
 DrawableBase(pDrawable, PHONE_PRIORITY, DRAWABLE_TEXTURE),
+ShowSD(false),
 ShowOverlay(false)
 {
+    SD.setPosition(PHONE_SD_POS_X, PHONE_SD_POS_Y);
     Overlay.setPosition(PHONE_OVERLAY_POS_X, PHONE_OVERLAY_POS_Y);
     Header.setPosition(PHONE_HEADER_POS_X, PHONE_HEADER_POS_Y);
     Wallpaper.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
     ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
     pPhoneTex = LoadTextureFromFile("cg/sys/phone/phone_01.png", sf::IntRect());
     pPhoneOpenTex = LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
+    pSDTex = LoadTextureFromFile("cg/sys/phone/phone_sd.png", sf::IntRect());
 }
 
 Phone::~Phone()
 {
+    delete pSDTex;
     delete pPhoneTex;
     delete pPhoneOpenTex;
     delete Header.getTexture();
@@ -144,6 +155,8 @@ void Phone::Draw(sf::RenderWindow* pWindow)
     }
     if (ShowOverlay)
         pWindow->draw(Overlay);
+    if (ShowSD)
+        pWindow->draw(SD);
 }
 
 void Phone::Update()
@@ -267,6 +280,28 @@ void Phone::MailReceive(int32_t Show)
             break;
         default:
             std::cout << "Invalid value " << Show << " passed to MailReceive." << std::endl;
+            break;
+    }
+}
+
+void Phone::SDDisplay(int32_t Show)
+{
+    switch (Show)
+    {
+        case 0:
+            ShowSD = false;
+            break;
+        case 1:
+            if (!SD.getTexture())
+            {
+                sf::IntRect ClipArea(PHONE_SD_TEX_X, PHONE_SD_TEX_Y, PHONE_SD_WIDTH, PHONE_SD_HEIGHT);
+                SD.setTexture(*pSDTex);
+                SD.setTextureRect(ClipArea);
+            }
+            ShowSD = true;
+            break;
+        default:
+            std::cout << "Invalid value " << Show << " passed to SDDisplay." << std::endl;
             break;
     }
 }

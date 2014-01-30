@@ -467,6 +467,8 @@ void NsbInterpreter::Set()
         pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneMode, this));
     else if (pLine->Params[0] == "$SF_PhoneMailReciveNew")
         pGame->GLCallback(std::bind(&Phone::MailReceive, pPhone, GetVariable<int32_t>("$SF_PhoneMailReciveNew")));
+    else if (pLine->Params[0] == "$SF_PhoneSD_Disp")
+        pGame->GLCallback(std::bind(&Phone::SDDisplay, pPhone, GetVariable<int32_t>("$SF_PhoneSD_Disp")));
 }
 
 void NsbInterpreter::ArrayRead()

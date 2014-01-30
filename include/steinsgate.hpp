@@ -36,6 +36,7 @@ public:
 
     virtual void Draw(sf::RenderWindow* pWindow);
     virtual void Update();
+    void SDDisplay(int32_t Show);
     void MailReceive(int32_t Show);
     void UpdateOpenMode(int32_t OpenMode);
     void UpdateMode(uint8_t NewMode);
@@ -44,6 +45,7 @@ public:
 private:
     void UpdateAnim();
 
+    bool ShowSD;
     bool ShowOverlay;
     uint8_t Mode;
     uint8_t State;
@@ -52,7 +54,9 @@ private:
     sf::Clock AnimClock;
     sf::Texture* pPhoneOpenTex; // Open/Close animation frames
     sf::Texture* pPhoneTex;
+    sf::Texture* pSDTex;
     sf::Sprite Wallpaper;
     sf::Sprite Header;
     sf::Sprite Overlay;
+    sf::Sprite SD;
 };
