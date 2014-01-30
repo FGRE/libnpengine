@@ -52,7 +52,7 @@ static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
         }
         Size = pAppsrc->File.GetFileSize() - pAppsrc->Offset;
     }
-    char* Data = pAppsrc->File.GetFileData(pAppsrc->Offset, 1024);
+    char* Data = pAppsrc->File.GetFileData(pAppsrc->Offset, Size);
     GstBuffer* Buffer = gst_buffer_new_wrapped(Data, Size);
     g_signal_emit_by_name(pAppsrc->Appsrc, "push-buffer", Buffer, &ret);
     gst_buffer_unref(Buffer);
