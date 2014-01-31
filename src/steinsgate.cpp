@@ -60,6 +60,7 @@ const int16_t PHONE_SD_HEIGHT = 50;
 // First digit in SD
 const int16_t PHONE_SD_DIGIT_POS_X = 36;
 const int16_t PHONE_SD_DIGIT_POS_Y = 36;
+const int16_t PHONE_SD_DIGIT_OFFSET_X = 7;
 
 // 1-9, 0
 const int16_t PHONE_DIGIT_A_TEX_X[10] =
@@ -78,6 +79,12 @@ const int16_t PHONE_DAY_TEX_X[7] =
 const int16_t PHONE_DAY_TEX_Y = 128;
 const int16_t PHONE_DAY_WIDTH = 39;
 const int16_t PHONE_DAY_HEIGHT = 14;
+
+// "/"
+const int16_t PHONE_SLASH_TEX_X = 400;
+const int16_t PHONE_SLASH_TEX_Y = 164;
+const int16_t PHONE_SLASH_WIDTH = 16;
+const int16_t PHONE_SLASH_HEIGHT = 24;
 
 enum PhoneMode
 {
@@ -326,6 +333,11 @@ void Phone::SDDisplay(int32_t Show)
             std::cout << "Invalid value " << Show << " passed to SDDisplay." << std::endl;
             break;
     }
+}
+
+void Phone::SetDate(string Date)
+{
+    
 }
 
 void NsbInterpreter::SGPhoneOpen()
