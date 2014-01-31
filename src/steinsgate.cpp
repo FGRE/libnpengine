@@ -57,14 +57,20 @@ const int16_t PHONE_SD_TEX_Y = 42;
 const int16_t PHONE_SD_WIDTH = 200;
 const int16_t PHONE_SD_HEIGHT = 50;
 
-const int16_t PHONE_NUMBER_A_TEX_X[10] =
+// First digit in SD
+const int16_t PHONE_SD_DIGIT_POS_X = 36;
+const int16_t PHONE_SD_DIGIT_POS_Y = 36;
+
+// 1-9, 0
+const int16_t PHONE_DIGIT_A_TEX_X[10] =
 {
     24, 59, 93, 127, 159, 192, 226, 260, 292, 334
 };
-const int16_t PHONE_NUMBER_A_TEX_Y = 83;
-const int16_t PHONE_NUMBER_A_WIDTH = 16;
-const int16_t PHONE_NUMBER_A_HEIGHT = 22;
+const int16_t PHONE_DIGIT_A_TEX_Y = 83;
+const int16_t PHONE_DIGIT_A_WIDTH = 16;
+const int16_t PHONE_DIGIT_A_HEIGHT = 22;
 
+// SUN, MON-SAT
 const int16_t PHONE_DAY_TEX_X[7] =
 {
     23, 75, 126, 178, 229, 281, 332
