@@ -29,7 +29,7 @@ const int16_t PHONE_WIDTH = 313;
 const int16_t PHONE_HEIGHT = 576;
 const int16_t PHONE_POS_X = 678;
 const int16_t PHONE_POS_Y = 8;
-const int32_t PHONE_PRIORITY = 20000 - 1; // BoxImage01.Priority - 1 (function.nss)
+const int32_t PHONE_PRIORITY = 10010 - 1; // sg00_01.nss, 3549
 
 // cg/sys/phone/phone_01.png
 const int16_t PHONE_TEX_X = 95; // TODO: guess
