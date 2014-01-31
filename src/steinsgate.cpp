@@ -152,9 +152,9 @@ void Phone::Draw(sf::RenderWindow* pWindow)
     {
         pWindow->draw(Wallpaper);
         pWindow->draw(Header);
+        if (ShowOverlay)
+            pWindow->draw(Overlay);
     }
-    if (ShowOverlay)
-        pWindow->draw(Overlay);
     if (ShowSD)
         pWindow->draw(SD);
 }
