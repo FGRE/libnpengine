@@ -60,4 +60,5 @@ private:
     sf::Sprite Header;
     sf::Sprite Overlay;
     sf::Sprite SD;
+    sf::Sprite SDDate[6];
 };
