@@ -471,6 +471,8 @@ void NsbInterpreter::Set()
         pGame->GLCallback(std::bind(&Phone::SDDisplay, pPhone, GetVariable<int32_t>("$SF_PhoneSD_Disp")));
     else if (pLine->Params[0] == "$LR_DATE")
         pGame->GLCallback(std::bind(&Phone::SetDate, pPhone, GetVariable<string>("$LR_DATE")));
+    else if (pLine->Params[0] == "$SW_PHONE_PRI")
+        pGame->GLCallback(std::bind(&NsbInterpreter::SGPhonePriority, this));
 }
 
 void NsbInterpreter::ArrayRead()

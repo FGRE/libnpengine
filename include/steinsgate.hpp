@@ -42,6 +42,7 @@ public:
     void UpdateOpenMode(int32_t OpenMode);
     void UpdateMode(uint8_t NewMode);
     void SetWallpaper(sf::Texture* pTexture);
+    void SetPriority(int32_t Priority);
 
 private:
     void UpdateAnim();
