@@ -49,7 +49,7 @@ const int16_t PHONE_HEADER_POS_Y = PHONE_POS_Y + 89; // 97
 const int16_t PHONE_WALLPAPER_X = PHONE_HEADER_POS_X;
 const int16_t PHONE_WALLPAPER_Y = PHONE_HEADER_POS_Y + PHONE_HEADER_HEIGHT; // TODO: guess
 const int16_t PHONE_OVERLAY_POS_X = PHONE_WALLPAPER_X;
-const int16_t PHONE_OVERLAY_POS_Y = 0; // TODO: NYI
+const int16_t PHONE_OVERLAY_POS_Y = 180; // TODO: NYI
 
 const int16_t PHONE_SD_POS_X = 20;
 const int16_t PHONE_SD_POS_Y = 20;
@@ -362,8 +362,8 @@ void Phone::MailReceive(int32_t Show)
             if (!Overlay.getTexture())
             {
                 sf::IntRect ClipArea(PHONE_NEW_MAIL_TEX_X, PHONE_NEW_MAIL_TEX_Y, PHONE_NEW_MAIL_WIDTH, PHONE_NEW_MAIL_HEIGHT);
-                Header.setTexture(*pPhoneTex);
-                Header.setTextureRect(ClipArea);
+                Overlay.setTexture(*pPhoneTex);
+                Overlay.setTextureRect(ClipArea);
             }
             ShowOverlay = true;
             break;
