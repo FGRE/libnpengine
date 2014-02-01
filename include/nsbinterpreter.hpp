@@ -206,6 +206,7 @@ private:
     Phone* pPhone;
     void SGPhoneOpen();
     void SGPhoneMode();
+    void SGPhonePriority();
 
     template <class T> T GetParam(int32_t Index);
     template <class T> T GetVariable(const string& Identifier);

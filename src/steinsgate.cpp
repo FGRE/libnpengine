@@ -30,7 +30,6 @@ const int16_t PHONE_WIDTH = 313;
 const int16_t PHONE_HEIGHT = 576;
 const int16_t PHONE_POS_X = 678;
 const int16_t PHONE_POS_Y = 8;
-const int32_t PHONE_PRIORITY = 10010 - 1; // sg00_01.nss, 3549
 
 // cg/sys/phone/phone_01.png
 const int16_t PHONE_TEX_X = 95; // TODO: guess
@@ -49,7 +48,7 @@ const int16_t PHONE_HEADER_POS_Y = PHONE_POS_Y + 89; // 97
 const int16_t PHONE_WALLPAPER_X = PHONE_HEADER_POS_X;
 const int16_t PHONE_WALLPAPER_Y = PHONE_HEADER_POS_Y + PHONE_HEADER_HEIGHT; // TODO: guess
 const int16_t PHONE_OVERLAY_POS_X = PHONE_WALLPAPER_X;
-const int16_t PHONE_OVERLAY_POS_Y = 180; // TODO: NYI
+const int16_t PHONE_OVERLAY_POS_Y = 180;
 
 const int16_t PHONE_SD_POS_X = 20;
 const int16_t PHONE_SD_POS_Y = 20;
@@ -57,6 +56,11 @@ const int16_t PHONE_SD_TEX_X = 794;
 const int16_t PHONE_SD_TEX_Y = 42;
 const int16_t PHONE_SD_WIDTH = 200;
 const int16_t PHONE_SD_HEIGHT = 50;
+
+const int16_t PHONE_SD_BLUE_TEX_X = 782;
+const int16_t PHONE_SD_BLUE_TEX_Y = 124;
+const int16_t PHONE_SD_BLUE_WIDTH = PHONE_SD_WIDTH + (PHONE_SD_TEX_X - PHONE_SD_BLUE_TEX_X) * 2;
+const int16_t PHONE_SD_BLUE_HEIGHT = PHONE_SD_HEIGHT + (136 - PHONE_SD_BLUE_TEX_Y) * 2;
 
 // First digit in SD
 const int16_t PHONE_SD_DIGIT_POS_X = 36;
@@ -191,7 +195,7 @@ int DateToWeekDay(string Date)
 }
 
 Phone::Phone(sf::Drawable* pDrawable) :
-DrawableBase(pDrawable, PHONE_PRIORITY, DRAWABLE_TEXTURE),
+DrawableBase(pDrawable, -1, DRAWABLE_TEXTURE),
 ShowSD(false),
 ShowOverlay(false)
 {
@@ -444,6 +448,18 @@ void Phone::SetDate(string Date)
     SDDate[5].setTexture(*pSDTex);
     SDDate[5].setTextureRect(ClipArea);
     SDDate[5].setPosition(PosX, PHONE_SD_DAY_POS_Y);
+}
+
+void Phone::SetPriority(int32_t Priority)
+{
+    this->Priority = Priority;
+}
+
+void NsbInterpreter::SGPhonePriority()
+{
+    pPhone->SetPriority(GetVariable<int32_t>("$SW_PHONE_PRI"));
+    pGame->RemoveDrawable(pPhone);
+    pGame->AddDrawable(pPhone);
 }
 
 void NsbInterpreter::SGPhoneOpen()
