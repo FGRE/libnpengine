@@ -88,6 +88,44 @@ const int16_t PHONE_SLASH_TEX_Y = 164;
 const int16_t PHONE_SLASH_WIDTH = 16;
 const int16_t PHONE_SLASH_HEIGHT = 24;
 
+//
+enum PhoneIcon
+{
+    PHONE_ICON_UNK = 0,
+    PHONE_ICON_MAIL = 1,
+    PHONE_ICON_SIGNAL = 2,
+    PHONE_ICON_BATTERY = 3,
+    PHONE_ICON_MAX = 4
+};
+const int16_t PHONE_ICON_TEX_X = 626;
+const int16_t PHONE_ICON_TEX_Y[PHONE_ICON_MAX] =
+{
+    30, 56, 79, 106
+};
+const int16_t PHONE_ICON_POS_X[PHONE_ICON_MAX] =
+{
+    -1, 147, 187, 166
+};
+const int16_t PHONE_ICON_POS_Y = 30;
+const int16_t PHONE_ICON_WIDTH[PHONE_ICON_MAX] =
+{
+    23, 16, 17, 19
+};
+const int16_t PHONE_ICON_HEIGHT = 11;
+
+//
+enum PhoneSDText
+{
+    PHONE_SD_TEXT_NEW_MAIL = 0,
+    PHONE_SD_TEXT_UNK1 = 1,
+    PHONE_SD_TEXT_UNK2 = 2,
+    PHONE_SD_TEXT_MAX = 3
+};
+const int16_t PHONE_SD_TEXT_TEX_X[PHONE_SD_TEXT_MAX] =
+{
+    135, 168, 200
+};
+
 enum PhoneMode
 {
     MODE_ADDRESS_BOOK = 0,
@@ -205,6 +243,8 @@ void Phone::Draw(sf::RenderWindow* pWindow)
         pWindow->draw(SD);
         for (int i = 0; i < 6; ++i)
             pWindow->draw(SDDate[i]);
+        for (int i = PHONE_ICON_SIGNAL; i <= PHONE_ICON_BATTERY; ++i)
+            pWindow->draw(SDIcon[i]);
     }
 }
 
@@ -315,10 +355,10 @@ void Phone::MailReceive(int32_t Show)
 {
     switch (Show)
     {
-        case 0:
+        case PHONE_CLOSING:
             ShowOverlay = false;
             break;
-        case 1:
+        case PHONE_OPENING:
             if (!Overlay.getTexture())
             {
                 sf::IntRect ClipArea(PHONE_NEW_MAIL_TEX_X, PHONE_NEW_MAIL_TEX_Y, PHONE_NEW_MAIL_WIDTH, PHONE_NEW_MAIL_HEIGHT);
@@ -337,15 +377,26 @@ void Phone::SDDisplay(int32_t Show)
 {
     switch (Show)
     {
-        case 0:
+        case PHONE_CLOSING:
             ShowSD = false;
             break;
-        case 1:
+        case PHONE_OPENING:
+            // Background
             if (!SD.getTexture())
             {
                 sf::IntRect ClipArea(PHONE_SD_TEX_X, PHONE_SD_TEX_Y, PHONE_SD_WIDTH, PHONE_SD_HEIGHT);
                 SD.setTexture(*pSDTex);
                 SD.setTextureRect(ClipArea);
+            }
+            for (int i = PHONE_ICON_SIGNAL; i <= PHONE_ICON_BATTERY; ++i)
+            {
+                if (!SDIcon[i].getTexture())
+                {
+                    sf::IntRect ClipArea(PHONE_ICON_TEX_X, PHONE_ICON_TEX_Y[i], PHONE_ICON_WIDTH[i], PHONE_ICON_HEIGHT);
+                    SDIcon[i].setTexture(*pSDTex);
+                    SDIcon[i].setTextureRect(ClipArea);
+                    SDIcon[i].setPosition(PHONE_ICON_POS_X[i], PHONE_ICON_POS_Y);
+                }
             }
             ShowSD = true;
             break;
