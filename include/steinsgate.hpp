@@ -61,4 +61,5 @@ private:
     sf::Sprite Overlay;
     sf::Sprite SD;
     sf::Sprite SDDate[6];
+    sf::Sprite SDIcon[4];
 };
