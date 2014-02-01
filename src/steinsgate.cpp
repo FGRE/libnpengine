@@ -20,6 +20,7 @@
 #include "game.hpp"
 
 #include <SFML/Graphics/Texture.hpp>
+#include <boost/lexical_cast.hpp>
 
 const int16_t PHONE_ANIM_SPEED = 40; // TODO: guess
 const int8_t PHONE_ANIM_ROW_MAX = 1;
@@ -61,11 +62,12 @@ const int16_t PHONE_SD_HEIGHT = 50;
 const int16_t PHONE_SD_DIGIT_POS_X = 36;
 const int16_t PHONE_SD_DIGIT_POS_Y = 36;
 const int16_t PHONE_SD_DIGIT_OFFSET_X = 7;
+const int16_t PHONE_SD_DAY_POS_Y = 47;
 
-// 1-9, 0
+// 0-9
 const int16_t PHONE_DIGIT_A_TEX_X[10] =
 {
-    24, 59, 93, 127, 159, 192, 226, 260, 292, 334
+    334, 24, 59, 93, 127, 159, 192, 226, 260, 292
 };
 const int16_t PHONE_DIGIT_A_TEX_Y = 83;
 const int16_t PHONE_DIGIT_A_WIDTH = 16;
@@ -136,6 +138,20 @@ const string PhoneModeString[] =
     "PhoneMode_SendMailEdit"
 };
 
+int DateToWeekDay(string Date)
+{
+    string Month(Date, 0, 2);
+    string Day(Date, 2, 2);
+
+    std::tm time_in = { 0, 0, 0,
+                        boost::lexical_cast<int>(Day),
+                        boost::lexical_cast<int>(Month) - 1,
+                        2010 - 1900 };
+
+    std::time_t time = std::mktime(&time_in);
+    return std::localtime(&time)->tm_wday;
+}
+
 Phone::Phone(sf::Drawable* pDrawable) :
 DrawableBase(pDrawable, PHONE_PRIORITY, DRAWABLE_TEXTURE),
 ShowSD(false),
@@ -185,7 +201,11 @@ void Phone::Draw(sf::RenderWindow* pWindow)
             pWindow->draw(Overlay);
     }
     if (ShowSD)
+    {
         pWindow->draw(SD);
+        for (int i = 0; i < 6; ++i)
+            pWindow->draw(SDDate[i]);
+    }
 }
 
 void Phone::Update()
@@ -337,7 +357,42 @@ void Phone::SDDisplay(int32_t Show)
 
 void Phone::SetDate(string Date)
 {
-    
+    int32_t PosX = PHONE_SD_DIGIT_POS_X;
+    int i;
+
+    // Month
+    i = (Date[0] == '0' ? 1 : 0); // Alignment : skip preceeding zero
+    for (; i < 2; ++i)
+    {
+        sf::IntRect ClipArea(PHONE_DIGIT_A_TEX_X[Date[i] - '0'], PHONE_DIGIT_A_TEX_Y, PHONE_DIGIT_A_WIDTH, PHONE_DIGIT_A_HEIGHT);
+        SDDate[i].setTexture(*pSDTex);
+        SDDate[i].setTextureRect(ClipArea);
+        SDDate[i].setPosition(PosX, PHONE_SD_DIGIT_POS_Y);
+        PosX += PHONE_SD_DIGIT_OFFSET_X + PHONE_DIGIT_A_WIDTH;
+    }
+
+    // Slash
+    SDDate[2].setTexture(*pSDTex);
+    SDDate[2].setTextureRect(sf::IntRect(PHONE_SLASH_TEX_X, PHONE_SLASH_TEX_Y, PHONE_SLASH_WIDTH, PHONE_SLASH_HEIGHT));
+    SDDate[2].setPosition(PosX, PHONE_SD_DIGIT_POS_Y);
+    PosX += PHONE_SD_DIGIT_OFFSET_X + PHONE_DIGIT_A_WIDTH;
+
+    // Day
+    i = (Date[2] == '0' ? 3 : 2);
+    for (; i < 4; ++i)
+    {
+        sf::IntRect ClipArea(PHONE_DIGIT_A_TEX_X[Date[i] - '0'], PHONE_DIGIT_A_TEX_Y, PHONE_DIGIT_A_WIDTH, PHONE_DIGIT_A_HEIGHT);
+        SDDate[i + 1].setTexture(*pSDTex);
+        SDDate[i + 1].setTextureRect(ClipArea);
+        SDDate[i + 1].setPosition(PosX, PHONE_SD_DIGIT_POS_Y);
+        PosX += PHONE_SD_DIGIT_OFFSET_X + PHONE_DIGIT_A_WIDTH;
+    }
+
+    // Week day
+    sf::IntRect ClipArea(PHONE_DAY_TEX_X[DateToWeekDay(Date)], PHONE_DAY_TEX_Y, PHONE_DAY_WIDTH, PHONE_DAY_HEIGHT);
+    SDDate[5].setTexture(*pSDTex);
+    SDDate[5].setTextureRect(ClipArea);
+    SDDate[5].setPosition(PosX, PHONE_SD_DAY_POS_Y);
 }
 
 void NsbInterpreter::SGPhoneOpen()
