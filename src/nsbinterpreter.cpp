@@ -501,6 +501,7 @@ void NsbInterpreter::ParseText()
 
 void NsbInterpreter::SetAudioLoop()
 {
+    HandleName = GetParam<string>(0);
     if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
         NSBSetAudioLoop(pMusic, GetParam<bool>(1));
 }
