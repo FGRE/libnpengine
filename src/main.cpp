@@ -38,7 +38,7 @@ void NitroscriptMain(NsbInterpreter* pInterpreter)
         }
         else
             pInterpreter->ExecuteScriptLocal(ScriptName);
-    } while (true && !IsLocal);
+    } while (!pInterpreter->StopInterpreter && !IsLocal);
 }
 
 extern "C"
