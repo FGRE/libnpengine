@@ -74,7 +74,8 @@ void Game::Run()
                             pInterpreter->Start();
                     break;
                 case sf::Event::Closed:
-                    // TODO: make interpreter (really) stop
+                    IsRunning = false;
+                    break;
                 default:
                     break;
             }
@@ -111,6 +112,8 @@ void Game::Run()
             pInterpreter->Start();
     }
 
+    pInterpreter->Start();
+    pInterpreter->Stop();
     ScriptThread.join();
 }
 
