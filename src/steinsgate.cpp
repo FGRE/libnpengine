@@ -214,7 +214,6 @@ Phone::~Phone()
     delete pSDTex;
     delete pPhoneTex;
     delete pPhoneOpenTex;
-    delete Header.getTexture();
     delete Wallpaper.getTexture();
 }
 
