@@ -67,6 +67,11 @@ void Game::Run()
                         pInterpreter->DumpState();
                     else if (Event.key.code == sf::Keyboard::LControl)
                         IgnoreText = !IgnoreText;
+                    else if (Event.key.code == sf::Keyboard::P)
+                    {
+                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
+                            pInterpreter->PhoneToggle();
+                    }
                     break;
                 case sf::Event::MouseButtonPressed:
                     if (pText)
