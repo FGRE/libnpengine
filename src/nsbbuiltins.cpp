@@ -424,6 +424,15 @@ void NsbInterpreter::NSBDestroy()
 
 void NsbInterpreter::NSBSystem(string Command, string Parameters, string Directory)
 {
+    // OPEN: is only known command
+    static const string OpenStr = "OPEN:";
+    if (Command.substr(0, OpenStr.size()) != OpenStr)
+        return;
+
+    Command = Command.substr(OpenStr.size());
+
+    if (fork() == 0)
+        execlp("/usr/bin/xdg-open", "/usr/bin/xdg-open", Command.c_str(), NULL);
 }
 
 void NsbInterpreter::NSBCreateArray()
