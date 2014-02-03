@@ -461,6 +461,15 @@ void NsbInterpreter::SGPhonePriority()
     pGame->AddDrawable(pPhone);
 }
 
+void NsbInterpreter::PhoneToggle()
+{
+    if (GetVariable<int32_t>("$SF_Phone_Open") == 1)
+        SetVariable("$SF_Phone_Open", Variable{"INT", "0"});
+    else
+        SetVariable("$SF_Phone_Open", Variable{"INT", "1"});
+    SGPhoneOpen();
+}
+
 void NsbInterpreter::SGPhoneOpen()
 {
     pPhone->UpdateOpenMode(GetVariable<int32_t>("$SF_Phone_Open"));

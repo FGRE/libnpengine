@@ -96,6 +96,7 @@ public:
 
     void CallScript(const string& FileName, const string& Symbol, SymbolType Type);
     void DumpState();
+    void PhoneToggle();
 private:
     void Run();
     void Sleep(int32_t ms);
