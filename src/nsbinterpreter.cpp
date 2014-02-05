@@ -37,12 +37,63 @@ static const std::string SpecialPos[SPECIAL_POS_NUM] =
     "OutRight"
 };
 
+NsbContext::NsbContext() :
+BranchCondition(true)
+{
+}
+
+bool NsbContext::CallSubroutine(NsbFile* pDestScript, const char* Symbol, SymbolType Type)
+{
+    if (!pDestScript)
+        return false;
+
+    uint32_t CodeLine = pDestScript->GetSymbol(Symbol, Type);
+
+    if (CodeLine != NSB_INVALIDE_LINE)
+    {
+        if (pScript)
+            Returns.push({pScript, pScript->GetNextLineEntry()});
+        pScript = pDestScript;
+        pScript->SetSourceIter(CodeLine);
+        return true;
+    }
+    return false;
+}
+
+void NsbContext::ReturnSubroutine()
+{
+    if (!Returns.empty())
+    {
+        pScript = Returns.top().pScript;
+        pScript->SetSourceIter(Returns.top().SourceLine);
+        Returns.pop();
+    }
+    else
+        pScript = nullptr;
+}
+
+void NsbContext::Sleep(int32_t ms)
+{
+    SleepTime = sf::milliseconds(ms);
+    SleepClock.restart();
+}
+
+bool NsbContext::NextLine()
+{
+    pLine = pScript->GetNextLine();
+    return pLine != nullptr;
+}
+
+bool NsbContext::PrevLine()
+{
+    pLine = pScript->GetPrevLine();
+    return pLine != nullptr;
+}
+
 NsbInterpreter::NsbInterpreter(Game* pGame) :
 pPhone(nullptr),
 pGame(pGame),
-StopInterpreter(false),
-WaitTime(0),
-BranchCondition(true)
+StopInterpreter(false)
 {
 #ifdef _WIN32
     Text::Initialize("fonts-japanese-gothic.ttf");
@@ -133,6 +184,12 @@ BranchCondition(true)
 
     // Steins gate
     pPhone = new Phone(new sf::Sprite());
+
+    // Main script thread
+    pMainContext = new NsbContext;
+    pContext = pMainContext;
+    pContext->Active = true;
+    Threads.push_back(pContext);
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -142,14 +199,14 @@ NsbInterpreter::~NsbInterpreter()
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
 {
-    pScript = sResourceMgr->GetResource<NsbFile>(ScriptName);
+    pMainContext->pScript = sResourceMgr->GetResource<NsbFile>(ScriptName);
     Run();
 }
 
 void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 {
     // This leaks memory but nobody really cares
-    pScript = new NsbFile(ScriptName);
+    pMainContext->pScript = new NsbFile(ScriptName);
     Run();
 }
 
@@ -157,38 +214,55 @@ void NsbInterpreter::Run()
 {
     // Hack: boot script should call StArray()
     for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
-        if (CallFunction(LoadedScripts[i], "StArray"))
+        if (pContext->CallSubroutine(LoadedScripts[i], "StArray", SYMBOL_FUNCTION))
             break;
 
     do
     {
-        while (!RunInterpreter)
-            Sleep(10);
-
-        // Some operations require interpreter to wait before continuing
-        if (WaitTime > 0)
+        auto iter = Threads.begin();
+        while (iter != Threads.end())
         {
-            Sleep(WaitTime);
-            WaitTime = 0;
-        }
+            if (!RunInterpreter)
+            {
+                boost::this_thread::sleep_for(boost::chrono::milliseconds(1));
+                continue;
+            }
 
-        if (NsbAssert(pScript, "Interpreting null script"))
-            break;
-        pLine = pScript->GetNextLine();
-        if (NsbAssert(pLine, "Interpreting null line"))
-            break;
+            pContext = *iter++;
 
-        try
-        {
-            if (pLine->Magic < Builtins.size())
-                if (BuiltinFunc pFunc = Builtins[pLine->Magic])
-                    (this->*pFunc)();
+            if (!pContext->Active)
+                continue;
+
+            if (pContext->SleepClock.getElapsedTime() < pContext->SleepTime)
+                continue;
+            else
+                pContext->SleepTime = sf::Time::Zero;
+
+            do
+            {
+                if (!pContext->pScript || !pContext->NextLine())
+                {
+                    Threads.remove(pContext);
+                    CacheHolder<NsbContext>::Write(pContext->Identifier, nullptr);
+                    delete pContext;
+                    pContext = nullptr;
+                    iter = Threads.end(); // Hack :) Do not invalidate iterator
+                    break;
+                }
+
+                try
+                {
+                    if (pContext->pLine->Magic < Builtins.size())
+                        if (BuiltinFunc pFunc = Builtins[pContext->pLine->Magic])
+                            (this->*pFunc)();
+                }
+                catch (...)
+                {
+                    NsbAssert(false, "Exception caught");
+                }
+            } while (pContext && pContext->pLine->Magic != MAGIC_CLEAR_PARAMS);
         }
-        catch (...)
-        {
-            NsbAssert(false, "Exception caught");
-        }
-    } while (!StopInterpreter);
+    } while (!StopInterpreter && !Threads.empty());
 }
 
 void NsbInterpreter::Stop()
@@ -249,7 +323,7 @@ void NsbInterpreter::LogicalGreater()
         "Comparing variables of different or non-integer types"))
         return;
 
-    BranchCondition = GetVariable<int32_t>(Params[0].Value) > GetVariable<int32_t>(Params[1].Value);
+    pContext->BranchCondition = GetVariable<int32_t>(Params[0].Value) > GetVariable<int32_t>(Params[1].Value);
 }
 
 void NsbInterpreter::LogicalLess()
@@ -258,7 +332,7 @@ void NsbInterpreter::LogicalLess()
         "Comparing variables of different or non-integer types"))
         return;
 
-    BranchCondition = GetVariable<int32_t>(Params[0].Value) < GetVariable<int32_t>(Params[1].Value);
+    pContext->BranchCondition = GetVariable<int32_t>(Params[0].Value) < GetVariable<int32_t>(Params[1].Value);
 }
 
 void NsbInterpreter::ArraySize()
@@ -274,10 +348,10 @@ void NsbInterpreter::If()
     //       because of other bugs, however this check is essential
     // See:  #SYSTEM_cosplay_patch in constructor
     if (Params.size() == 1 && Params[0].Value == "false")
-        BranchCondition = false;
+        pContext->BranchCondition = false;
 
     // Jump to end of block only if condition is not met
-    if (BranchCondition)
+    if (pContext->BranchCondition)
         return;
 
     string Label = GetParam<string>(0);
@@ -288,12 +362,12 @@ void NsbInterpreter::If()
         // TODO: This can be done faster with symbol lookup table (.map)
         if (!JumpTo(MAGIC_LABEL))
             return;
-    } while (pLine->Params[0] != Label);
+    } while (pContext->pLine->Params[0] != Label);
 }
 
 void NsbInterpreter::While()
 {
-    if (BranchCondition)
+    if (pContext->BranchCondition)
         return;
 
     // Use the fact that labels are consistently named
@@ -306,12 +380,13 @@ void NsbInterpreter::While()
     {
         if (!JumpTo(MAGIC_LABEL))
             return;
-    } while (pLine->Params[0] != Label);
+    } while (pContext->pLine->Params[0] != Label);
 }
 
 void NsbInterpreter::LoopJump()
 {
-    pLine = pScript->GetNextLine(); // MAGIC_LABEL
+    if (!pContext->NextLine())
+        return;
 
     // Opposite of While()
     string Label = GetParam<string>(0);
@@ -322,7 +397,7 @@ void NsbInterpreter::LoopJump()
     do
     {
         ReverseJumpTo(MAGIC_WHILE);
-    } while (pLine->Params[0] != Label);
+    } while (pContext->pLine->Params[0] != Label);
 
     // Jump before logical condition
     ReverseJumpTo(MAGIC_CLEAR_PARAMS);
@@ -361,7 +436,7 @@ void NsbInterpreter::LogicalNotEqual()
     if (NsbAssert(Params[0].Type == Params[1].Type, "Comparing variables of different types for non-equality"))
         return;
 
-    BranchCondition = GetVariable<string>(Params[0].Value) != GetVariable<string>(Params[1].Value);
+    pContext->BranchCondition = GetVariable<string>(Params[0].Value) != GetVariable<string>(Params[1].Value);
 }
 
 void NsbInterpreter::LogicalEqual()
@@ -369,15 +444,15 @@ void NsbInterpreter::LogicalEqual()
     if (NsbAssert(Params[0].Type == Params[1].Type, "Comparing variables of different types for equality"))
         return;
 
-    BranchCondition = GetVariable<string>(Params[0].Value) == GetVariable<string>(Params[1].Value);
+    pContext->BranchCondition = GetVariable<string>(Params[0].Value) == GetVariable<string>(Params[1].Value);
 }
 
 void NsbInterpreter::LogicalNot()
 {
     if (Params.back().Value == "true")
-        BranchCondition = false;
+        pContext->BranchCondition = false;
     else if (Params.back().Value == "false")
-        BranchCondition = true;
+        pContext->BranchCondition = true;
     else
         std::cout << "LogicalNot(): Applying to " << Params.back().Value << std::endl;
 }
@@ -411,7 +486,7 @@ void NsbInterpreter::ScopeEnd()
 
 void NsbInterpreter::GetScriptName()
 {
-    string Name = pScript->GetName();
+    string Name = pContext->pScript->GetName();
     Name = Name.substr(4, Name.size() - 8); // Remove nss/ and .nsb
     Params.push_back(Variable("STRING", Name));
 }
@@ -441,7 +516,8 @@ void NsbInterpreter::Negative()
 
 void NsbInterpreter::Set()
 {
-    if (pLine->Params.back() == "__array_variable__")
+    const string& Identifier = pContext->pLine->Params[0];
+    if (pContext->pLine->Params.back() == "__array_variable__")
     {
         if (ArrayParams.empty())
             return;
@@ -457,33 +533,33 @@ void NsbInterpreter::Set()
         // SetParam(STRING, value1)
         // SetParam(STRING, value2); <- Take last param
         // Set($var); <- Put it into first argument
-        SetVariable(pLine->Params[0], Params.back());
+        SetVariable(Identifier, Params.back());
     }
 
     // Handle hardcoded operations
-    if (pLine->Params[0] == "$SF_Phone_Open")
+    if (Identifier == "$SF_Phone_Open")
         pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneOpen, this));
-    else if (pLine->Params[0] == "$SW_PHONE_MODE")
+    else if (Identifier == "$SW_PHONE_MODE")
         pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneMode, this));
-    else if (pLine->Params[0] == "$SF_PhoneMailReciveNew")
+    else if (Identifier == "$SF_PhoneMailReciveNew")
         pGame->GLCallback(std::bind(&Phone::MailReceive, pPhone, GetVariable<int32_t>("$SF_PhoneMailReciveNew")));
-    else if (pLine->Params[0] == "$SF_PhoneSD_Disp")
+    else if (Identifier == "$SF_PhoneSD_Disp")
         pGame->GLCallback(std::bind(&Phone::SDDisplay, pPhone, GetVariable<int32_t>("$SF_PhoneSD_Disp")));
-    else if (pLine->Params[0] == "$LR_DATE")
+    else if (Identifier == "$LR_DATE")
         pGame->GLCallback(std::bind(&Phone::SetDate, pPhone, GetVariable<string>("$LR_DATE")));
-    else if (pLine->Params[0] == "$SW_PHONE_PRI")
+    else if (Identifier == "$SW_PHONE_PRI")
         pGame->GLCallback(std::bind(&NsbInterpreter::SGPhonePriority, this));
 }
 
 void NsbInterpreter::ArrayRead()
 {
-    HandleName = pLine->Params[0];
+    HandleName = pContext->pLine->Params[0];
     NSBArrayRead(GetParam<int32_t>(1));
 }
 
 void NsbInterpreter::RegisterCallback()
 {
-    pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pLine->Params[0][0] - 'A'), pLine->Params[1]);
+    pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pContext->pLine->Params[0][0] - 'A'), pContext->pLine->Params[1]);
 }
 
 void NsbInterpreter::SetState()
@@ -589,16 +665,17 @@ void NsbInterpreter::GetMovieTime()
 
 void NsbInterpreter::SetParam()
 {
-    Params.push_back({pLine->Params[0], pLine->Params[1]});
+    Params.push_back({pContext->pLine->Params[0], pContext->pLine->Params[1]});
 }
 
 void NsbInterpreter::Get()
 {
-    Params.push_back(Variables[pLine->Params[0]]);
+    Params.push_back(Variables[pContext->pLine->Params[0]]);
 }
 
 void NsbInterpreter::DrawToTexture()
 {
+    HandleName = GetParam<string>(0);
     if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
         pGame->GLCallback(std::bind(&NsbInterpreter::GLDrawToTexture, this, pTexture,
                          GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3)));
@@ -615,15 +692,15 @@ void NsbInterpreter::ClearParams()
 {
     Params.clear();
     ArrayParams.clear();
-    BranchCondition = true; // Not sure about this...
+    pContext->BranchCondition = true; // Not sure about this...
 }
 
 void NsbInterpreter::Begin()
 {
     // Turn params into global variables
-    // TODO: Scope should be respected instead
-    for (uint32_t i = 1; i < pLine->Params.size(); ++i)
-        SetVariable(pLine->Params[i], Params[i - 1]);
+    // TODO: Should scope be respected instead?
+    for (uint32_t i = 1; i < pContext->pLine->Params.size(); ++i)
+        SetVariable(pContext->pLine->Params[i], Params[i - 1]);
 }
 
 void NsbInterpreter::ApplyMask()
@@ -676,14 +753,7 @@ void NsbInterpreter::SetOpacity()
 
 void NsbInterpreter::End()
 {
-    if (NsbAssert(!Returns.empty(), "Empty return stack"))
-        pScript = nullptr;
-    else
-    {
-        pScript = Returns.top().pScript;
-        pScript->SetSourceIter(Returns.top().SourceLine);
-        Returns.pop();
-    }
+    pContext->ReturnSubroutine();
 }
 
 void NsbInterpreter::LoadTexture()
@@ -716,7 +786,7 @@ void NsbInterpreter::Destroy()
 
 void NsbInterpreter::Call()
 {
-    const char* FuncName = pLine->Params[0].c_str();
+    const char* FuncName = pContext->pLine->Params[0].c_str();
 
     // Find function override (i.e. a hack)
     if (std::strcmp(FuncName, "MovieWaitSG") == 0 && pGame->pMovie)
@@ -725,7 +795,7 @@ void NsbInterpreter::Call()
         HandleName = "ムービー";
         NSBGetMovieTime();
         if (!std::ifstream("NOMOVIE"))
-            Sleep(GetVariable<int32_t>(Params[0].Value));
+            SleepMs();
         pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                           CacheHolder<DrawableBase>::Read("ムービー")));
         return;
@@ -742,12 +812,12 @@ void NsbInterpreter::Call()
         Params[0].Value = "STBUF1";
 
     // Find function locally
-    if (CallFunction(pScript, FuncName))
+    if (pContext->CallSubroutine(pContext->pScript, FuncName, SYMBOL_FUNCTION))
         return;
 
     // Find function globally
     for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
-        if (CallFunction(LoadedScripts[i], FuncName))
+        if (pContext->CallSubroutine(LoadedScripts[i], FuncName, SYMBOL_FUNCTION))
             return;
 
     std::cout << "Failed to lookup function symbol " << FuncName << std::endl;
@@ -758,11 +828,11 @@ void NsbInterpreter::Format()
     boost::format Fmt(Params[0].Value);
 
     // Don't format more Params than specified by argument list (pLine->Params)
-    for (uint8_t i = Params.size() - (pLine->Params.size() - 1); i < Params.size(); ++i)
+    for (uint8_t i = Params.size() - (pContext->pLine->Params.size() - 1); i < Params.size(); ++i)
         Fmt % Params[i].Value;
 
     // Remove arguments used by Format
-    Params.resize(Params.size() - (pLine->Params.size() - 1));
+    Params.resize(Params.size() - (pContext->pLine->Params.size() - 1));
     Params.back().Value = Fmt.str();
 }
 
@@ -828,9 +898,10 @@ template <class T> T NsbInterpreter::GetParam(int32_t Index)
 {
     // "WTF" is workaround for Nitroplus bug
     // See: NsbInterpreter::Negative
+    // TODO: Should probably take all from parameter list but currently it may regress
     if (Params.size() > Index && Params[Index].Type == "WTF")
         return GetVariable<T>(Params[Index].Value);
-    return GetVariable<T>(pLine->Params[Index]);
+    return GetVariable<T>(pContext->pLine->Params[Index]);
 }
 
 template <> bool NsbInterpreter::GetParam(int32_t Index)
@@ -862,59 +933,56 @@ void NsbInterpreter::LoadScript(const string& FileName)
 
 void NsbInterpreter::CallScript(const string& FileName, const string& Symbol, SymbolType Type)
 {
-    if (NsbFile* pDestScript = sResourceMgr->GetResource<NsbFile>(FileName))
-    {
-        Returns.push({pScript, pScript->GetNextLineEntry()});
-        pScript = pDestScript;
-        pScript->SetSourceIter(pScript->GetSymbol(Symbol, Type));
-    }
-}
-
-bool NsbInterpreter::CallFunction(NsbFile* pDestScript, const char* FuncName)
-{
-    if (uint32_t FuncLine = pDestScript->GetSymbol(FuncName, SYMBOL_FUNCTION))
-    {
-        Returns.push({pScript, pScript->GetNextLineEntry()});
-        pScript = pDestScript;
-        pScript->SetSourceIter(FuncLine - 1);
-        return true;
-    }
-    return false;
+    pContext->CallSubroutine(sResourceMgr->GetResource<NsbFile>(FileName), Symbol.c_str(), Type);
 }
 
 bool NsbInterpreter::JumpTo(uint16_t Magic)
 {
 #warning Remove return value. Its a hack for If() hack
-    while (pLine = pScript->GetNextLine())
+    if (!pContext->pLine)
+        return false;
+
+    do
     {
-        // Just in case, jumping beyond function end can be very bad
-        if (pLine->Magic == MAGIC_FUNCTION_END)
+        // Just in case, jumping beyond scope end can be very bad
+        // TODO: Perhaps it should be logged instead
+        if (pContext->pLine->Magic == MAGIC_SCOPE_END)
             return false;
 
-        if (pLine->Magic == Magic)
+        if (pContext->pLine->Magic == Magic)
+        {
+            // TODO: Do not skip this line in Run()
+            // pContext->PrevLine();
             return true;
-    }
+        }
+
+    } while (pContext->NextLine());
     return false;
 }
 
 void NsbInterpreter::ReverseJumpTo(uint16_t Magic)
 {
-    while (pLine = pScript->GetPrevLine())
+    do
     {
-        if (pLine->Magic == MAGIC_FUNCTION_BEGIN ||
-            pLine->Magic == MAGIC_CHAPTER_BEGIN ||
-            pLine->Magic == Magic)
+        // Don't jump outside scope
+        // TODO: Log this?
+        if (pContext->pLine->Magic == MAGIC_SCOPE_BEGIN ||
+            pContext->pLine->Magic == Magic)
+        {
+            // TODO: Do not skip this line in Run()
+            // pContext->PrevLine();
             return;
-    }
+        }
+    } while (pContext->PrevLine());
 }
 
 void NsbInterpreter::WriteTrace(std::ostream& Stream)
 {
-    if (!pScript)
+    if (!pContext->pScript)
         return;
 
-    std::stack<FuncReturn> Stack = Returns;
-    Stack.push({pScript, pScript->GetNextLineEntry()});
+    std::stack<FuncReturn> Stack = pContext->Returns;
+    Stack.push({pContext->pScript, pContext->pScript->GetNextLineEntry()});
     while (!Stack.empty())
     {
         Stream << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
@@ -944,7 +1012,7 @@ void NsbInterpreter::Crash()
 void NsbInterpreter::Recover()
 {
     // It is generally segfault-safe to jump to next ClearParams()
-    if (pScript)
+    if (pContext->pScript)
         JumpTo(MAGIC_CLEAR_PARAMS);
 }
 

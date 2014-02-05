@@ -88,7 +88,7 @@ void NsbInterpreter::GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Star
     if (sf::Texture* pTexture = LoadTextureFromFile(File))
         pDrawable->SetMask(pTexture, Start, End, Time);
     if (Wait)
-        WaitTime = Time;
+        pContext->Sleep(Time);
 }
 
 void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color)
@@ -285,10 +285,10 @@ void NsbInterpreter::NSBSetState(const string& State)
         if (State == "Play")
             pPlayable->Play();
     }
-    else if (Thread* pThread = CacheHolder<Thread>::Read(HandleName))
+    else if (NsbContext* pThread = CacheHolder<NsbContext>::Read(HandleName))
     {
         if (State == "Start")
-            ;
+            pThread->Active = true;
     }
 }
 
@@ -304,7 +304,7 @@ void NsbInterpreter::NSBGetMovieTime()
     if (Playable* pPlayable = CacheHolder<Playable>::Read(HandleName))
         Params.push_back({"INT", boost::lexical_cast<string>(pPlayable->GetDuration())});
     else
-        std::cout << "Failed to get movie time because there is no Movie " << HandleName << std::endl;
+        std::cout << "Failed to get movie time because there is no Playable " << HandleName << std::endl;
 }
 
 void NsbInterpreter::NSBSetOpacity(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
@@ -321,7 +321,7 @@ void NsbInterpreter::NSBSetOpacity(DrawableBase* pDrawable, int32_t Time, int32_
         ((Drawable*)pDrawable)->SetOpacity(Opacity, Time, FADE_TEX);
 
     if (Wait)
-        WaitTime = Time;
+        pContext->Sleep(Time);
 }
 
 void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
@@ -363,7 +363,7 @@ void NsbInterpreter::NSBStartAnimation(DrawableBase* pDrawable, int32_t Time, in
         ((Drawable*)pDrawable)->AddLerpEffect(LERP_ANIM, x, y, Time);
 
     if (Wait)
-        WaitTime = Time;
+        pContext->Sleep(Time);
 }
 
 void NsbInterpreter::NSBSetAudioRange(Playable* pMusic, int32_t Begin, int32_t End)
@@ -389,7 +389,7 @@ void NsbInterpreter::NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y
 
     pDrawable->AddLerpEffect(LERP_ZOOM, x / 1000.0f, y / 1000.0f, Time);
     if (Wait)
-        WaitTime = Time;
+        pContext->Sleep(Time);
 }
 
 void NsbInterpreter::NSBDestroy()
@@ -441,13 +441,13 @@ void NsbInterpreter::NSBCreateArray()
     if (ArrayParams.empty())
     {
         // Check if tree already exists
-        auto iter = Arrays.find(pLine->Params[0]);
+        auto iter = Arrays.find(pContext->pLine->Params[0]);
         if (NsbAssert(iter == Arrays.end(),
-            "Cannot create tree % as it already exists", pLine->Params[0]))
+            "Cannot create tree % as it already exists", pContext->pLine->Params[0]))
             return;
 
         for (uint32_t i = 1; i < Params.size(); ++i)
-            Arrays[pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+            Arrays[pContext->pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
     }
     // Create subtree
     else
@@ -462,12 +462,12 @@ void NsbInterpreter::NSBBindIdentifier()
     if (ArrayParams.empty())
     {
         // Check if identifiers are already bound
-        if (NsbAssert(Arrays[pLine->Params[0]].Members[0].first.empty(),
+        if (NsbAssert(Arrays[pContext->pLine->Params[0]].Members[0].first.empty(),
             "Cannot bind identifiers to tree as they are already bound"))
             return;
 
         for (uint32_t i = 1; i < Params.size(); ++i)
-            Arrays[pLine->Params[0]].Members[i - 1].first = Params[i].Value;
+            Arrays[pContext->pLine->Params[0]].Members[i - 1].first = Params[i].Value;
     }
     // Bind to subtree
     else
@@ -475,17 +475,21 @@ void NsbInterpreter::NSBBindIdentifier()
             ArrayParams.back()->Members[i - 1].first = Params[i].Value;
 }
 
-void NsbInterpreter::NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, string Function)
+void NsbInterpreter::NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function)
 {
-    if (Thread* pThread = CacheHolder<Thread>::Read(HandleName))
+    if (NsbContext* pThread = CacheHolder<NsbContext>::Read(HandleName))
     {
-        // TODO: Cleanup
+        Threads.remove(pThread);
         delete pThread;
     }
 
-    Thread* pThread = new Thread;
-    pThread->FuncSymbol = Function;
-    CacheHolder<Thread>::Write(HandleName, pThread);
+    NsbContext* pThread = new NsbContext;
+    pContext->Identifier = HandleName;
+    pThread->Active = false;
+    pThread->pScript = nullptr;
+    pThread->CallSubroutine(pContext->pScript, Function.c_str(), SYMBOL_FUNCTION);
+    CacheHolder<NsbContext>::Write(HandleName, pThread);
+    Threads.push_back(pThread);
 }
 
 void NsbInterpreter::NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1,

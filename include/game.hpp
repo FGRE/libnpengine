@@ -55,17 +55,17 @@ private:
     void AddDrawable(Movie* pMovie);
     void RemoveDrawable(DrawableBase* pDrawable);
     void RegisterCallback(sf::Keyboard::Key Key, const std::string& Script);
-    void GLCallback(const std::function<void()>& Func);
+    void GLCallback(const std::function<void()>& Func); // Request main thread to call Func
 
     boost::mutex GLMutex;
     std::queue<std::function<void()>> GLCallbacks; // TODO: Only one is (probably?) actually possible in practice
     std::vector<Callback> Callbacks;
-    std::list<DrawableBase*> Drawables;
-    Movie* pMovie;
-    bool IsRunning;
-    bool IgnoreText;
-    Text* pText;
-    NsbInterpreter* pInterpreter;
+    std::list<DrawableBase*> Drawables; // Objects drawn to window sorted by Z coordinate
+    Movie* pMovie; // Currently drawn movie
+    volatile bool IsRunning; // If false, game should exit
+    bool IgnoreText; // If true, doesn't block interpreter untill user clicks
+    Text* pText; // Currently drawn text
+    NsbInterpreter* pInterpreter; // nsb interpreter
 };
 
 #endif

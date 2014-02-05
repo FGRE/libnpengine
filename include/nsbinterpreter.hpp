@@ -22,11 +22,13 @@
 
 #include <stack>
 #include <cstdint>
+#include <list>
 #include <map>
 #include <queue>
 #include <vector>
 #include <functional>
 #include <SFML/Graphics/Rect.hpp>
+#include <SFML/System/Clock.hpp>
 using std::string;
 
 #define SPECIAL_POS_NUM 7
@@ -76,10 +78,26 @@ struct FuncReturn
     uint32_t SourceLine;
 };
 
-// Concurrently running function created by CreateThread
-struct Thread
+// Interpreter thread context
+struct NsbContext
 {
-    string FuncSymbol;
+    NsbContext();
+
+    string Identifier; // Thread name
+    bool Active; // If true, code in this context is exected
+    Line* pLine; // Line of code which is currently being executed
+    NsbFile* pScript; // Script which is currently being executed (top of call stack)
+    sf::Clock SleepClock; // SleepTime clock
+    sf::Time SleepTime; // How long should interpreter wait before executing next line
+    bool BranchCondition; // If false, code block after If/While is not executed
+    std::stack<FuncReturn> Returns; // Call stack
+
+    bool PrevLine(); // Prev instruction
+    bool NextLine(); // Next instruction
+    void Sleep(int32_t ms);
+
+    bool CallSubroutine(NsbFile* pDestScript, const char* Symbol, SymbolType Type); // Attempts to call specified symbol in specified script
+    void ReturnSubroutine(); // Function return: pop the call stack
 };
 
 class NsbInterpreter
@@ -187,7 +205,7 @@ private:
     void NSBSetOpacity(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void NSBBindIdentifier();
     void NSBCreateArray();
-    void NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, string Function);
+    void NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function);
     void NSBSystem(string Command, string Parameters, string Directory);
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
@@ -209,13 +227,12 @@ private:
     void SGPhoneMode();
     void SGPhonePriority();
 
-    template <class T> T GetParam(int32_t Index);
-    template <class T> T GetVariable(const string& Identifier);
-    template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func);
-    bool CallFunction(NsbFile* pDestScript, const char* FuncName);
-    bool JumpTo(uint16_t Magic);
-    void ReverseJumpTo(uint16_t Magic);
-    void SetVariable(const string& Identifier, const Variable& Var);
+    template <class T> T GetParam(int32_t Index); // If parameter is identifier, it is transformed to value
+    template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
+    template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
+    bool JumpTo(uint16_t Magic);  // Skips instructions untill first occurence of Magic
+    void ReverseJumpTo(uint16_t Magic); // Backwards JumpTo (TODO: Merge functions?)
+    void SetVariable(const string& Identifier, const Variable& Var); // Sets value of global variable
     void CallScriptSymbol(SymbolType Type);
 
     void Recover();
@@ -226,22 +243,20 @@ private:
     template<typename T, typename... A> void NsbAssert(const char* fmt, T value, A... args);
     template<typename T, typename... A> bool NsbAssert(bool expr, const char* fmt, T value, A... args);
 
-    Line* pLine;
     Game* pGame;
-    NsbFile* pScript;
+    NsbContext* pContext;
+    NsbContext* pMainContext;
     volatile bool RunInterpreter;
     volatile bool StopInterpreter;
-    volatile int32_t WaitTime;
 
     string HandleName; // Identifier of current Drawable/Playable used by NSB and GL functions
-    bool BranchCondition; // If false, code block after If/While is not executed
-    std::stack<FuncReturn> Returns; // Call stack
     std::vector<NsbFile*> LoadedScripts; // Scripts considered in symbol lookup
-    std::map<string, Variable> Variables; // All local and global variables (TODO: respect scope)
+    std::map<string, Variable> Variables; // All local and global variables (TODO: respect scope?)
     std::map<string, ArrayVariable> Arrays; // Same as above, except these are trees
     std::vector<Variable> Params; // Builtin function parameters
-    std::vector<ArrayVariable*> ArrayParams;
+    std::vector<ArrayVariable*> ArrayParams; // Tree node parameters
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
+    std::list<NsbContext*> Threads;
 };
 
 template <> bool NsbInterpreter::GetParam(int32_t Index);
