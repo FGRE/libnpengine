@@ -187,9 +187,7 @@ StopInterpreter(false)
 
     // Main script thread
     pMainContext = new NsbContext;
-    pContext = pMainContext;
-    pContext->Active = true;
-    Threads.push_back(pContext);
+    pMainContext->Active = true;
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -213,10 +211,12 @@ void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 void NsbInterpreter::Run()
 {
     // Hack: boot script should call StArray()
+    pContext = pMainContext;
     for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
         if (pContext->CallSubroutine(LoadedScripts[i], "StArray", SYMBOL_FUNCTION))
             break;
 
+    Threads.push_back(pMainContext);
     do
     {
         auto iter = Threads.begin();
@@ -242,10 +242,25 @@ void NsbInterpreter::Run()
             {
                 if (!pContext->pScript || !pContext->NextLine())
                 {
-                    Threads.remove(pContext);
-                    CacheHolder<NsbContext>::Write(pContext->Identifier, nullptr);
-                    delete pContext;
-                    pContext = nullptr;
+                    // Main thread died, terminate all others
+                    if (pContext == pMainContext)
+                    {
+                        auto i = Threads.begin();
+                        ++i; // Dont delete main thread
+                        for (; i != Threads.end(); ++i)
+                        {
+                            CacheHolder<NsbContext>::Write((*i)->Identifier, nullptr);
+                            delete *i;
+                        }
+                        Threads.clear();
+                    }
+                    else
+                    {
+                        Threads.remove(pContext);
+                        CacheHolder<NsbContext>::Write(pContext->Identifier, nullptr);
+                        delete pContext;
+                        pContext = nullptr;
+                    }
                     iter = Threads.end(); // Hack :) Do not invalidate iterator
                     break;
                 }
