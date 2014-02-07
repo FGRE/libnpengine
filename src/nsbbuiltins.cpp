@@ -475,7 +475,7 @@ void NsbInterpreter::NSBBindIdentifier()
             ArrayParams.back()->Members[i - 1].first = Params[i].Value;
 }
 
-void NsbInterpreter::NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function)
+void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function)
 {
     // TODO: Log error
     if (Function.empty())
