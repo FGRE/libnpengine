@@ -133,32 +133,32 @@ private:
     void Get();
     void DrawToTexture();
     void CreateColor();
-    void SetOpacity();
+    void Fade();
     void Begin();
     void End();
     void LoadTexture();
-    void Destroy();
+    void Delete();
     void Call();
     void Add();
     void Format();
-    void LoadMovie();
+    void CreateMovie();
     void ApplyMask();
     void ClearParams();
     void CreateTexture();
     void GetMovieTime();
     void ApplyBlur();
-    void CreateBox();
+    void CreateWindow();
     void SetTextboxAttributes();
     void LoadAudio();
     void SetAudioRange();
     void SetFontAttributes();
-    void SetAudioState();
+    void SetVolume();
     void DisplayText();
-    void StartAnimation();
-    void SleepMs();
-    void SetAudioLoop();
+    void Move();
+    void Wait();
+    void SetLoop();
     void ParseText();
-    void SetState();
+    void Request();
     void RegisterCallback();
     void ArrayRead();
     void Set();
@@ -188,21 +188,21 @@ private:
     void UNK77();
 
     // Builtin functions
-    void NSBDestroy();
+    void NSBDelete();
     void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void NSBArrayRead(int32_t Depth);
-    void NSBSetState(const string& State);
-    void NSBSetAudioLoop(Playable* pMusic, bool Loop);
-    void NSBStartAnimation(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
+    void NSBRequest(const string& State);
+    void NSBSetLoop(Playable* pMusic, bool Loop);
+    void NSBMove(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void NSBDisplayText(Text* pText, const string& unk);
-    void NSBSetAudioState(Playable* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
+    void NSBSetVolume(Playable* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
     void NSBSetAudioRange(Playable* pMusic, int32_t Begin, int32_t End);
     void NSBSetFontAttributes(const string& Font, int32_t Size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
     void NSBLoadAudio(const string& Type, const string& File);
     void NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
-    void NSBCreateBox(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
+    void NSBCreateWindow(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void NSBGetMovieTime();
-    void NSBSetOpacity(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
+    void NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void NSBBindIdentifier();
     void NSBCreateArray();
     void NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function);
@@ -210,10 +210,11 @@ private:
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
     // See: Game::GLCallback
-    void GLDestroy(DrawableBase* pDrawable);
+    void GLDelete(DrawableBase* pDrawable);
     void GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
     void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
-    void GLLoadMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio);
+    // NOTE: Chaos;Head doesn't have last parameter (音声同期)
+    void GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio);
     void GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait);
     void GLCreateTexture(int32_t Width, int32_t Height, const string& Color);
     void GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File);

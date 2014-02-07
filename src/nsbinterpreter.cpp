@@ -123,32 +123,32 @@ StopInterpreter(false)
     Builtins[MAGIC_SET] = &NsbInterpreter::Set;
     Builtins[MAGIC_ARRAY_READ] = &NsbInterpreter::ArrayRead;
     Builtins[MAGIC_REGISTER_CALLBACK] = &NsbInterpreter::RegisterCallback;
-    Builtins[MAGIC_SET_STATE] = &NsbInterpreter::SetState;
+    Builtins[MAGIC_REQUEST] = &NsbInterpreter::Request;
     Builtins[MAGIC_PARSE_TEXT] = &NsbInterpreter::ParseText;
-    Builtins[MAGIC_SET_AUDIO_LOOP] = &NsbInterpreter::SetAudioLoop;
-    Builtins[MAGIC_SLEEP_MS] = &NsbInterpreter::SleepMs;
-    Builtins[MAGIC_START_ANIMATION] = &NsbInterpreter::StartAnimation;
+    Builtins[MAGIC_SET_LOOP] = &NsbInterpreter::SetLoop;
+    Builtins[MAGIC_WAIT] = &NsbInterpreter::Wait;
+    Builtins[MAGIC_MOVE] = &NsbInterpreter::Move;
     Builtins[MAGIC_DISPLAY_TEXT] = &NsbInterpreter::DisplayText;
-    Builtins[MAGIC_SET_AUDIO_STATE] = &NsbInterpreter::SetAudioState;
+    Builtins[MAGIC_SET_VOLUME] = &NsbInterpreter::SetVolume;
     Builtins[MAGIC_SET_AUDIO_RANGE] = &NsbInterpreter::SetAudioRange;
     Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
     Builtins[MAGIC_LOAD_AUDIO] = &NsbInterpreter::LoadAudio;
     Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
-    Builtins[MAGIC_CREATE_BOX] = &NsbInterpreter::CreateBox;
+    Builtins[MAGIC_CREATE_WINDOW] = &NsbInterpreter::CreateWindow;
     Builtins[MAGIC_APPLY_BLUR] = &NsbInterpreter::ApplyBlur;
     Builtins[MAGIC_GET_MOVIE_TIME] = &NsbInterpreter::GetMovieTime;
     Builtins[MAGIC_SET_PARAM] = &NsbInterpreter::SetParam;
     Builtins[MAGIC_GET] = &NsbInterpreter::Get;
     Builtins[MAGIC_DRAW_TO_TEXTURE] = &NsbInterpreter::DrawToTexture;
     Builtins[MAGIC_CREATE_TEXTURE] = &NsbInterpreter::CreateTexture;
-    Builtins[MAGIC_LOAD_MOVIE] = &NsbInterpreter::LoadMovie;
+    Builtins[MAGIC_CREATE_MOVIE] = &NsbInterpreter::CreateMovie;
     Builtins[MAGIC_APPLY_MASK] = &NsbInterpreter::ApplyMask;
     Builtins[MAGIC_CREATE_COLOR] = &NsbInterpreter::CreateColor;
     Builtins[MAGIC_LOAD_TEXTURE] = &NsbInterpreter::LoadTexture;
     Builtins[MAGIC_CALL] = &NsbInterpreter::Call;
     Builtins[MAGIC_ADD] = &NsbInterpreter::Add;
-    Builtins[MAGIC_DESTROY] = &NsbInterpreter::Destroy;
-    Builtins[MAGIC_SET_OPACITY] = &NsbInterpreter::SetOpacity;
+    Builtins[MAGIC_DELETE] = &NsbInterpreter::Delete;
+    Builtins[MAGIC_FADE] = &NsbInterpreter::Fade;
     Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::NSBBindIdentifier;
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_CALL_CHAPTER] = &NsbInterpreter::CallChapter;
@@ -165,6 +165,7 @@ StopInterpreter(false)
     Builtins[MAGIC_SCOPE_END] = &NsbInterpreter::ScopeEnd;
     Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format;
     //Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
+    //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
     // Stubs
     Builtins[MAGIC_UNK1] = &NsbInterpreter::UNK1;
@@ -577,10 +578,10 @@ void NsbInterpreter::RegisterCallback()
     pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pContext->pLine->Params[0][0] - 'A'), pContext->pLine->Params[1]);
 }
 
-void NsbInterpreter::SetState()
+void NsbInterpreter::Request()
 {
     HandleName = GetParam<string>(0);
-    NSBSetState(GetParam<string>(1));
+    NSBRequest(GetParam<string>(1));
 }
 
 void NsbInterpreter::ParseText()
@@ -590,23 +591,23 @@ void NsbInterpreter::ParseText()
                       GetParam<string>(1), GetParam<string>(2)));
 }
 
-void NsbInterpreter::SetAudioLoop()
+void NsbInterpreter::SetLoop()
 {
     HandleName = GetParam<string>(0);
     if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
-        NSBSetAudioLoop(pMusic, GetParam<bool>(1));
+        NSBSetLoop(pMusic, GetParam<bool>(1));
 }
 
-void NsbInterpreter::SleepMs()
+void NsbInterpreter::Wait()
 {
     Sleep(GetVariable<int32_t>(Params[0].Value));
 }
 
-void NsbInterpreter::StartAnimation()
+void NsbInterpreter::Move()
 {
     if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        NSBStartAnimation(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                          GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
+        NSBMove(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
+                           GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
 }
 
 void NsbInterpreter::DisplayText()
@@ -615,18 +616,18 @@ void NsbInterpreter::DisplayText()
         NSBDisplayText(pText, GetParam<string>(1));
 }
 
-void NsbInterpreter::SetAudioState()
+void NsbInterpreter::SetVolume()
 {
     HandleName = GetParam<string>(0);
     if (HandleName.back() == '*' && HandleName.size() > 2)
     {
         WildcardCall<Playable>(HandleName, [this] (Playable* pMusic)
         {
-            NSBSetAudioState(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
+            NSBSetVolume(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
         });
     }
     else if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
-        NSBSetAudioState(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
+        NSBSetVolume(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
 }
 
 void NsbInterpreter::SetAudioRange()
@@ -654,11 +655,11 @@ void NsbInterpreter::SetTextboxAttributes()
                             GetParam<string>(4), GetParam<string>(5), GetParam<int32_t>(6), GetParam<string>(7));
 }
 
-void NsbInterpreter::CreateBox()
+void NsbInterpreter::CreateWindow()
 {
     HandleName = GetParam<string>(0);
-    NSBCreateBox(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
-                 GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<bool>(6));
+    NSBCreateWindow(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
+                    GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<bool>(6));
 }
 
 void NsbInterpreter::ApplyBlur()
@@ -734,10 +735,10 @@ void NsbInterpreter::ApplyMask()
     }
 }
 
-void NsbInterpreter::LoadMovie()
+void NsbInterpreter::CreateMovie()
 {
     HandleName = GetParam<string>(0);
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadMovie, this, GetParam<int32_t>(1),
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateMovie, this, GetParam<int32_t>(1),
                       GetParam<int32_t>(2), GetParam<int32_t>(3), GetParam<bool>(4),
                       GetParam<bool>(5), GetParam<string>(6), GetParam<bool>(7)));
 }
@@ -750,20 +751,20 @@ void NsbInterpreter::CreateColor()
                       GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<string>(6)));
 }
 
-void NsbInterpreter::SetOpacity()
+void NsbInterpreter::Fade()
 {
     HandleName = GetParam<string>(0);
     if (HandleName.back() == '*')
     {
         WildcardCall<DrawableBase>(HandleName, [this] (DrawableBase* pDrawable)
         {
-            NSBSetOpacity(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                          GetParam<string>(3), GetParam<bool>(4));
+            NSBFade(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
+                    GetParam<string>(3), GetParam<bool>(4));
         });
     }
     else if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
-        NSBSetOpacity(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                      GetParam<string>(3), GetParam<bool>(4));
+        NSBFade(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
+                GetParam<string>(3), GetParam<bool>(4));
 }
 
 void NsbInterpreter::End()
@@ -793,10 +794,10 @@ void NsbInterpreter::LoadTexture()
                       GetParam<int32_t>(1), Pos[0], Pos[1], GetParam<string>(4)));
 }
 
-void NsbInterpreter::Destroy()
+void NsbInterpreter::Delete()
 {
     HandleName = GetParam<string>(0);
-    NSBDestroy();
+    NSBDelete();
 }
 
 void NsbInterpreter::Call()
@@ -810,7 +811,7 @@ void NsbInterpreter::Call()
         HandleName = "ムービー";
         NSBGetMovieTime();
         if (!std::ifstream("NOMOVIE"))
-            SleepMs();
+            Wait();
         pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
                           CacheHolder<DrawableBase>::Read("ムービー")));
         return;
@@ -819,7 +820,7 @@ void NsbInterpreter::Call()
     {
         ClearParams();
         HandleName = "StNameSTBUF1/STBUF100";
-        NSBDestroy();
+        NSBDelete();
         return;
     }
     else if (std::strcmp(FuncName, "St") == 0 ||
