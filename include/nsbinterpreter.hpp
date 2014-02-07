@@ -180,11 +180,12 @@ private:
     void GetScriptName();
     void ScopeBegin();
     void ScopeEnd();
+    void WriteFile();
+    void LoopJump();
 
     // Stubs
     void UNK1();
     void UNK2();
-    void LoopJump();
     void UNK77();
 
     // Builtin functions
@@ -207,6 +208,7 @@ private:
     void NSBCreateArray();
     void NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function);
     void NSBSystem(string Command, string Parameters, string Directory);
+    void NSBWriteFile(const string& FileName, const string& Data);
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
     // See: Game::GLCallback

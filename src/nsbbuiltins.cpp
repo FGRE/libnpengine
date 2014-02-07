@@ -496,6 +496,13 @@ void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, 
     Threads.push_back(pThread);
 }
 
+void NsbInterpreter::NSBWriteFile(const string& Filename, const string& Data)
+{
+    std::ofstream File(Filename, std::ios::binary);
+    File.write(Data.c_str(), Data.size());
+    File.close();
+}
+
 void NsbInterpreter::NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1,
                                              const string& Color1, const string& Color2,
                                              int32_t unk2, const string& unk3)
