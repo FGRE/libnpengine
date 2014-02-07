@@ -164,6 +164,7 @@ StopInterpreter(false)
     Builtins[MAGIC_SCOPE_BEGIN] = &NsbInterpreter::ScopeBegin;
     Builtins[MAGIC_SCOPE_END] = &NsbInterpreter::ScopeEnd;
     Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format;
+    Builtins[MAGIC_WRITE_FILE] = &NsbInterpreter::WriteFile;
     //Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
@@ -322,6 +323,11 @@ void NsbInterpreter::CreateProcess()
 {
     HandleName = GetParam<string>(0);
     NSBCreateProcess(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3), GetParam<string>(4));
+}
+
+void NsbInterpreter::WriteFile()
+{
+    NSBWriteFile(GetParam<string>(0), GetParam<string>(1));
 }
 
 void NsbInterpreter::Increment()
