@@ -182,6 +182,7 @@ private:
     void ScopeEnd();
     void WriteFile();
     void LoopJump();
+    void Divide();
 
     // Stubs
     void UNK1();

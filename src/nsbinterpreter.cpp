@@ -165,6 +165,7 @@ StopInterpreter(false)
     Builtins[MAGIC_SCOPE_END] = &NsbInterpreter::ScopeEnd;
     Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format;
     Builtins[MAGIC_WRITE_FILE] = &NsbInterpreter::WriteFile;
+    Builtins[MAGIC_DIVIDE] = &NsbInterpreter::Divide;
     //Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
@@ -873,6 +874,20 @@ void NsbInterpreter::Add()
                               boost::lexical_cast<int32_t>(Params[Second].Value));
     else
         Params[First].Value += Params[Second].Value;
+    Params.resize(Second);
+}
+
+void NsbInterpreter::Divide()
+{
+    uint32_t First = Params.size() - 2, Second = Params.size() - 1;
+    if (NsbAssert(Params[First].Type == Params[Second].Type && Params[First].Type == "INT",
+                  "Dividing params of non-integer types (% and %)",
+                  Params[First].Type, Params[Second].Type))
+        return;
+
+    Params[First].Value = boost::lexical_cast<string>(
+                          boost::lexical_cast<int32_t>(Params[First].Value) /
+                          boost::lexical_cast<int32_t>(Params[Second].Value));
     Params.resize(Second);
 }
 
