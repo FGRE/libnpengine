@@ -140,11 +140,11 @@ StopInterpreter(false)
     Builtins[MAGIC_SET_PARAM] = &NsbInterpreter::SetParam;
     Builtins[MAGIC_GET] = &NsbInterpreter::Get;
     Builtins[MAGIC_DRAW_TO_TEXTURE] = &NsbInterpreter::DrawToTexture;
-    Builtins[MAGIC_CREATE_TEXTURE] = &NsbInterpreter::CreateTexture;
+    Builtins[MAGIC_CREATE_RENDER_TEXTURE] = &NsbInterpreter::CreateRenderTexture;
     Builtins[MAGIC_CREATE_MOVIE] = &NsbInterpreter::CreateMovie;
     Builtins[MAGIC_DRAW_TRANSITION] = &NsbInterpreter::DrawTransition;
     Builtins[MAGIC_CREATE_COLOR] = &NsbInterpreter::CreateColor;
-    Builtins[MAGIC_LOAD_TEXTURE] = &NsbInterpreter::LoadTexture;
+    Builtins[MAGIC_CREATE_TEXTURE] = &NsbInterpreter::CreateTexture;
     Builtins[MAGIC_CALL] = &NsbInterpreter::Call;
     Builtins[MAGIC_ADD] = &NsbInterpreter::Add;
     Builtins[MAGIC_DELETE] = &NsbInterpreter::Delete;
@@ -703,10 +703,10 @@ void NsbInterpreter::DrawToTexture()
                          GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3)));
 }
 
-void NsbInterpreter::CreateTexture()
+void NsbInterpreter::CreateRenderTexture()
 {
     HandleName = GetParam<string>(0);
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this,
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateRenderTexture, this,
                       GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3)));
 }
 
@@ -778,7 +778,7 @@ void NsbInterpreter::End()
     pContext->ReturnSubroutine();
 }
 
-void NsbInterpreter::LoadTexture()
+void NsbInterpreter::CreateTexture()
 {
     // Represent special position as negative index to function
     // in SpecialPosTable. See: NsbInterpreter::GLLoadTexture
@@ -796,7 +796,7 @@ void NsbInterpreter::LoadTexture()
     }
 
     HandleName = GetParam<string>(0);
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTexture, this,
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this,
                       GetParam<int32_t>(1), Pos[0], Pos[1], GetParam<string>(4)));
 }
 

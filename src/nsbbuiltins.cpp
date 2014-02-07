@@ -56,7 +56,7 @@ sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area = s
     return pTexture;
 }
 
-void NsbInterpreter::GLCreateTexture(int32_t Width, int32_t Height, const string& Color)
+void NsbInterpreter::GLCreateRenderTexture(int32_t Width, int32_t Height, const string& Color)
 {
     if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
         delete pTexture;
@@ -159,7 +159,7 @@ void NsbInterpreter::GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool 
     pGame->AddDrawable(pMovie);
 }
 
-void NsbInterpreter::GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File)
+void NsbInterpreter::GLCreateTexture(int32_t Priority, int32_t x, int32_t y, const string& File)
 {
     GLLoadTextureClip(Priority, x, y, 0, 0, 0, 0, File);
 }
