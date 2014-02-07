@@ -142,7 +142,7 @@ StopInterpreter(false)
     Builtins[MAGIC_DRAW_TO_TEXTURE] = &NsbInterpreter::DrawToTexture;
     Builtins[MAGIC_CREATE_TEXTURE] = &NsbInterpreter::CreateTexture;
     Builtins[MAGIC_CREATE_MOVIE] = &NsbInterpreter::CreateMovie;
-    Builtins[MAGIC_APPLY_MASK] = &NsbInterpreter::ApplyMask;
+    Builtins[MAGIC_DRAW_TRANSITION] = &NsbInterpreter::DrawTransition;
     Builtins[MAGIC_CREATE_COLOR] = &NsbInterpreter::CreateColor;
     Builtins[MAGIC_LOAD_TEXTURE] = &NsbInterpreter::LoadTexture;
     Builtins[MAGIC_CALL] = &NsbInterpreter::Call;
@@ -719,11 +719,11 @@ void NsbInterpreter::Begin()
         SetVariable(pContext->pLine->Params[i], Params[i - 1]);
 }
 
-void NsbInterpreter::ApplyMask()
+void NsbInterpreter::DrawTransition()
 {
     if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
     {
-        pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyMask, this, pDrawable,
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLDrawTransition, this, pDrawable,
                           GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
                           GetParam<int32_t>(4), GetParam<string>(5), GetParam<string>(6),
                           GetParam<bool>(7)));
