@@ -885,9 +885,16 @@ void NsbInterpreter::Divide()
                   Params[First].Type, Params[Second].Type))
         return;
 
-    Params[First].Value = boost::lexical_cast<string>(
-                          boost::lexical_cast<int32_t>(Params[First].Value) /
-                          boost::lexical_cast<int32_t>(Params[Second].Value));
+    // Do not divide by zero
+    if (boost::lexical_cast<int32_t>(Params[Second].Value) != 0)
+        Params[First].Value = boost::lexical_cast<string>(
+                              boost::lexical_cast<int32_t>(Params[First].Value) /
+                              boost::lexical_cast<int32_t>(Params[Second].Value));
+    else
+    {
+        std::cout << "Division by zero!" << std::endl;
+        WriteTrace(std::cout);
+    }
     Params.resize(Second);
 }
 
