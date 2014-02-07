@@ -123,7 +123,7 @@ private:
     void ExecuteScriptLocal(const string& InitScript);
 
     // Magic handlers
-    void CreateThread();
+    void CreateProcess();
     void LoadTextureClip();
     void Increment();
     void LogicalGreater();
@@ -205,7 +205,7 @@ private:
     void NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void NSBBindIdentifier();
     void NSBCreateArray();
-    void NSBCreateThread(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function);
+    void NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function);
     void NSBSystem(string Command, string Parameters, string Directory);
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread

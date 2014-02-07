@@ -109,7 +109,7 @@ StopInterpreter(false)
     Builtins[MAGIC_CALL_SCENE] = &NsbInterpreter::CallScene;
     Builtins[MAGIC_CREATE_SCROLLBAR] = &NsbInterpreter::CreateScrollbar;
     Builtins[MAGIC_SYSTEM] = &NsbInterpreter::System;
-    Builtins[MAGIC_CREATE_THREAD] = &NsbInterpreter::CreateThread;
+    Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
     Builtins[MAGIC_LOAD_TEXTURE_CLIP] = &NsbInterpreter::LoadTextureClip;
     Builtins[MAGIC_INCREMENT] = &NsbInterpreter::Increment;
     Builtins[MAGIC_LOGICAL_GREATER] = &NsbInterpreter::LogicalGreater;
@@ -318,10 +318,10 @@ void NsbInterpreter::LoadTextureClip()
 }
 
 // CreateProcess in Chaos;Head
-void NsbInterpreter::CreateThread()
+void NsbInterpreter::CreateProcess()
 {
     HandleName = GetParam<string>(0);
-    NSBCreateThread(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3), GetParam<string>(4));
+    NSBCreateProcess(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3), GetParam<string>(4));
 }
 
 void NsbInterpreter::Increment()
