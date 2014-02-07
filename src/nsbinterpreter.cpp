@@ -109,7 +109,7 @@ StopInterpreter(false)
     Builtins[MAGIC_CALL_SCENE] = &NsbInterpreter::CallScene;
     Builtins[MAGIC_CREATE_SCROLLBAR] = &NsbInterpreter::CreateScrollbar;
     Builtins[MAGIC_SYSTEM] = &NsbInterpreter::System;
-    Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
+    //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
     Builtins[MAGIC_LOAD_TEXTURE_CLIP] = &NsbInterpreter::LoadTextureClip;
     Builtins[MAGIC_INCREMENT] = &NsbInterpreter::Increment;
     Builtins[MAGIC_LOGICAL_GREATER] = &NsbInterpreter::LogicalGreater;
