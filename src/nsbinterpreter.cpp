@@ -102,8 +102,8 @@ StopInterpreter(false)
 #endif
 
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
-    //Builtins[MAGIC_TEXTURE_WIDTH] = &NsbInterpreter::TextureWidth;
-    //Builtins[MAGIC_TEXTURE_HEIGHT] = &NsbInterpreter::TextureHeight;
+    Builtins[MAGIC_TEXTURE_WIDTH] = &NsbInterpreter::TextureWidth;
+    Builtins[MAGIC_TEXTURE_HEIGHT] = &NsbInterpreter::TextureHeight;
     Builtins[MAGIC_SHAKE] = &NsbInterpreter::Shake;
     Builtins[MAGIC_TIME] = &NsbInterpreter::Time;
     Builtins[MAGIC_CALL_SCENE] = &NsbInterpreter::CallScene;
@@ -308,6 +308,18 @@ void NsbInterpreter::Shake()
 
 void NsbInterpreter::CreateScrollbar()
 {
+}
+
+void NsbInterpreter::TextureWidth()
+{
+    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
+        Params.push_back({"INT", boost::lexical_cast<string>(pDrawable->ToSprite()->getTexture()->getSize().x)});
+}
+
+void NsbInterpreter::TextureHeight()
+{
+    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
+        Params.push_back({"INT", boost::lexical_cast<string>(pDrawable->ToSprite()->getTexture()->getSize().y)});
 }
 
 void NsbInterpreter::LoadTextureClip()

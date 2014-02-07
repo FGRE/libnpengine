@@ -183,6 +183,8 @@ private:
     void WriteFile();
     void LoopJump();
     void Divide();
+    void TextureWidth();
+    void TextureHeight();
 
     // Stubs
     void UNK1();
