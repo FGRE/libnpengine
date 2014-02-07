@@ -136,7 +136,7 @@ private:
     void Fade();
     void Begin();
     void End();
-    void LoadTexture();
+    void CreateTexture();
     void Delete();
     void Call();
     void Add();
@@ -144,7 +144,7 @@ private:
     void CreateMovie();
     void DrawTransition();
     void ClearParams();
-    void CreateTexture();
+    void CreateRenderTexture();
     void GetMovieTime();
     void ApplyBlur();
     void CreateWindow();
@@ -213,12 +213,12 @@ private:
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
     // See: Game::GLCallback
     void GLDelete(DrawableBase* pDrawable);
-    void GLLoadTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
+    void GLCreateTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
     void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
     // NOTE: Chaos;Head doesn't have last parameter (音声同期)
     void GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio);
     void GLDrawTransition(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait);
-    void GLCreateTexture(int32_t Width, int32_t Height, const string& Color);
+    void GLCreateRenderTexture(int32_t Width, int32_t Height, const string& Color);
     void GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File);
     void GLApplyBlur(Drawable* pDrawable, const string& Heaviness);
     void GLParseText(const string& Box, const string& XML);
