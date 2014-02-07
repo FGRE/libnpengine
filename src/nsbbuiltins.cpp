@@ -83,7 +83,7 @@ void NsbInterpreter::GLApplyBlur(Drawable* pDrawable, const string& Heaviness)
     pDrawable->SetBlur(Heaviness);
 }
 
-void NsbInterpreter::GLApplyMask(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait)
+void NsbInterpreter::GLDrawTransition(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait)
 {
     if (sf::Texture* pTexture = LoadTextureFromFile(File))
         pDrawable->SetMask(pTexture, Start, End, Time);
