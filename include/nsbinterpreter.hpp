@@ -153,7 +153,7 @@ private:
     void SetAudioRange();
     void SetFontAttributes();
     void SetVolume();
-    void DisplayText();
+    void WaitText();
     void Move();
     void Wait();
     void SetLoop();
@@ -198,7 +198,7 @@ private:
     void NSBRequest(const string& State);
     void NSBSetLoop(Playable* pMusic, bool Loop);
     void NSBMove(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
-    void NSBDisplayText(Text* pText, const string& unk);
+    void NSBWaitText(Text* pText, const string& unk);
     void NSBSetVolume(Playable* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
     void NSBSetAudioRange(Playable* pMusic, int32_t Begin, int32_t End);
     void NSBSetFontAttributes(const string& Font, int32_t Size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);

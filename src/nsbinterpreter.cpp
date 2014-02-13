@@ -128,7 +128,7 @@ StopInterpreter(false)
     Builtins[MAGIC_SET_LOOP] = &NsbInterpreter::SetLoop;
     Builtins[MAGIC_WAIT] = &NsbInterpreter::Wait;
     Builtins[MAGIC_MOVE] = &NsbInterpreter::Move;
-    Builtins[MAGIC_DISPLAY_TEXT] = &NsbInterpreter::DisplayText;
+    Builtins[MAGIC_WAIT_TEXT] = &NsbInterpreter::WaitText;
     Builtins[MAGIC_SET_VOLUME] = &NsbInterpreter::SetVolume;
     Builtins[MAGIC_SET_AUDIO_RANGE] = &NsbInterpreter::SetAudioRange;
     Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
@@ -629,10 +629,10 @@ void NsbInterpreter::Move()
                            GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
 }
 
-void NsbInterpreter::DisplayText()
+void NsbInterpreter::WaitText()
 {
     if (Text* pText = (Text*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        NSBDisplayText(pText, GetParam<string>(1));
+        NSBWaitText(pText, GetParam<string>(1));
 }
 
 void NsbInterpreter::SetVolume()

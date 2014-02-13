@@ -336,7 +336,7 @@ void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
     CacheHolder<Playable>::Write(HandleName, new Playable(AudioFile));
 }
 
-void NsbInterpreter::NSBDisplayText(Text* pText, const string& unk)
+void NsbInterpreter::NSBWaitText(Text* pText, const string& unk)
 {
     if (Playable* pMusic = pText->Voices[0].pMusic)
     {
