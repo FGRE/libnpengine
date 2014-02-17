@@ -102,6 +102,7 @@ StopInterpreter(false)
 #endif
 
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
+    Builtins[MAGIC_SUBSTRACT] = &NsbInterpreter::Substract;
     Builtins[MAGIC_TEXTURE_WIDTH] = &NsbInterpreter::TextureWidth;
     Builtins[MAGIC_TEXTURE_HEIGHT] = &NsbInterpreter::TextureHeight;
     Builtins[MAGIC_SHAKE] = &NsbInterpreter::Shake;
@@ -117,7 +118,7 @@ StopInterpreter(false)
     Builtins[MAGIC_ARRAY_SIZE] = &NsbInterpreter::ArraySize;
     Builtins[MAGIC_CENTER] = &NsbInterpreter::Center;
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
-    Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
+    //Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
     Builtins[MAGIC_NEGATIVE] = &NsbInterpreter::Negative;
     Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::NSBCreateArray;
     Builtins[MAGIC_SET] = &NsbInterpreter::Set;
@@ -539,14 +540,16 @@ void NsbInterpreter::System()
 
 void NsbInterpreter::PlaceholderParam()
 {
+    // Parameters with this flag are @ in MAGIC_CALL argument list
+    // This works around the issue: See: NsbInterpreter::GetParam<T>
+    Params.back().Type = "WTF";
 }
 
 void NsbInterpreter::Negative()
 {
     Params.back().Value = boost::lexical_cast<string>(-GetVariable<int32_t>(Params.back().Value));
     // Negative integers are incorrectly compiled by Nitroplus
-    // This works around the issue: See: NsbInterpreter::GetParam<T>
-    Params.back().Type = "WTF";
+    PlaceholderParam();
 }
 
 void NsbInterpreter::Set()
@@ -871,42 +874,49 @@ void NsbInterpreter::Format()
     Params.back().Value = Fmt.str();
 }
 
+void NsbInterpreter::Substract()
+{
+    BinaryOperator([] (int32_t a, int32_t b) -> int32_t { return a - b; });
+}
+
 void NsbInterpreter::Add()
 {
+    // If parameters are strings, concat
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
-    if (NsbAssert(Params[First].Type == Params[Second].Type,
-                  "Concating params of different types (% and %)",
-                  Params[First].Type, Params[Second].Type))
-        return;
-
-    // If parameters are integers, perform addition instead of string concat
-    if (Params[First].Type == "INT")
-        Params[First].Value = boost::lexical_cast<string>(
-                              boost::lexical_cast<int32_t>(Params[First].Value) +
-                              boost::lexical_cast<int32_t>(Params[Second].Value));
-    else
+    if (Params[First].Type == "STRING")
+    {
         Params[First].Value += Params[Second].Value;
-    Params.resize(Second);
+        Params.resize(Second);
+    }
+    else
+        BinaryOperator([](int32_t a, int32_t b) -> int32_t { return a + b; });
 }
 
 void NsbInterpreter::Divide()
 {
+    BinaryOperator([](int32_t a, int32_t b) -> int32_t
+    {
+        if (b == 0)
+            return 0;
+        return a / b;
+    });
+}
+
+void NsbInterpreter::Multiply()
+{
+    BinaryOperator([](int32_t a, int32_t b) -> int32_t { return a + b; });
+}
+
+void NsbInterpreter::BinaryOperator(std::function<int32_t(int32_t, int32_t)> Func)
+{
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
-    if (NsbAssert(Params[First].Type == Params[Second].Type && Params[First].Type == "INT",
-                  "Dividing params of non-integer types (% and %)",
+    if (NsbAssert(Params[First].Type == Params[Second].Type,
+                  "BianryOperator: Params of different types (% and %)",
                   Params[First].Type, Params[Second].Type))
         return;
 
-    // Do not divide by zero
-    if (boost::lexical_cast<int32_t>(Params[Second].Value) != 0)
-        Params[First].Value = boost::lexical_cast<string>(
-                              boost::lexical_cast<int32_t>(Params[First].Value) /
-                              boost::lexical_cast<int32_t>(Params[Second].Value));
-    else
-    {
-        std::cout << "Division by zero!" << std::endl;
-        WriteTrace(std::cout);
-    }
+    Params[First].Value = boost::lexical_cast<string>(Func(boost::lexical_cast<int32_t>(Params[First].Value),
+                                                           boost::lexical_cast<int32_t>(Params[Second].Value)));
     Params.resize(Second);
 }
 
