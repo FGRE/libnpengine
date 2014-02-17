@@ -185,6 +185,8 @@ private:
     void Divide();
     void TextureWidth();
     void TextureHeight();
+    void Multiply();
+    void Substract();
 
     // Stubs
     void UNK1();
@@ -233,6 +235,7 @@ private:
     void SGPhoneMode();
     void SGPhonePriority();
 
+    void BinaryOperator(std::function<int32_t(int32_t, int32_t)> Func); // +,-,*,/
     template <class T> T GetParam(int32_t Index); // If parameter is identifier, it is transformed to value
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
