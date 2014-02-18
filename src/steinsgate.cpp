@@ -130,6 +130,39 @@ const int16_t PHONE_SD_TEXT_TEX_X[PHONE_SD_TEXT_MAX] =
     135, 168, 200
 };
 
+enum PhoneButton
+{
+    BUTTON_CONTACTS = 0,
+    BUTTON_MAIL,
+    BUTTON_WEB,
+    BUTTON_SETTINGS,
+    BUTTON_MAX
+};
+const int16_t PHONE_BUTTON_TEX_X = 27;
+const int16_t PHONE_BUTTON_TEX_Y[BUTTON_MAX * 2] =
+{
+    20, 82,
+    151, 222,
+    291, 363,
+    436, 505
+};
+const int16_t PHONE_BUTTON_POS_X[] =
+{
+    766,
+    848
+};
+const int16_t PHONE_BUTTON_POS_Y[] =
+{
+    154,
+    223
+};
+
+// Menu wallpaper
+const int16_t PHONE_MENU_TEX_X = 532;
+const int16_t PHONE_MENU_TEX_Y = 760;
+const int16_t PHONE_MENU_WIDTH = 220;
+const int16_t PHONE_MENU_HEIGHT = 254;
+
 enum PhoneMode
 {
     MODE_ADDRESS_BOOK = 0,
@@ -204,6 +237,7 @@ ShowOverlay(false)
     Header.setPosition(PHONE_HEADER_POS_X, PHONE_HEADER_POS_Y);
     Wallpaper.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
     ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
+    pWallpaper = LoadTextureFromFile("cg/sys/phone/pwcg101.png", sf::IntRect());
     pPhoneTex = LoadTextureFromFile("cg/sys/phone/phone_01.png", sf::IntRect());
     pPhoneOpenTex = LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
     pSDTex = LoadTextureFromFile("cg/sys/phone/phone_sd.png", sf::IntRect());
@@ -214,7 +248,7 @@ Phone::~Phone()
     delete pSDTex;
     delete pPhoneTex;
     delete pPhoneOpenTex;
-    delete Wallpaper.getTexture();
+    delete pWallpaper;
 }
 
 void Phone::UpdateOpenMode(int32_t OpenMode)
@@ -333,9 +367,7 @@ void Phone::UpdateMode(uint8_t NewMode)
     switch (Mode)
     {
         case MODE_DEFAULT:
-            if (sf::Texture* pTexture = LoadTextureFromFile("cg/sys/phone/pwcg101.png", sf::IntRect()))
-                SetWallpaper(pTexture);
-
+            Wallpaper.setTexture(*pWallpaper);
             if (!Header.getTexture())
             {
                 sf::IntRect ClipArea(PHONE_HEADER_TEX_X, PHONE_HEADER_TEX_Y, PHONE_HEADER_WIDTH, PHONE_HEADER_HEIGHT);
@@ -343,15 +375,16 @@ void Phone::UpdateMode(uint8_t NewMode)
                 Header.setTextureRect(ClipArea);
             }
             break;
+        case MODE_DEFAULT_OPERATABLE:
+        {
+            sf::IntRect ClipArea(PHONE_MENU_TEX_X, PHONE_MENU_TEX_Y, PHONE_MENU_WIDTH, PHONE_MENU_HEIGHT);
+            Wallpaper.setTexture(*pPhoneTex);
+            Wallpaper.setTextureRect(ClipArea);
+            break;
+        }
         case MODE_POWER_OFF:
             break;
     }
-}
-
-void Phone::SetWallpaper(sf::Texture* pTexture)
-{
-    delete Wallpaper.getTexture();
-    Wallpaper.setTexture(*pTexture);
 }
 
 void Phone::MailReceive(int32_t Show)
