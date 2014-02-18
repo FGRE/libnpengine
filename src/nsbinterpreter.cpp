@@ -167,6 +167,7 @@ StopInterpreter(false)
     Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format;
     Builtins[MAGIC_WRITE_FILE] = &NsbInterpreter::WriteFile;
     Builtins[MAGIC_DIVIDE] = &NsbInterpreter::Divide;
+    Builtins[MAGIC_MULTIPLY] = &NsbInterpreter::Multiply;
     //Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
