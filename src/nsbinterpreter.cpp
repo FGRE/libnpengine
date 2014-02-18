@@ -131,9 +131,9 @@ StopInterpreter(false)
     Builtins[MAGIC_MOVE] = &NsbInterpreter::Move;
     Builtins[MAGIC_WAIT_TEXT] = &NsbInterpreter::WaitText;
     Builtins[MAGIC_SET_VOLUME] = &NsbInterpreter::SetVolume;
-    Builtins[MAGIC_SET_AUDIO_RANGE] = &NsbInterpreter::SetAudioRange;
+    Builtins[MAGIC_SET_LOOP_POINT] = &NsbInterpreter::SetLoopPoint;
     Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
-    Builtins[MAGIC_LOAD_AUDIO] = &NsbInterpreter::LoadAudio;
+    Builtins[MAGIC_CREATE_SOUND] = &NsbInterpreter::CreateSound;
     Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
     Builtins[MAGIC_CREATE_WINDOW] = &NsbInterpreter::CreateWindow;
     Builtins[MAGIC_APPLY_BLUR] = &NsbInterpreter::ApplyBlur;
@@ -652,10 +652,10 @@ void NsbInterpreter::SetVolume()
         NSBSetVolume(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3));
 }
 
-void NsbInterpreter::SetAudioRange()
+void NsbInterpreter::SetLoopPoint()
 {
     if (Playable* pMusic = CacheHolder<Playable>::Read(GetParam<string>(0)))
-        NSBSetAudioRange(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2));
+        NSBSetLoopPoint(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2));
 }
 
 void NsbInterpreter::SetFontAttributes()
@@ -664,10 +664,10 @@ void NsbInterpreter::SetFontAttributes()
                          GetParam<string>(3), GetParam<int32_t>(4), GetParam<string>(5));
 }
 
-void NsbInterpreter::LoadAudio()
+void NsbInterpreter::CreateSound()
 {
     HandleName = GetParam<string>(0);
-    NSBLoadAudio(GetParam<string>(1), GetParam<string>(2) + ".ogg");
+    NSBCreateSound(GetParam<string>(1), GetParam<string>(2) + ".ogg");
 }
 
 void NsbInterpreter::SetTextboxAttributes()
