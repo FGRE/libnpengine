@@ -41,7 +41,6 @@ public:
     void MailReceive(int32_t Show);
     void UpdateOpenMode(int32_t OpenMode);
     void UpdateMode(uint8_t NewMode);
-    void SetWallpaper(sf::Texture* pTexture);
     void SetPriority(int32_t Priority);
 
 private:
@@ -54,6 +53,7 @@ private:
     int8_t AnimRow;
     int8_t AnimColumn;
     sf::Clock AnimClock;
+    sf::Texture* pWallpaper;
     sf::Texture* pPhoneOpenTex; // Open/Close animation frames
     sf::Texture* pPhoneTex;
     sf::Texture* pSDTex;
