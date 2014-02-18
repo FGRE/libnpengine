@@ -324,7 +324,7 @@ void NsbInterpreter::NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opac
         pContext->Sleep(Time);
 }
 
-void NsbInterpreter::NSBLoadAudio(const string& Type, const string& File)
+void NsbInterpreter::NSBCreateSound(const string& Type, const string& File)
 {
     if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
         delete pMusic;
@@ -366,7 +366,7 @@ void NsbInterpreter::NSBMove(DrawableBase* pDrawable, int32_t Time, int32_t x, i
         pContext->Sleep(Time);
 }
 
-void NsbInterpreter::NSBSetAudioRange(Playable* pMusic, int32_t Begin, int32_t End)
+void NsbInterpreter::NSBSetLoopPoint(Playable* pMusic, int32_t Begin, int32_t End)
 {
     pMusic->SetRange(Begin, End);
 }
