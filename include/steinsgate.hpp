@@ -63,4 +63,5 @@ private:
     sf::Sprite SD;
     sf::Sprite SDDate[6];
     sf::Sprite SDIcon[4];
+    sf::Sprite Button[2][2];
 };

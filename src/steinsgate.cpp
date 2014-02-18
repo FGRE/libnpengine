@@ -141,8 +141,8 @@ enum PhoneButton
 const int16_t PHONE_BUTTON_TEX_X = 27;
 const int16_t PHONE_BUTTON_TEX_Y[BUTTON_MAX * 2] =
 {
-    20, 82,
     151, 222,
+    20, 82,
     291, 363,
     436, 505
 };
@@ -156,6 +156,8 @@ const int16_t PHONE_BUTTON_POS_Y[] =
     154,
     223
 };
+const int16_t PHONE_BUTTON_WIDTH = 50;
+const int16_t PHONE_BUTTON_HEIGHT = 50;
 
 // Menu wallpaper
 const int16_t PHONE_MENU_TEX_X = 532;
@@ -241,6 +243,17 @@ ShowOverlay(false)
     pPhoneTex = LoadTextureFromFile("cg/sys/phone/phone_01.png", sf::IntRect());
     pPhoneOpenTex = LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
     pSDTex = LoadTextureFromFile("cg/sys/phone/phone_sd.png", sf::IntRect());
+
+    for (int y = 0; y < 2; ++y)
+    {
+        for (int x = 0; x < 2; ++x)
+        {
+            sf::IntRect ClipArea(PHONE_BUTTON_TEX_X, PHONE_BUTTON_TEX_Y[(y * 2 + x) * 2 + 1], PHONE_BUTTON_WIDTH, PHONE_BUTTON_HEIGHT);
+            Button[y][x].setTexture(*pPhoneTex);
+            Button[y][x].setTextureRect(ClipArea);
+            Button[y][x].setPosition(PHONE_BUTTON_POS_X[x], PHONE_BUTTON_POS_Y[y]);
+        }
+    }
 }
 
 Phone::~Phone()
@@ -274,6 +287,12 @@ void Phone::Draw(sf::RenderWindow* pWindow)
         pWindow->draw(Header);
         if (ShowOverlay)
             pWindow->draw(Overlay);
+    }
+    if (Mode == MODE_DEFAULT_OPERATABLE)
+    {
+        for (int y = 0; y < 2; ++y)
+            for (int x = 0; x < 2; ++x)
+                pWindow->draw(Button[y][x]);
     }
     if (ShowSD)
     {
