@@ -42,9 +42,11 @@ public:
     void UpdateOpenMode(int32_t OpenMode);
     void UpdateMode(uint8_t NewMode);
     void SetPriority(int32_t Priority);
+    void MouseMoved(sf::Vector2i Pos);
 
 private:
     void UpdateAnim();
+    bool HighlightButton(int x, int y);
 
     bool ShowSD;
     bool ShowOverlay;
@@ -52,6 +54,7 @@ private:
     uint8_t State;
     int8_t AnimRow;
     int8_t AnimColumn;
+    int8_t ButtonHighlightX, ButtonHighlightY; // Currently highlighed button
     sf::Clock AnimClock;
     sf::Texture* pWallpaper;
     sf::Texture* pPhoneOpenTex; // Open/Close animation frames

@@ -232,7 +232,9 @@ int DateToWeekDay(string Date)
 Phone::Phone(sf::Drawable* pDrawable) :
 DrawableBase(pDrawable, -1, DRAWABLE_TEXTURE),
 ShowSD(false),
-ShowOverlay(false)
+ShowOverlay(false),
+ButtonHighlightX(-1),
+ButtonHighlightY(-1)
 {
     SD.setPosition(PHONE_SD_POS_X, PHONE_SD_POS_Y);
     Overlay.setPosition(PHONE_OVERLAY_POS_X, PHONE_OVERLAY_POS_Y);
@@ -281,18 +283,21 @@ void Phone::UpdateOpenMode(int32_t OpenMode)
 void Phone::Draw(sf::RenderWindow* pWindow)
 {
     DrawableBase::Draw(pWindow);
-    if (Mode != MODE_POWER_OFF && State == PHONE_OPEN)
+    if (State == PHONE_OPEN)
     {
-        pWindow->draw(Wallpaper);
-        pWindow->draw(Header);
-        if (ShowOverlay)
-            pWindow->draw(Overlay);
-    }
-    if (Mode == MODE_DEFAULT_OPERATABLE)
-    {
-        for (int y = 0; y < 2; ++y)
-            for (int x = 0; x < 2; ++x)
-                pWindow->draw(Button[y][x]);
+        if (Mode != MODE_POWER_OFF)
+        {
+            pWindow->draw(Wallpaper);
+            pWindow->draw(Header);
+            if (ShowOverlay)
+                pWindow->draw(Overlay);
+        }
+        if (Mode == MODE_DEFAULT_OPERATABLE)
+        {
+            for (int y = 0; y < 2; ++y)
+                for (int x = 0; x < 2; ++x)
+                    pWindow->draw(Button[y][x]);
+        }
     }
     if (ShowSD)
     {
@@ -506,6 +511,37 @@ void Phone::SetPriority(int32_t Priority)
     this->Priority = Priority;
 }
 
+void Phone::MouseMoved(sf::Vector2i Pos)
+{
+    if (Mode == MODE_DEFAULT_OPERATABLE)
+        for (int y = 0; y < 2; ++y)
+            for (int x = 0; x < 2; ++x)
+                if (Pos.x > PHONE_BUTTON_POS_X[x] && Pos.x < PHONE_BUTTON_POS_X[x] + PHONE_BUTTON_WIDTH)
+                    if (Pos.y > PHONE_BUTTON_POS_Y[y] && Pos.y < PHONE_BUTTON_POS_Y[y] + PHONE_BUTTON_HEIGHT)
+                        if (HighlightButton(x, y))
+                            return;
+
+    if (ButtonHighlightX == -1)
+        return;
+
+    const int x = ButtonHighlightX, y = ButtonHighlightY;
+    sf::IntRect ClipArea(PHONE_BUTTON_TEX_X, PHONE_BUTTON_TEX_Y[(y * 2 + x) * 2 + 1], PHONE_BUTTON_WIDTH, PHONE_BUTTON_HEIGHT);
+    Button[y][x].setTextureRect(ClipArea);
+    ButtonHighlightX = -1;
+}
+
+bool Phone::HighlightButton(int x, int y)
+{
+    if (x == ButtonHighlightX && y == ButtonHighlightY)
+        return true;
+
+    ButtonHighlightX = x;
+    ButtonHighlightY = y;
+    sf::IntRect ClipArea(PHONE_BUTTON_TEX_X, PHONE_BUTTON_TEX_Y[(y * 2 + x) * 2], PHONE_BUTTON_WIDTH, PHONE_BUTTON_HEIGHT);
+    Button[y][x].setTextureRect(ClipArea);
+    return true;
+}
+
 void NsbInterpreter::SGPhonePriority()
 {
     pPhone->SetPriority(GetVariable<int32_t>("$SW_PHONE_PRI"));
@@ -520,6 +556,11 @@ void NsbInterpreter::PhoneToggle()
     else
         SetVariable("$SF_Phone_Open", Variable{"INT", "1"});
     SGPhoneOpen();
+}
+
+void NsbInterpreter::MouseMoved(sf::Vector2i Pos)
+{
+    pPhone->MouseMoved(Pos);
 }
 
 void NsbInterpreter::SGPhoneOpen()
