@@ -165,6 +165,15 @@ const int16_t PHONE_MENU_TEX_Y = 760;
 const int16_t PHONE_MENU_WIDTH = 220;
 const int16_t PHONE_MENU_HEIGHT = 254;
 
+const char* ContactString[] =
+{
+    "ダル",
+    "電話レンジ (仮)",
+    "フェイリス",
+    "まゆり",
+    "ルカ子"
+};
+
 enum PhoneMode
 {
     MODE_ADDRESS_BOOK = 0,
