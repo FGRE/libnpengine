@@ -77,6 +77,7 @@ void Game::Run()
                     if (pText)
                         if (!pText->NextLine())
                             pInterpreter->Start();
+                    pInterpreter->MouseClicked();
                     break;
                 case sf::Event::MouseMoved:
                         pInterpreter->MouseMoved(sf::Mouse::getPosition(*this));
