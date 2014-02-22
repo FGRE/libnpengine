@@ -29,6 +29,7 @@
 #include <functional>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Clock.hpp>
+#include <SFML/Window/Event.hpp>
 using std::string;
 
 #define SPECIAL_POS_NUM 7
@@ -116,7 +117,7 @@ public:
     void DumpState();
     void PhoneToggle();
     void MouseMoved(sf::Vector2i Pos);
-    void MouseClicked();
+    void MouseClicked(sf::Event::MouseButtonEvent Event);
 private:
     void Run();
     void Sleep(int32_t ms);
