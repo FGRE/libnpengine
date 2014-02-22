@@ -43,6 +43,7 @@ public:
     void UpdateMode(uint8_t NewMode);
     void SetPriority(int32_t Priority);
     void MouseMoved(sf::Vector2i Pos);
+    void MouseClicked();
 
 private:
     void UpdateAnim();

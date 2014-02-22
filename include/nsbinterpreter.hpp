@@ -116,6 +116,7 @@ public:
     void DumpState();
     void PhoneToggle();
     void MouseMoved(sf::Vector2i Pos);
+    void MouseClicked();
 private:
     void Run();
     void Sleep(int32_t ms);

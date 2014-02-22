@@ -132,8 +132,8 @@ const int16_t PHONE_SD_TEXT_TEX_X[PHONE_SD_TEXT_MAX] =
 
 enum PhoneButton
 {
-    BUTTON_CONTACTS = 0,
-    BUTTON_MAIL,
+    BUTTON_MAIL = 0,
+    BUTTON_CONTACTS,
     BUTTON_WEB,
     BUTTON_SETTINGS,
     BUTTON_MAX
@@ -530,6 +530,26 @@ void Phone::MouseMoved(sf::Vector2i Pos)
     ButtonHighlightX = -1;
 }
 
+void Phone::MouseClicked()
+{
+    if (ButtonHighlightX == -1)
+        return;
+
+    switch (ButtonHighlightY * 2 + ButtonHighlightX)
+    {
+        case BUTTON_CONTACTS:
+            break;
+        case BUTTON_MAIL:
+            break;
+        case BUTTON_WEB:
+            if (fork() == 0)
+                execlp("/usr/bin/xdg-open", "/usr/bin/xdg-open", "http://futuregadget-lab.com/", NULL);
+            break;
+        case BUTTON_SETTINGS:
+            break;
+    }
+}
+
 bool Phone::HighlightButton(int x, int y)
 {
     if (x == ButtonHighlightX && y == ButtonHighlightY)
@@ -556,6 +576,11 @@ void NsbInterpreter::PhoneToggle()
     else
         SetVariable("$SF_Phone_Open", Variable{"INT", "1"});
     SGPhoneOpen();
+}
+
+void NsbInterpreter::MouseClicked()
+{
+    pPhone->MouseClicked();
 }
 
 void NsbInterpreter::MouseMoved(sf::Vector2i Pos)
