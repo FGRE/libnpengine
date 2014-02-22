@@ -190,6 +190,9 @@ const int16_t BLUE_HEADER_POS_Y = PHONE_HEADER_POS_Y + PHONE_HEADER_HEIGHT;
 const int16_t BLUE_HEADER_WIDTH = 220;
 const int16_t BLUE_HEADER_HEIGHT = 23;
 
+const int16_t WALLPAPER_WIDTH = 220;
+const int16_t WALLPAPER_HEIGHT = 244;
+
 enum PhoneMode
 {
     MODE_ADDRESS_BOOK = 0,
@@ -256,7 +259,6 @@ int DateToWeekDay(string Date)
 
 Phone::Phone(sf::Drawable* pDrawable) :
 DrawableBase(pDrawable, -1, DRAWABLE_TEXTURE),
-ShowBlueHeader(false),
 ShowSD(false),
 ShowOverlay(false),
 ButtonHighlightX(-1),
@@ -333,9 +335,9 @@ void Phone::Draw(sf::RenderWindow* pWindow)
             for (int y = 0; y < 2; ++y)
                 for (int x = 0; x < 2; ++x)
                     pWindow->draw(Button[y][x]);
-            if (ShowBlueHeader)
-                pWindow->draw(BlueHeader);
         }
+        if (Mode == MODE_ADDRESS_BOOK)
+            pWindow->draw(BlueHeader);
     }
     if (ShowSD)
     {
@@ -430,12 +432,19 @@ void Phone::UpdateMode(uint8_t NewMode)
     {
         case MODE_DEFAULT:
             Wallpaper.setTexture(*pWallpaper);
+            Wallpaper.setTextureRect(sf::IntRect(0, 0, WALLPAPER_WIDTH, WALLPAPER_HEIGHT));
             break;
         case MODE_DEFAULT_OPERATABLE:
         {
             sf::IntRect ClipArea(PHONE_MENU_TEX_X, PHONE_MENU_TEX_Y, PHONE_MENU_WIDTH, PHONE_MENU_HEIGHT);
             Wallpaper.setTexture(*pPhoneTex);
             Wallpaper.setTextureRect(ClipArea);
+            break;
+        }
+        case MODE_ADDRESS_BOOK:
+        {
+            sf::IntRect ClipArea(BLUE_HEADER_TEX_X, BLUE_HEADER_TEX_Y[BLUE_HEADER_CONACTS], BLUE_HEADER_WIDTH, BLUE_HEADER_HEIGHT);
+            BlueHeader.setTextureRect(ClipArea);
             break;
         }
         case MODE_POWER_OFF:
@@ -549,19 +558,15 @@ void Phone::MouseMoved(sf::Vector2i Pos)
     ButtonHighlightX = -1;
 }
 
-void Phone::MouseClicked()
+void Phone::LeftMouseClicked()
 {
     if (ButtonHighlightX != -1 && Mode == MODE_DEFAULT_OPERATABLE)
     {
         switch (ButtonHighlightY * 2 + ButtonHighlightX)
         {
             case BUTTON_CONTACTS:
-            {
-                sf::IntRect ClipArea(BLUE_HEADER_TEX_X, BLUE_HEADER_TEX_Y[BLUE_HEADER_CONACTS], BLUE_HEADER_WIDTH, BLUE_HEADER_HEIGHT);
-                BlueHeader.setTextureRect(ClipArea);
-                ShowBlueHeader = true;
+                UpdateMode(MODE_ADDRESS_BOOK);
                 break;
-            }
             case BUTTON_MAIL:
                 break;
             case BUTTON_WEB:
@@ -571,6 +576,16 @@ void Phone::MouseClicked()
             case BUTTON_SETTINGS:
                 break;
         }
+    }
+}
+
+void Phone::RightMouseClicked(NsbInterpreter* pInterpreter)
+{
+    switch (Mode)
+    {
+        case MODE_ADDRESS_BOOK: UpdateMode(MODE_DEFAULT_OPERATABLE); break;
+        case MODE_DEFAULT_OPERATABLE: UpdateMode(MODE_DEFAULT); break;
+        case MODE_DEFAULT: pInterpreter->PhoneToggle(); break;
     }
 }
 
@@ -602,9 +617,12 @@ void NsbInterpreter::PhoneToggle()
     SGPhoneOpen();
 }
 
-void NsbInterpreter::MouseClicked()
+void NsbInterpreter::MouseClicked(sf::Event::MouseButtonEvent Event)
 {
-    pPhone->MouseClicked();
+    if (Event.button == sf::Mouse::Left)
+        pPhone->LeftMouseClicked();
+    else if (Event.button == sf::Mouse::Right)
+        pPhone->RightMouseClicked(this);
 }
 
 void NsbInterpreter::MouseMoved(sf::Vector2i Pos)

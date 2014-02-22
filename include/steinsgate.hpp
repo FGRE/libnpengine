@@ -43,13 +43,13 @@ public:
     void UpdateMode(uint8_t NewMode);
     void SetPriority(int32_t Priority);
     void MouseMoved(sf::Vector2i Pos);
-    void MouseClicked();
+    void LeftMouseClicked();
+    void RightMouseClicked(NsbInterpreter* pInterpreter);
 
 private:
     void UpdateAnim();
     bool HighlightButton(int x, int y);
 
-    bool ShowBlueHeader;
     bool ShowSD;
     bool ShowOverlay;
     uint8_t Mode;
