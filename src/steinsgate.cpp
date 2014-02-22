@@ -174,6 +174,22 @@ const char* ContactString[] =
     "ルカ子"
 };
 
+enum
+{
+    BLUE_HEADER_MAIL,
+    BLUE_HEADER_CONACTS,
+    BLUE_HEADER_SETTINGS
+};
+const int16_t BLUE_HEADER_TEX_X = 670;
+const int16_t BLUE_HEADER_TEX_Y[] =
+{
+    284, 318, 349
+};
+const int16_t BLUE_HEADER_POS_X = PHONE_HEADER_POS_X;
+const int16_t BLUE_HEADER_POS_Y = PHONE_HEADER_POS_Y + PHONE_HEADER_HEIGHT;
+const int16_t BLUE_HEADER_WIDTH = 220;
+const int16_t BLUE_HEADER_HEIGHT = 23;
+
 enum PhoneMode
 {
     MODE_ADDRESS_BOOK = 0,
@@ -240,20 +256,31 @@ int DateToWeekDay(string Date)
 
 Phone::Phone(sf::Drawable* pDrawable) :
 DrawableBase(pDrawable, -1, DRAWABLE_TEXTURE),
+ShowBlueHeader(false),
 ShowSD(false),
 ShowOverlay(false),
 ButtonHighlightX(-1),
 ButtonHighlightY(-1)
 {
-    SD.setPosition(PHONE_SD_POS_X, PHONE_SD_POS_Y);
-    Overlay.setPosition(PHONE_OVERLAY_POS_X, PHONE_OVERLAY_POS_Y);
-    Header.setPosition(PHONE_HEADER_POS_X, PHONE_HEADER_POS_Y);
-    Wallpaper.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
-    ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
     pWallpaper = LoadTextureFromFile("cg/sys/phone/pwcg101.png", sf::IntRect());
     pPhoneTex = LoadTextureFromFile("cg/sys/phone/phone_01.png", sf::IntRect());
     pPhoneOpenTex = LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
     pSDTex = LoadTextureFromFile("cg/sys/phone/phone_sd.png", sf::IntRect());
+
+    BlueHeader.setTexture(*pPhoneTex);
+    BlueHeader.setPosition(BLUE_HEADER_POS_X, BLUE_HEADER_POS_Y);
+    SD.setTexture(*pSDTex);
+    SD.setPosition(PHONE_SD_POS_X, PHONE_SD_POS_Y);
+    SD.setTextureRect(sf::IntRect(PHONE_SD_TEX_X, PHONE_SD_TEX_Y, PHONE_SD_WIDTH, PHONE_SD_HEIGHT));
+    Overlay.setTexture(*pPhoneTex);
+    Overlay.setPosition(PHONE_OVERLAY_POS_X, PHONE_OVERLAY_POS_Y);
+    Overlay.setTextureRect(sf::IntRect(PHONE_NEW_MAIL_TEX_X, PHONE_NEW_MAIL_TEX_Y, PHONE_NEW_MAIL_WIDTH, PHONE_NEW_MAIL_HEIGHT));
+    Header.setTexture(*pPhoneTex);
+    Header.setPosition(PHONE_HEADER_POS_X, PHONE_HEADER_POS_Y);
+    Header.setTextureRect(sf::IntRect(PHONE_HEADER_TEX_X, PHONE_HEADER_TEX_Y, PHONE_HEADER_WIDTH, PHONE_HEADER_HEIGHT));
+
+    Wallpaper.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
+    ToSprite()->setPosition(PHONE_POS_X, PHONE_POS_Y);
 
     for (int y = 0; y < 2; ++y)
     {
@@ -306,6 +333,8 @@ void Phone::Draw(sf::RenderWindow* pWindow)
             for (int y = 0; y < 2; ++y)
                 for (int x = 0; x < 2; ++x)
                     pWindow->draw(Button[y][x]);
+            if (ShowBlueHeader)
+                pWindow->draw(BlueHeader);
         }
     }
     if (ShowSD)
@@ -401,12 +430,6 @@ void Phone::UpdateMode(uint8_t NewMode)
     {
         case MODE_DEFAULT:
             Wallpaper.setTexture(*pWallpaper);
-            if (!Header.getTexture())
-            {
-                sf::IntRect ClipArea(PHONE_HEADER_TEX_X, PHONE_HEADER_TEX_Y, PHONE_HEADER_WIDTH, PHONE_HEADER_HEIGHT);
-                Header.setTexture(*pPhoneTex);
-                Header.setTextureRect(ClipArea);
-            }
             break;
         case MODE_DEFAULT_OPERATABLE:
         {
@@ -428,12 +451,6 @@ void Phone::MailReceive(int32_t Show)
             ShowOverlay = false;
             break;
         case PHONE_OPENING:
-            if (!Overlay.getTexture())
-            {
-                sf::IntRect ClipArea(PHONE_NEW_MAIL_TEX_X, PHONE_NEW_MAIL_TEX_Y, PHONE_NEW_MAIL_WIDTH, PHONE_NEW_MAIL_HEIGHT);
-                Overlay.setTexture(*pPhoneTex);
-                Overlay.setTextureRect(ClipArea);
-            }
             ShowOverlay = true;
             break;
         default:
@@ -450,13 +467,6 @@ void Phone::SDDisplay(int32_t Show)
             ShowSD = false;
             break;
         case PHONE_OPENING:
-            // Background
-            if (!SD.getTexture())
-            {
-                sf::IntRect ClipArea(PHONE_SD_TEX_X, PHONE_SD_TEX_Y, PHONE_SD_WIDTH, PHONE_SD_HEIGHT);
-                SD.setTexture(*pSDTex);
-                SD.setTextureRect(ClipArea);
-            }
             for (int i = PHONE_ICON_SIGNAL; i <= PHONE_ICON_BATTERY; ++i)
             {
                 if (!SDIcon[i].getTexture())
@@ -541,21 +551,26 @@ void Phone::MouseMoved(sf::Vector2i Pos)
 
 void Phone::MouseClicked()
 {
-    if (ButtonHighlightX == -1)
-        return;
-
-    switch (ButtonHighlightY * 2 + ButtonHighlightX)
+    if (ButtonHighlightX != -1 && Mode == MODE_DEFAULT_OPERATABLE)
     {
-        case BUTTON_CONTACTS:
-            break;
-        case BUTTON_MAIL:
-            break;
-        case BUTTON_WEB:
-            if (fork() == 0)
-                execlp("/usr/bin/xdg-open", "/usr/bin/xdg-open", "http://futuregadget-lab.com/", NULL);
-            break;
-        case BUTTON_SETTINGS:
-            break;
+        switch (ButtonHighlightY * 2 + ButtonHighlightX)
+        {
+            case BUTTON_CONTACTS:
+            {
+                sf::IntRect ClipArea(BLUE_HEADER_TEX_X, BLUE_HEADER_TEX_Y[BLUE_HEADER_CONACTS], BLUE_HEADER_WIDTH, BLUE_HEADER_HEIGHT);
+                BlueHeader.setTextureRect(ClipArea);
+                ShowBlueHeader = true;
+                break;
+            }
+            case BUTTON_MAIL:
+                break;
+            case BUTTON_WEB:
+                if (fork() == 0)
+                    execlp("/usr/bin/xdg-open", "/usr/bin/xdg-open", "http://futuregadget-lab.com/", NULL);
+                break;
+            case BUTTON_SETTINGS:
+                break;
+        }
     }
 }
 
