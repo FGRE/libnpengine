@@ -49,6 +49,7 @@ private:
     void UpdateAnim();
     bool HighlightButton(int x, int y);
 
+    bool ShowBlueHeader;
     bool ShowSD;
     bool ShowOverlay;
     uint8_t Mode;
@@ -68,4 +69,5 @@ private:
     sf::Sprite SDDate[6];
     sf::Sprite SDIcon[4];
     sf::Sprite Button[2][2];
+    sf::Sprite BlueHeader;
 };
