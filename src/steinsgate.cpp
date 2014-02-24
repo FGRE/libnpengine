@@ -174,6 +174,13 @@ const char* ContactString[] =
     "ルカ子"
 };
 
+const char* HeaderString[] =
+{
+    "アドレス帳",
+    "受信メール",
+    "送信メール"
+};
+
 enum
 {
     BLUE_HEADER_MAIL,
