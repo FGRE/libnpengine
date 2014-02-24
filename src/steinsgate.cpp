@@ -193,6 +193,11 @@ const int16_t BLUE_HEADER_HEIGHT = 23;
 const int16_t WALLPAPER_WIDTH = 220;
 const int16_t WALLPAPER_HEIGHT = 244;
 
+const int16_t MASK_TEX_X = 425;
+const int16_t MASK_TEX_Y = 21;
+const int16_t MASK_WIDTH = 220;
+const int16_t MASK_HEIGHT = 253;
+
 enum PhoneMode
 {
     MODE_ADDRESS_BOOK = 0,
@@ -268,7 +273,10 @@ ButtonHighlightY(-1)
     pPhoneTex = LoadTextureFromFile("cg/sys/phone/phone_01.png", sf::IntRect());
     pPhoneOpenTex = LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
     pSDTex = LoadTextureFromFile("cg/sys/phone/phone_sd.png", sf::IntRect());
+    pWhite = LoadTextureFromColor("white", MASK_WIDTH, MASK_HEIGHT);
 
+    Mask.setTexture(*pPhoneTex);
+    Mask.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
     BlueHeader.setTexture(*pPhoneTex);
     BlueHeader.setPosition(BLUE_HEADER_POS_X, BLUE_HEADER_POS_Y);
     SD.setTexture(*pSDTex);
@@ -298,6 +306,7 @@ ButtonHighlightY(-1)
 
 Phone::~Phone()
 {
+    delete pWhite;
     delete pSDTex;
     delete pPhoneTex;
     delete pPhoneOpenTex;
@@ -337,7 +346,10 @@ void Phone::Draw(sf::RenderWindow* pWindow)
                     pWindow->draw(Button[y][x]);
         }
         if (Mode == MODE_ADDRESS_BOOK)
+        {
+            pWindow->draw(Mask);
             pWindow->draw(BlueHeader);
+        }
     }
     if (ShowSD)
     {
@@ -443,8 +455,11 @@ void Phone::UpdateMode(uint8_t NewMode)
         }
         case MODE_ADDRESS_BOOK:
         {
-            sf::IntRect ClipArea(BLUE_HEADER_TEX_X, BLUE_HEADER_TEX_Y[BLUE_HEADER_CONACTS], BLUE_HEADER_WIDTH, BLUE_HEADER_HEIGHT);
-            BlueHeader.setTextureRect(ClipArea);
+            sf::IntRect BlueHeaderClipArea(BLUE_HEADER_TEX_X, BLUE_HEADER_TEX_Y[BLUE_HEADER_CONACTS], BLUE_HEADER_WIDTH, BLUE_HEADER_HEIGHT);
+            BlueHeader.setTextureRect(BlueHeaderClipArea);
+            Wallpaper.setTexture(*pWhite, true);
+            sf::IntRect MaskClipArea(MASK_TEX_X, MASK_TEX_Y, MASK_WIDTH, MASK_HEIGHT);
+            Mask.setTextureRect(MaskClipArea);
             break;
         }
         case MODE_POWER_OFF:
@@ -635,6 +650,7 @@ void NsbInterpreter::SGPhoneOpen()
     pPhone->UpdateOpenMode(GetVariable<int32_t>("$SF_Phone_Open"));
     pGame->RemoveDrawable(pPhone);
     pGame->AddDrawable(pPhone);
+    pPhone->UpdateMode(MODE_DEFAULT_OPERATABLE);
 }
 
 void NsbInterpreter::SGPhoneMode()
@@ -651,7 +667,7 @@ void NsbInterpreter::SGPhoneMode()
         }
     }
 
-    if (NsbAssert(Mode != MODE_INVALID, "Invalid phone mode specified: %", StringMode.c_str()))
+    if (Mode == MODE_INVALID)
         return;
 
     pPhone->UpdateMode(Mode);

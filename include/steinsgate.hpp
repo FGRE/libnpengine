@@ -58,10 +58,12 @@ private:
     int8_t AnimColumn;
     int8_t ButtonHighlightX, ButtonHighlightY; // Currently highlighed button
     sf::Clock AnimClock;
+    sf::Texture* pWhite;
     sf::Texture* pWallpaper;
     sf::Texture* pPhoneOpenTex; // Open/Close animation frames
     sf::Texture* pPhoneTex;
     sf::Texture* pSDTex;
+    sf::Sprite Mask;
     sf::Sprite Wallpaper;
     sf::Sprite Header;
     sf::Sprite Overlay;
