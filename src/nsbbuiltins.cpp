@@ -56,6 +56,46 @@ sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area = s
     return pTexture;
 }
 
+sf::Texture* LoadTextureFromColor(string Color, int32_t Width, int32_t Height)
+{
+    uint32_t IntColor;
+    std::transform(Color.begin(), Color.end(), Color.begin(), ::tolower);
+
+    if (Color[0] == '#')
+    {
+        Color = string(Color.c_str() + 1);
+        std::stringstream ss(Color);
+        ss >> std::hex >> IntColor;
+    }
+    else
+    {
+        if (Color == "black")
+            IntColor = 0;
+        else if (Color == "white")
+            IntColor = 0xFFFFFF;
+        else if (Color == "blue")
+            IntColor = 0xFF;
+        else
+        {
+            std::cout << "Unknown color: " << Color << std::endl;
+            return nullptr;
+        }
+    }
+
+    sf::Image ColorImage;
+    ColorImage.create(Width, Height, sf::Color(IntColor >> 4, (IntColor >> 2) & 0xFF, IntColor & 0xFF));
+
+    sf::Texture* pTexture = new sf::Texture;
+    if (!pTexture->loadFromImage(ColorImage))
+    {
+        std::cout << "Failed to create texture from color " << Color << std::endl;
+        delete pTexture;
+        return nullptr;
+    }
+    return pTexture;
+}
+
+// TODO: Color unused
 void NsbInterpreter::GLCreateRenderTexture(int32_t Width, int32_t Height, const string& Color)
 {
     if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
@@ -91,7 +131,7 @@ void NsbInterpreter::GLDrawTransition(Drawable* pDrawable, int32_t Time, int32_t
         pContext->Sleep(Time);
 }
 
-void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color)
+void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, const string& Color)
 {
     // Workaround
     if (HandleName == "クリア黒")
@@ -103,31 +143,7 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
         delete pDrawable;
     }
 
-    uint32_t IntColor;
-
-    std::transform(Color.begin(), Color.end(), Color.begin(), ::tolower);
-    if (Color[0] == '#')
-    {
-        Color = string(Color.c_str() + 1);
-        std::stringstream ss(Color);
-        ss >> std::hex >> IntColor;
-    }
-    else
-    {
-        if (Color == "black")
-            IntColor = 0;
-        else if (Color == "white")
-            IntColor = 0xFFFFFF;
-        else if (Color == "blue")
-            IntColor = 0xFF;
-        else if (NsbAssert(false, "Unknown color: %, ", Color))
-            return;
-    }
-
-    sf::Image ColorImage;
-    ColorImage.create(Width, Height, sf::Color(IntColor >> 4, (IntColor >> 2) & 0xFF, IntColor & 0xFF));
-    sf::Texture* pTexture = new sf::Texture;
-    NsbAssert(pTexture->loadFromImage(ColorImage), "Failed to create color % texture to handle.", Color);
+    sf::Texture* pTexture = LoadTextureFromColor(Color, Width, Height);
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
     pSprite->setPosition(x, y);
     CacheHolder<DrawableBase>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));

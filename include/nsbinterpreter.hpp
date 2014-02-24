@@ -222,7 +222,7 @@ private:
     // See: Game::GLCallback
     void GLDelete(DrawableBase* pDrawable);
     void GLCreateTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
-    void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, string Color);
+    void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, const string& Color);
     // NOTE: Chaos;Head doesn't have last parameter (音声同期)
     void GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio);
     void GLDrawTransition(Drawable* pDrawable, int32_t Time, int32_t Start, int32_t End, int32_t Range, const string& Tempo, string File, bool Wait);
@@ -275,5 +275,6 @@ template <> bool NsbInterpreter::GetParam(int32_t Index);
 template <> bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, string value);
 
 sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
+sf::Texture* LoadTextureFromColor(string Color, int32_t Width, int32_t Height);
 
 #endif
