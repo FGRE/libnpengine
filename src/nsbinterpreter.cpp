@@ -497,8 +497,8 @@ void NsbInterpreter::LogicalNot()
 void NsbInterpreter::Zoom()
 {
     if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        NSBZoom(pDrawable, GetParam<int32_t>(1), GetParam<float>(2),
-                GetParam<float>(3), GetParam<string>(4), GetParam<bool>(5));
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLZoom, this, pDrawable, GetParam<int32_t>(1),
+                          GetParam<float>(2), GetParam<float>(3), GetParam<string>(4), GetParam<bool>(5)));
 }
 
 void NsbInterpreter::UNK1()
@@ -629,8 +629,8 @@ void NsbInterpreter::Wait()
 void NsbInterpreter::Move()
 {
     if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        NSBMove(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                           GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5));
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLMove, this, pDrawable, GetParam<int32_t>(1),
+                          GetParam<int32_t>(2), GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5)));
 }
 
 void NsbInterpreter::WaitText()

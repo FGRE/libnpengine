@@ -198,11 +198,9 @@ private:
 
     // Builtin functions
     void NSBDelete();
-    void NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void NSBArrayRead(int32_t Depth);
     void NSBRequest(const string& State);
     void NSBSetLoop(Playable* pMusic, bool Loop);
-    void NSBMove(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void NSBWaitText(Text* pText, const string& unk);
     void NSBSetVolume(Playable* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
     void NSBSetLoopPoint(Playable* pMusic, int32_t Begin, int32_t End);
@@ -220,6 +218,8 @@ private:
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
     // See: Game::GLCallback
+    void GLZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
+    void GLMove(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void GLDelete(DrawableBase* pDrawable);
     void GLCreateTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
     void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, const string& Color);

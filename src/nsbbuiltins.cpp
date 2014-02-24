@@ -368,7 +368,7 @@ void NsbInterpreter::NSBSetLoop(Playable* pMusic, bool Loop)
     pMusic->SetLoop(Loop);
 }
 
-void NsbInterpreter::NSBMove(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait)
+void NsbInterpreter::GLMove(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait)
 {
     if (pDrawable->Type == DRAWABLE_TEXT)
     {
@@ -394,7 +394,7 @@ void NsbInterpreter::NSBSetVolume(Playable* pMusic, int32_t NumSeconds, int32_t 
     pMusic->SetVolume(Volume / 1000.0d);
 }
 
-void NsbInterpreter::NSBZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait)
+void NsbInterpreter::GLZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait)
 {
     if (x == 0 || y == 0)
     {
