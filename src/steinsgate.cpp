@@ -302,6 +302,15 @@ ButtonHighlightY(-1)
             Button[y][x].setPosition(PHONE_BUTTON_POS_X[x], PHONE_BUTTON_POS_Y[y]);
         }
     }
+
+    for (int i = 0; i < 5; ++i)
+    {
+        Contacts[i].setString(sf::String::fromUtf8(ContactString[i], ContactString[i] + strlen(ContactString[i])));
+        Contacts[i].setFont(Text::Font);
+        Contacts[i].setPosition(PHONE_WALLPAPER_X, BLUE_HEADER_POS_Y + BLUE_HEADER_HEIGHT + i * 20);
+        Contacts[i].setCharacterSize(20);
+        Contacts[i].setColor(sf::Color::Black);
+    }
 }
 
 Phone::~Phone()
@@ -349,6 +358,8 @@ void Phone::Draw(sf::RenderWindow* pWindow)
         {
             pWindow->draw(Mask);
             pWindow->draw(BlueHeader);
+            for (int i = 0; i < 5; ++i)
+                pWindow->draw(Contacts[i]);
         }
     }
     if (ShowSD)
