@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#include "drawable.hpp"
+#include "text.hpp"
 #include <SFML/Graphics/Sprite.hpp>
 
 enum PhoneState
@@ -72,4 +72,5 @@ private:
     sf::Sprite SDIcon[4];
     sf::Sprite Button[2][2];
     sf::Sprite BlueHeader;
+    sf::Text Contacts[5];
 };
