@@ -22,6 +22,16 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <boost/lexical_cast.hpp>
 
+enum PhoneState
+{
+    PHONE_CLOSING = 0,
+    PHONE_OPENING = 1,
+    PHONE_OPENING_DONE, // Switch from last opening animation frame to open phone frame
+    PHONE_CLOSING_DONE, // Same as above, except that phone needs to be removed
+    PHONE_OPEN,
+    PHONE_CLOSED
+};
+
 const int16_t PHONE_ANIM_SPEED = 40; // TODO: guess
 const int8_t PHONE_ANIM_ROW_MAX = 1;
 const int8_t PHONE_ANIM_COLUMN_MAX = 4;
@@ -287,6 +297,7 @@ Phone::Phone(sf::Drawable* pDrawable, sf::Window* pWindow) :
 DrawableBase(pDrawable, -1, DRAWABLE_TEXTURE),
 ShowSD(false),
 ShowOverlay(false),
+Mode(MODE_POWER_OFF),
 ButtonHighlightX(-1),
 ButtonHighlightY(-1),
 MailMenuHighlight(0),
@@ -674,9 +685,11 @@ void Phone::MouseMoved(sf::Vector2i Pos)
 
 void Phone::LeftMouseClicked(sf::Vector2i Pos)
 {
-    if (ButtonHighlightX != -1 && Mode == MODE_DEFAULT_OPERATABLE &&
-        Pos.x > PHONE_WALLPAPER_X && Pos.x < PHONE_WALLPAPER_X + WALLPAPER_WIDTH &&
-        Pos.y > PHONE_WALLPAPER_Y && Pos.y < PHONE_WALLPAPER_Y + WALLPAPER_HEIGHT)
+    if (!(Pos.x > PHONE_WALLPAPER_X && Pos.x < PHONE_WALLPAPER_X + WALLPAPER_WIDTH &&
+          Pos.y > PHONE_WALLPAPER_Y && Pos.y < PHONE_WALLPAPER_Y + WALLPAPER_HEIGHT))
+        return;
+
+    if (ButtonHighlightX != -1 && Mode == MODE_DEFAULT_OPERATABLE)
     {
         switch (ButtonHighlightY * 2 + ButtonHighlightX)
         {
