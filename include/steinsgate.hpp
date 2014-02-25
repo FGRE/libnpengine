@@ -18,16 +18,6 @@
 #include "text.hpp"
 #include <SFML/Graphics/Sprite.hpp>
 
-enum PhoneState
-{
-    PHONE_CLOSING = 0,
-    PHONE_OPENING = 1,
-    PHONE_OPENING_DONE, // Switch from last opening animation frame to open phone frame
-    PHONE_CLOSING_DONE, // Same as above, except that phone needs to be removed
-    PHONE_OPEN,
-    PHONE_CLOSED
-};
-
 class Phone : public DrawableBase
 {
 public:
