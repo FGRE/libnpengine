@@ -188,7 +188,7 @@ StopInterpreter(false)
     SetVariable("#SYSTEM_cosplay_patch", Variable{"STRING", "false"});
 
     // Steins gate
-    pPhone = new Phone(new sf::Sprite());
+    pPhone = new Phone(new sf::Sprite(), pGame);
 
     // Main script thread
     pMainContext = new NsbContext;
