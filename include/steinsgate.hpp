@@ -57,6 +57,7 @@ private:
     int8_t AnimRow;
     int8_t AnimColumn;
     int8_t ButtonHighlightX, ButtonHighlightY; // Currently highlighed button
+    int8_t MailMenuHighlight; // Currently highlighted text
     sf::Clock AnimClock;
     sf::Texture* pWhite;
     sf::Texture* pWallpaper;
