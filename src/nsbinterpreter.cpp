@@ -333,7 +333,6 @@ void NsbInterpreter::LoadTextureClip()
                       GetParam<int32_t>(7), GetParam<string>(8)));
 }
 
-// CreateProcess in Chaos;Head
 void NsbInterpreter::CreateProcess()
 {
     HandleName = GetParam<string>(0);

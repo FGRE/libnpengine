@@ -217,6 +217,8 @@ const int16_t OVERLAY_RED_HEIGHT = 119;
 const int16_t OVERLAY_RED_POS_X = 728;
 const int16_t OVERLAY_RED_POS_Y = 159;
 
+const int16_t MAIL_MENU_TEXT_POS_X = 750;
+
 enum PhoneMode
 {
     MODE_ADDRESS_BOOK = 0,
@@ -286,7 +288,8 @@ DrawableBase(pDrawable, -1, DRAWABLE_TEXTURE),
 ShowSD(false),
 ShowOverlay(false),
 ButtonHighlightX(-1),
-ButtonHighlightY(-1)
+ButtonHighlightY(-1),
+MailMenuHighlight(0)
 {
     pHighlight = LoadTextureFromColor("#ffc896", 220, 20);
     pWallpaper = LoadTextureFromFile("cg/sys/phone/pwcg101.png", sf::IntRect());
@@ -342,7 +345,7 @@ ButtonHighlightY(-1)
     {
         MailMenuText[i].setString(sf::String::fromUtf8(HeaderString[i + 1], HeaderString[i + 1] + strlen(HeaderString[i + 1])));
         MailMenuText[i].setFont(Text::Font);
-        MailMenuText[i].setPosition(750, 170 + i * 20);
+        MailMenuText[i].setPosition(MAIL_MENU_TEXT_POS_X, 170 + i * 20);
         MailMenuText[i].setCharacterSize(20);
         MailMenuText[i].setColor(sf::Color::Black);
     }
@@ -633,10 +636,21 @@ void Phone::MouseMoved(sf::Vector2i Pos)
         case MODE_ADDRESS_BOOK:
             if (Pos.x > BLUE_HEADER_POS_X && Pos.x < BLUE_HEADER_POS_X + MASK_WIDTH && Pos.y > BLUE_HEADER_POS_Y + BLUE_HEADER_HEIGHT)
             {
-                Pos.y = Pos.y - (BLUE_HEADER_POS_Y + BLUE_HEADER_HEIGHT);
-                int i = Pos.y / 20;
-                if (i < 5)
+                int i = (Pos.y - (BLUE_HEADER_POS_Y + BLUE_HEADER_HEIGHT)) / 20;
+                if (i >= 0 && i < 5)
                     Highlight.setPosition(BLUE_HEADER_POS_X, BLUE_HEADER_POS_Y + BLUE_HEADER_HEIGHT + i * 20);
+            }
+            break;
+        case MODE_MAIL_MENU:
+            if (Pos.x > MAIL_MENU_TEXT_POS_X && Pos.x < MAIL_MENU_TEXT_POS_X + MailMenuText[0].getLocalBounds().width)
+            {
+                int i = (Pos.y - 170) / 20;
+                if (i >= 0 && i < 2 && i != MailMenuHighlight)
+                {
+                    MailMenuText[MailMenuHighlight].setColor(sf::Color::Black);
+                    MailMenuText[i].setColor(sf::Color::Red);
+                    MailMenuHighlight = i;
+                }
             }
             break;
     }
@@ -695,6 +709,8 @@ void Phone::HighlightButton(int x, int y)
     ButtonHighlightY = y;
     sf::IntRect ClipArea(PHONE_BUTTON_TEX_X, PHONE_BUTTON_TEX_Y[(y * 2 + x) * 2], PHONE_BUTTON_WIDTH, PHONE_BUTTON_HEIGHT);
     Button[y][x].setTextureRect(ClipArea);
+
+    // TODO: Move mouse to middle of button
 }
 
 void NsbInterpreter::SGPhonePriority()
