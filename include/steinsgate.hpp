@@ -31,7 +31,7 @@ enum PhoneState
 class Phone : public DrawableBase
 {
 public:
-    Phone(sf::Drawable* pDrawable);
+    Phone(sf::Drawable* pDrawable, sf::Window* pWindow);
     virtual ~Phone();
 
     virtual void Draw(sf::RenderWindow* pWindow);
@@ -80,4 +80,5 @@ private:
     sf::Text HeaderText;
     sf::Text Contacts[5];
     sf::Text MailMenuText[2];
+    sf::Window* pWindow; // Needed to move mouse pointer
 };

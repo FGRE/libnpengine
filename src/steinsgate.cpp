@@ -283,13 +283,14 @@ int DateToWeekDay(string Date)
     return std::localtime(&time)->tm_wday;
 }
 
-Phone::Phone(sf::Drawable* pDrawable) :
+Phone::Phone(sf::Drawable* pDrawable, sf::Window* pWindow) :
 DrawableBase(pDrawable, -1, DRAWABLE_TEXTURE),
 ShowSD(false),
 ShowOverlay(false),
 ButtonHighlightX(-1),
 ButtonHighlightY(-1),
-MailMenuHighlight(0)
+MailMenuHighlight(0),
+pWindow(pWindow)
 {
     pHighlight = LoadTextureFromColor("#ffc896", 220, 20);
     pWallpaper = LoadTextureFromFile("cg/sys/phone/pwcg101.png", sf::IntRect());
@@ -502,8 +503,7 @@ void Phone::UpdateMode(uint8_t NewMode)
     if (NewMode == Mode)
         return;
 
-    Mode = NewMode;
-    switch (Mode)
+    switch (NewMode)
     {
         case MODE_DEFAULT:
             Wallpaper.setTexture(*pWallpaper);
@@ -516,6 +516,21 @@ void Phone::UpdateMode(uint8_t NewMode)
             Wallpaper.setTextureRect(WallpaperClipArea);
             sf::IntRect OverlayClipArea(PHONE_MENU_MAIN_TEX_X, PHONE_MENU_MAIN_TEX_Y, PHONE_MENU_MAIN_WIDTH, PHONE_MENU_MAIN_HEIGHT);
             MenuOverlay.setTextureRect(OverlayClipArea);
+
+            // Check old mode
+            switch (Mode)
+            {
+                case MODE_ADDRESS_BOOK:
+                    sf::Mouse::setPosition(sf::Vector2i(PHONE_BUTTON_POS_X[1] + PHONE_BUTTON_WIDTH / 2,
+                                                        PHONE_BUTTON_POS_Y[0] + PHONE_BUTTON_HEIGHT / 2),
+                                           *pWindow);
+                    break;
+                case MODE_MAIL_MENU:
+                    sf::Mouse::setPosition(sf::Vector2i(PHONE_BUTTON_POS_X[0] + PHONE_BUTTON_WIDTH / 2,
+                                                        PHONE_BUTTON_POS_Y[0] + PHONE_BUTTON_HEIGHT / 2),
+                                           *pWindow);
+                    break;
+            }
             break;
         }
         case MODE_ADDRESS_BOOK:
@@ -533,6 +548,7 @@ void Phone::UpdateMode(uint8_t NewMode)
         case MODE_POWER_OFF:
             break;
     }
+    Mode = NewMode;
 }
 
 void Phone::MailReceive(int32_t Show)
@@ -712,7 +728,10 @@ void Phone::HighlightButton(int x, int y)
     sf::IntRect ClipArea(PHONE_BUTTON_TEX_X, PHONE_BUTTON_TEX_Y[(y * 2 + x) * 2], PHONE_BUTTON_WIDTH, PHONE_BUTTON_HEIGHT);
     Button[y][x].setTextureRect(ClipArea);
 
-    // TODO: Move mouse to middle of button
+    // Move mouse to center of button
+    sf::Mouse::setPosition(sf::Vector2i(PHONE_BUTTON_POS_X[x] + PHONE_BUTTON_WIDTH / 2,
+                                        PHONE_BUTTON_POS_Y[y] + PHONE_BUTTON_HEIGHT / 2),
+                           *pWindow);
 }
 
 void NsbInterpreter::SGPhonePriority()
