@@ -83,7 +83,7 @@ sf::Texture* LoadTextureFromColor(string Color, int32_t Width, int32_t Height)
     }
 
     sf::Image ColorImage;
-    ColorImage.create(Width, Height, sf::Color(IntColor >> 4, (IntColor >> 2) & 0xFF, IntColor & 0xFF));
+    ColorImage.create(Width, Height, sf::Color(IntColor / 0x10000, (IntColor / 0x100) % 0x100, IntColor & 0xFF));
 
     sf::Texture* pTexture = new sf::Texture;
     if (!pTexture->loadFromImage(ColorImage))
