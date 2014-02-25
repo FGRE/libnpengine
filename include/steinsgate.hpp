@@ -43,7 +43,7 @@ public:
     void UpdateMode(uint8_t NewMode);
     void SetPriority(int32_t Priority);
     void MouseMoved(sf::Vector2i Pos);
-    void LeftMouseClicked();
+    void LeftMouseClicked(sf::Vector2i Pos);
     void RightMouseClicked(NsbInterpreter* pInterpreter);
 
 private:

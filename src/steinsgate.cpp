@@ -656,9 +656,11 @@ void Phone::MouseMoved(sf::Vector2i Pos)
     }
 }
 
-void Phone::LeftMouseClicked()
+void Phone::LeftMouseClicked(sf::Vector2i Pos)
 {
-    if (ButtonHighlightX != -1 && Mode == MODE_DEFAULT_OPERATABLE)
+    if (ButtonHighlightX != -1 && Mode == MODE_DEFAULT_OPERATABLE &&
+        Pos.x > PHONE_WALLPAPER_X && Pos.x < PHONE_WALLPAPER_X + WALLPAPER_WIDTH &&
+        Pos.y > PHONE_WALLPAPER_Y && Pos.y < PHONE_WALLPAPER_Y + WALLPAPER_HEIGHT)
     {
         switch (ButtonHighlightY * 2 + ButtonHighlightX)
         {
@@ -732,7 +734,7 @@ void NsbInterpreter::PhoneToggle()
 void NsbInterpreter::MouseClicked(sf::Event::MouseButtonEvent Event)
 {
     if (Event.button == sf::Mouse::Left)
-        pPhone->LeftMouseClicked();
+        pPhone->LeftMouseClicked(sf::Vector2i(Event.x, Event.y));
     else if (Event.button == sf::Mouse::Right)
         pPhone->RightMouseClicked(this);
 }
