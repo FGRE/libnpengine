@@ -318,6 +318,10 @@ ButtonHighlightY(-1)
         Contacts[i].setCharacterSize(20);
         Contacts[i].setColor(sf::Color::Black);
     }
+
+    HeaderText.setFont(Text::Font);
+    HeaderText.setPosition(BLUE_HEADER_POS_X + 24, BLUE_HEADER_POS_Y);
+    HeaderText.setCharacterSize(20);
 }
 
 Phone::~Phone()
@@ -365,6 +369,7 @@ void Phone::Draw(sf::RenderWindow* pWindow)
         {
             pWindow->draw(Mask);
             pWindow->draw(BlueHeader);
+            pWindow->draw(HeaderText);
             for (int i = 0; i < 5; ++i)
                 pWindow->draw(Contacts[i]);
         }
@@ -478,6 +483,7 @@ void Phone::UpdateMode(uint8_t NewMode)
             Wallpaper.setTexture(*pWhite, true);
             sf::IntRect MaskClipArea(MASK_TEX_X, MASK_TEX_Y, MASK_WIDTH, MASK_HEIGHT);
             Mask.setTextureRect(MaskClipArea);
+            HeaderText.setString(sf::String::fromUtf8(HeaderString[0], HeaderString[0] + strlen(HeaderString[0])));
             break;
         }
         case MODE_POWER_OFF:

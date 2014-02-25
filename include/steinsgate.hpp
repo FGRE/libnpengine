@@ -72,5 +72,6 @@ private:
     sf::Sprite SDIcon[4];
     sf::Sprite Button[2][2];
     sf::Sprite BlueHeader;
+    sf::Text HeaderText;
     sf::Text Contacts[5];
 };
