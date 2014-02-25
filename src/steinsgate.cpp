@@ -165,6 +165,11 @@ const int16_t PHONE_MENU_TEX_Y = 760;
 const int16_t PHONE_MENU_WIDTH = 220;
 const int16_t PHONE_MENU_HEIGHT = 254;
 
+const int16_t PHONE_MENU_MAIN_TEX_X = 670;
+const int16_t PHONE_MENU_MAIN_TEX_Y = 213;
+const int16_t PHONE_MENU_MAIN_WIDTH = 220;
+const int16_t PHONE_MENU_MAIN_HEIGHT = 38;
+
 const char* ContactString[] =
 {
     "ダル",
@@ -282,6 +287,8 @@ ButtonHighlightY(-1)
     pSDTex = LoadTextureFromFile("cg/sys/phone/phone_sd.png", sf::IntRect());
     pWhite = LoadTextureFromColor("white", MASK_WIDTH, MASK_HEIGHT);
 
+    MenuOverlay.setTexture(*pPhoneTex);
+    MenuOverlay.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
     Mask.setTexture(*pPhoneTex);
     Mask.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
     BlueHeader.setTexture(*pPhoneTex);
@@ -361,6 +368,7 @@ void Phone::Draw(sf::RenderWindow* pWindow)
         }
         if (Mode == MODE_DEFAULT_OPERATABLE)
         {
+            pWindow->draw(MenuOverlay);
             for (int y = 0; y < 2; ++y)
                 for (int x = 0; x < 2; ++x)
                     pWindow->draw(Button[y][x]);
@@ -471,9 +479,11 @@ void Phone::UpdateMode(uint8_t NewMode)
             break;
         case MODE_DEFAULT_OPERATABLE:
         {
-            sf::IntRect ClipArea(PHONE_MENU_TEX_X, PHONE_MENU_TEX_Y, PHONE_MENU_WIDTH, PHONE_MENU_HEIGHT);
+            sf::IntRect WallpaperClipArea(PHONE_MENU_TEX_X, PHONE_MENU_TEX_Y, PHONE_MENU_WIDTH, PHONE_MENU_HEIGHT);
             Wallpaper.setTexture(*pPhoneTex);
-            Wallpaper.setTextureRect(ClipArea);
+            Wallpaper.setTextureRect(WallpaperClipArea);
+            sf::IntRect OverlayClipArea(PHONE_MENU_MAIN_TEX_X, PHONE_MENU_MAIN_TEX_Y, PHONE_MENU_MAIN_WIDTH, PHONE_MENU_MAIN_HEIGHT);
+            MenuOverlay.setTextureRect(OverlayClipArea);
             break;
         }
         case MODE_ADDRESS_BOOK:
@@ -625,7 +635,10 @@ void Phone::RightMouseClicked(NsbInterpreter* pInterpreter)
 {
     switch (Mode)
     {
-        case MODE_ADDRESS_BOOK: UpdateMode(MODE_DEFAULT_OPERATABLE); break;
+        case MODE_MAIL_MENU:
+        case MODE_ADDRESS_BOOK:
+            UpdateMode(MODE_DEFAULT_OPERATABLE);
+            break;
         case MODE_DEFAULT_OPERATABLE: UpdateMode(MODE_DEFAULT); break;
         case MODE_DEFAULT: pInterpreter->PhoneToggle(); break;
     }
