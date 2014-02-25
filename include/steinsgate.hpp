@@ -48,7 +48,7 @@ public:
 
 private:
     void UpdateAnim();
-    bool HighlightButton(int x, int y);
+    void HighlightButton(int x, int y);
 
     bool ShowSD;
     bool ShowOverlay;
@@ -63,6 +63,7 @@ private:
     sf::Texture* pPhoneOpenTex; // Open/Close animation frames
     sf::Texture* pPhoneTex;
     sf::Texture* pSDTex;
+    sf::Texture* pHighlight;
     sf::Sprite Mask;
     sf::Sprite Wallpaper;
     sf::Sprite Header;
@@ -74,6 +75,7 @@ private:
     sf::Sprite Button[2][2];
     sf::Sprite BlueHeader;
     sf::Sprite MenuOverlay;
+    sf::Sprite Highlight;
     sf::Text HeaderText;
     sf::Text Contacts[5];
     sf::Text MailMenuText[2];

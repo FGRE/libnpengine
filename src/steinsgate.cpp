@@ -288,12 +288,14 @@ ShowOverlay(false),
 ButtonHighlightX(-1),
 ButtonHighlightY(-1)
 {
+    pHighlight = LoadTextureFromColor("#ffc896", 220, 20);
     pWallpaper = LoadTextureFromFile("cg/sys/phone/pwcg101.png", sf::IntRect());
     pPhoneTex = LoadTextureFromFile("cg/sys/phone/phone_01.png", sf::IntRect());
     pPhoneOpenTex = LoadTextureFromFile("cg/sys/phone/phone_open_anim.png", sf::IntRect());
     pSDTex = LoadTextureFromFile("cg/sys/phone/phone_sd.png", sf::IntRect());
     pWhite = LoadTextureFromColor("white", MASK_WIDTH, MASK_HEIGHT);
 
+    Highlight.setTexture(*pHighlight);
     OverlayRed.setTexture(*pPhoneTex);
     OverlayRed.setPosition(OVERLAY_RED_POS_X, OVERLAY_RED_POS_Y);
     OverlayRed.setTextureRect(sf::IntRect(OVERLAY_RED_TEX_X, OVERLAY_RED_TEX_Y, OVERLAY_RED_WIDTH, OVERLAY_RED_HEIGHT));
@@ -352,6 +354,7 @@ ButtonHighlightY(-1)
 
 Phone::~Phone()
 {
+    delete pHighlight;
     delete pWhite;
     delete pSDTex;
     delete pPhoneTex;
@@ -397,6 +400,7 @@ void Phone::Draw(sf::RenderWindow* pWindow)
             pWindow->draw(Mask);
             pWindow->draw(BlueHeader);
             pWindow->draw(HeaderText);
+            pWindow->draw(Highlight);
             for (int i = 0; i < 5; ++i)
                 pWindow->draw(Contacts[i]);
         }
@@ -617,21 +621,25 @@ void Phone::SetPriority(int32_t Priority)
 
 void Phone::MouseMoved(sf::Vector2i Pos)
 {
-    if (Mode == MODE_DEFAULT_OPERATABLE)
-        for (int y = 0; y < 2; ++y)
-            for (int x = 0; x < 2; ++x)
-                if (Pos.x > PHONE_BUTTON_POS_X[x] && Pos.x < PHONE_BUTTON_POS_X[x] + PHONE_BUTTON_WIDTH)
-                    if (Pos.y > PHONE_BUTTON_POS_Y[y] && Pos.y < PHONE_BUTTON_POS_Y[y] + PHONE_BUTTON_HEIGHT)
-                        if (HighlightButton(x, y))
-                            return;
-
-    if (ButtonHighlightX == -1)
-        return;
-
-    const int x = ButtonHighlightX, y = ButtonHighlightY;
-    sf::IntRect ClipArea(PHONE_BUTTON_TEX_X, PHONE_BUTTON_TEX_Y[(y * 2 + x) * 2 + 1], PHONE_BUTTON_WIDTH, PHONE_BUTTON_HEIGHT);
-    Button[y][x].setTextureRect(ClipArea);
-    ButtonHighlightX = -1;
+    switch (Mode)
+    {
+        case MODE_DEFAULT_OPERATABLE:
+            for (int y = 0; y < 2; ++y)
+                for (int x = 0; x < 2; ++x)
+                    if (Pos.x > PHONE_BUTTON_POS_X[x] && Pos.x < PHONE_BUTTON_POS_X[x] + PHONE_BUTTON_WIDTH)
+                        if (Pos.y > PHONE_BUTTON_POS_Y[y] && Pos.y < PHONE_BUTTON_POS_Y[y] + PHONE_BUTTON_HEIGHT)
+                            HighlightButton(x, y);
+            break;
+        case MODE_ADDRESS_BOOK:
+            if (Pos.x > BLUE_HEADER_POS_X && Pos.x < BLUE_HEADER_POS_X + MASK_WIDTH && Pos.y > BLUE_HEADER_POS_Y + BLUE_HEADER_HEIGHT)
+            {
+                Pos.y = Pos.y - (BLUE_HEADER_POS_Y + BLUE_HEADER_HEIGHT);
+                int i = Pos.y / 20;
+                if (i < 5)
+                    Highlight.setPosition(BLUE_HEADER_POS_X, BLUE_HEADER_POS_Y + BLUE_HEADER_HEIGHT + i * 20);
+            }
+            break;
+    }
 }
 
 void Phone::LeftMouseClicked()
@@ -664,21 +672,29 @@ void Phone::RightMouseClicked(NsbInterpreter* pInterpreter)
         case MODE_ADDRESS_BOOK:
             UpdateMode(MODE_DEFAULT_OPERATABLE);
             break;
-        case MODE_DEFAULT_OPERATABLE: UpdateMode(MODE_DEFAULT); break;
-        case MODE_DEFAULT: pInterpreter->PhoneToggle(); break;
+        case MODE_DEFAULT_OPERATABLE:
+            UpdateMode(MODE_DEFAULT);
+            break;
+        case MODE_DEFAULT:
+            pInterpreter->PhoneToggle();
+            break;
     }
 }
 
-bool Phone::HighlightButton(int x, int y)
+void Phone::HighlightButton(int x, int y)
 {
     if (x == ButtonHighlightX && y == ButtonHighlightY)
-        return true;
+        return;
 
+    // Remove old highlight
+    sf::IntRect OldClipArea(PHONE_BUTTON_TEX_X, PHONE_BUTTON_TEX_Y[(ButtonHighlightY * 2 + ButtonHighlightX) * 2 + 1], PHONE_BUTTON_WIDTH, PHONE_BUTTON_HEIGHT);
+    Button[ButtonHighlightY][ButtonHighlightX].setTextureRect(OldClipArea);
+
+    // Add new highlight
     ButtonHighlightX = x;
     ButtonHighlightY = y;
     sf::IntRect ClipArea(PHONE_BUTTON_TEX_X, PHONE_BUTTON_TEX_Y[(y * 2 + x) * 2], PHONE_BUTTON_WIDTH, PHONE_BUTTON_HEIGHT);
     Button[y][x].setTextureRect(ClipArea);
-    return true;
 }
 
 void NsbInterpreter::SGPhonePriority()
