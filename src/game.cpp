@@ -74,7 +74,7 @@ void Game::Run()
                     }
                     break;
                 case sf::Event::MouseButtonPressed:
-                    if (pText)
+                    if (pText && Event.mouseButton.button == sf::Mouse::Left)
                         if (!pText->NextLine())
                             pInterpreter->Start();
                     pInterpreter->MouseClicked(Event.mouseButton);
