@@ -182,8 +182,8 @@ const char* ContactString[] =
 const char* HeaderString[] =
 {
     "アドレス帳",
-    "受信メール",
-    "送信メール"
+    "受信メールBOX",
+    "送信メールBOX"
 };
 
 enum
@@ -209,6 +209,13 @@ const int16_t MASK_TEX_X = 425;
 const int16_t MASK_TEX_Y = 21;
 const int16_t MASK_WIDTH = 220;
 const int16_t MASK_HEIGHT = 253;
+
+const int16_t OVERLAY_RED_TEX_X = 302;
+const int16_t OVERLAY_RED_TEX_Y = 722;
+const int16_t OVERLAY_RED_WIDTH = 220;
+const int16_t OVERLAY_RED_HEIGHT = 119;
+const int16_t OVERLAY_RED_POS_X = 728;
+const int16_t OVERLAY_RED_POS_Y = 159;
 
 enum PhoneMode
 {
@@ -287,6 +294,9 @@ ButtonHighlightY(-1)
     pSDTex = LoadTextureFromFile("cg/sys/phone/phone_sd.png", sf::IntRect());
     pWhite = LoadTextureFromColor("white", MASK_WIDTH, MASK_HEIGHT);
 
+    OverlayRed.setTexture(*pPhoneTex);
+    OverlayRed.setPosition(OVERLAY_RED_POS_X, OVERLAY_RED_POS_Y);
+    OverlayRed.setTextureRect(sf::IntRect(OVERLAY_RED_TEX_X, OVERLAY_RED_TEX_Y, OVERLAY_RED_WIDTH, OVERLAY_RED_HEIGHT));
     MenuOverlay.setTexture(*pPhoneTex);
     MenuOverlay.setPosition(PHONE_WALLPAPER_X, PHONE_WALLPAPER_Y);
     Mask.setTexture(*pPhoneTex);
@@ -324,6 +334,15 @@ ButtonHighlightY(-1)
         Contacts[i].setPosition(PHONE_WALLPAPER_X, BLUE_HEADER_POS_Y + BLUE_HEADER_HEIGHT + i * 20);
         Contacts[i].setCharacterSize(20);
         Contacts[i].setColor(sf::Color::Black);
+    }
+
+    for (int i = 0; i < 2; ++i)
+    {
+        MailMenuText[i].setString(sf::String::fromUtf8(HeaderString[i + 1], HeaderString[i + 1] + strlen(HeaderString[i + 1])));
+        MailMenuText[i].setFont(Text::Font);
+        MailMenuText[i].setPosition(750, 170 + i * 20);
+        MailMenuText[i].setCharacterSize(20);
+        MailMenuText[i].setColor(sf::Color::Black);
     }
 
     HeaderText.setFont(Text::Font);
@@ -380,6 +399,12 @@ void Phone::Draw(sf::RenderWindow* pWindow)
             pWindow->draw(HeaderText);
             for (int i = 0; i < 5; ++i)
                 pWindow->draw(Contacts[i]);
+        }
+        if (Mode == MODE_MAIL_MENU)
+        {
+            pWindow->draw(OverlayRed);
+            for (int i = 0; i < 2; ++i)
+                pWindow->draw(MailMenuText[i]);
         }
     }
     if (ShowSD)
@@ -493,7 +518,7 @@ void Phone::UpdateMode(uint8_t NewMode)
             Wallpaper.setTexture(*pWhite, true);
             sf::IntRect MaskClipArea(MASK_TEX_X, MASK_TEX_Y, MASK_WIDTH, MASK_HEIGHT);
             Mask.setTextureRect(MaskClipArea);
-            HeaderText.setString(sf::String::fromUtf8(HeaderString[0], HeaderString[0] + strlen(HeaderString[0])));
+            HeaderText.setString(sf::String::fromUtf8(HeaderString[0], HeaderString[0] + strlen(HeaderString[0]) - 3));
             break;
         }
         case MODE_MAIL_MENU:

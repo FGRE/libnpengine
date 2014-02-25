@@ -67,6 +67,7 @@ private:
     sf::Sprite Wallpaper;
     sf::Sprite Header;
     sf::Sprite Overlay;
+    sf::Sprite OverlayRed;
     sf::Sprite SD;
     sf::Sprite SDDate[6];
     sf::Sprite SDIcon[4];
@@ -75,4 +76,5 @@ private:
     sf::Sprite MenuOverlay;
     sf::Text HeaderText;
     sf::Text Contacts[5];
+    sf::Text MailMenuText[2];
 };
