@@ -486,6 +486,8 @@ void Phone::UpdateMode(uint8_t NewMode)
             HeaderText.setString(sf::String::fromUtf8(HeaderString[0], HeaderString[0] + strlen(HeaderString[0])));
             break;
         }
+        case MODE_MAIL_MENU:
+            break;
         case MODE_POWER_OFF:
             break;
     }
@@ -607,6 +609,7 @@ void Phone::LeftMouseClicked()
                 UpdateMode(MODE_ADDRESS_BOOK);
                 break;
             case BUTTON_MAIL:
+                UpdateMode(MODE_MAIL_MENU);
                 break;
             case BUTTON_WEB:
                 if (fork() == 0)
