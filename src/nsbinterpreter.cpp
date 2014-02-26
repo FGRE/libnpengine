@@ -22,13 +22,15 @@
 #include "nsbmagic.hpp"
 #include "text.hpp"
 #include "playable.hpp"
-#include "steinsgate.hpp"
 
 #include <iostream>
 #include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <boost/thread/thread.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+
+void gst_init(int* argc, char** argv[]);
 
 static const std::string SpecialPos[SPECIAL_POS_NUM] =
 {
@@ -90,16 +92,12 @@ bool NsbContext::PrevLine()
     return pLine != nullptr;
 }
 
-NsbInterpreter::NsbInterpreter(Game* pGame) :
-pPhone(nullptr),
-pGame(pGame),
-StopInterpreter(false)
+NsbInterpreter::NsbInterpreter() :
+StopInterpreter(false),
+pGame(nullptr)
 {
-#ifdef _WIN32
-    Text::Initialize("fonts-japanese-gothic.ttf");
-#else
-    Text::Initialize("/usr/share/fonts/cjkuni-uming/uming.ttc");
-#endif
+    // TODO: Move this somewhere else
+    gst_init(nullptr, nullptr);
 
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
     Builtins[MAGIC_SUBSTRACT] = &NsbInterpreter::Substract;
@@ -187,9 +185,6 @@ StopInterpreter(false)
     // Hack
     SetVariable("#SYSTEM_cosplay_patch", Variable{"STRING", "false"});
 
-    // Steins gate
-    pPhone = new Phone(new sf::Sprite(), pGame);
-
     // Main script thread
     pMainContext = new NsbContext;
     pMainContext->Active = true;
@@ -197,7 +192,6 @@ StopInterpreter(false)
 
 NsbInterpreter::~NsbInterpreter()
 {
-    delete pPhone;
 }
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
@@ -573,20 +567,6 @@ void NsbInterpreter::Set()
         // Set($var); <- Put it into first argument
         SetVariable(Identifier, Params.back());
     }
-
-    // Handle hardcoded operations
-    if (Identifier == "$SF_Phone_Open")
-        pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneOpen, this));
-    else if (Identifier == "$SW_PHONE_MODE")
-        pGame->GLCallback(std::bind(&NsbInterpreter::SGPhoneMode, this));
-    else if (Identifier == "$SF_PhoneMailReciveNew")
-        pGame->GLCallback(std::bind(&Phone::MailReceive, pPhone, GetVariable<int32_t>("$SF_PhoneMailReciveNew")));
-    else if (Identifier == "$SF_PhoneSD_Disp")
-        pGame->GLCallback(std::bind(&Phone::SDDisplay, pPhone, GetVariable<int32_t>("$SF_PhoneSD_Disp")));
-    else if (Identifier == "$LR_DATE")
-        pGame->GLCallback(std::bind(&Phone::SetDate, pPhone, GetVariable<string>("$LR_DATE")));
-    else if (Identifier == "$SW_PHONE_PRI")
-        pGame->GLCallback(std::bind(&NsbInterpreter::SGPhonePriority, this));
 }
 
 void NsbInterpreter::ArrayRead()

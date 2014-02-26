@@ -43,19 +43,20 @@ class Game : public sf::RenderWindow
 {
     friend class NsbInterpreter;
 public:
-    Game(const std::vector<std::string>& AchieveFileNames);
+    Game(NsbInterpreter* pInterpreter, const char* WindowTitle);
     ~Game();
 
     void Run();
+    void GLCallback(const std::function<void()>& Func); // Request main thread to call Func
+    void AddDrawable(DrawableBase* pDrawable);
+    void RemoveDrawable(DrawableBase* pDrawable);
 
-private:
+protected:
+    virtual void HandleEvent(sf::Event Event);
     void ClearText();
     void SetText(Text* pText);
-    void AddDrawable(DrawableBase* pDrawable);
     void AddDrawable(Movie* pMovie);
-    void RemoveDrawable(DrawableBase* pDrawable);
     void RegisterCallback(sf::Keyboard::Key Key, const std::string& Script);
-    void GLCallback(const std::function<void()>& Func); // Request main thread to call Func
 
     boost::mutex GLMutex;
     std::queue<std::function<void()>> GLCallbacks; // TODO: Only one is (probably?) actually possible in practice

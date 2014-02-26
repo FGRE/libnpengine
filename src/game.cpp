@@ -16,79 +16,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "game.hpp"
-#include "resourcemgr.hpp"
 #include "drawable.hpp"
 #include "text.hpp"
 #include "movie.hpp"
 
 #include <SFML/Window/Event.hpp>
-#include <boost/thread/thread.hpp>
 
-void NitroscriptMain(NsbInterpreter* pInterpreter);
-
-Game::Game(const std::vector<std::string>& AchieveFileNames) :
-sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "steins-gate", sf::Style::Close),
+Game::Game(NsbInterpreter* pInterpreter, const char* WindowTitle) :
+sf::RenderWindow(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), WindowTitle, sf::Style::Close),
 IsRunning(true),
 IgnoreText(false),
 pText(nullptr),
-pMovie(nullptr)
+pMovie(nullptr),
+pInterpreter(pInterpreter)
 {
     setFramerateLimit(60);
     sf::Vector2i WindowPos(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height);
     WindowPos -= sf::Vector2i(WINDOW_WIDTH, WINDOW_HEIGHT);
     WindowPos /= 2;
     setPosition(WindowPos);
-    sResourceMgr = new ResourceMgr(AchieveFileNames);
-    pInterpreter = new NsbInterpreter(this);
 }
 
 Game::~Game()
 {
-    delete pInterpreter;
-    delete sResourceMgr;
 }
 
 void Game::Run()
 {
     sf::Event Event;
-    boost::thread ScriptThread(&NitroscriptMain, pInterpreter);
 
     while (IsRunning)
     {
         while (pollEvent(Event))
-        {
-            switch (Event.type)
-            {
-                case sf::Event::KeyPressed:
-                    for (uint32_t i = 0; i < Callbacks.size(); ++i)
-                        if (Callbacks[i].Key == Event.key.code)
-                            pInterpreter->CallScript(Callbacks[i].Script, "", SYMBOL_CHAPTER);
-                    if (Event.key.code == sf::Keyboard::F8)
-                        pInterpreter->DumpState();
-                    else if (Event.key.code == sf::Keyboard::LControl)
-                        IgnoreText = !IgnoreText;
-                    else if (Event.key.code == sf::Keyboard::P)
-                    {
-                        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LAlt))
-                            pInterpreter->PhoneToggle();
-                    }
-                    break;
-                case sf::Event::MouseButtonPressed:
-                    if (pText && Event.mouseButton.button == sf::Mouse::Left)
-                        if (!pText->NextLine())
-                            pInterpreter->Start();
-                    pInterpreter->MouseClicked(Event.mouseButton);
-                    break;
-                case sf::Event::MouseMoved:
-                        pInterpreter->MouseMoved(sf::Mouse::getPosition(*this));
-                    break;
-                case sf::Event::Closed:
-                    IsRunning = false;
-                    break;
-                default:
-                    break;
-            }
-        }
+            HandleEvent(Event);
 
         clear();
         auto d = Drawables.begin();
@@ -123,7 +83,36 @@ void Game::Run()
 
     pInterpreter->Start();
     pInterpreter->Stop();
-    ScriptThread.join();
+}
+
+void Game::HandleEvent(sf::Event Event)
+{
+    switch (Event.type)
+    {
+        case sf::Event::KeyPressed:
+            for (uint32_t i = 0; i < Callbacks.size(); ++i)
+                if (Callbacks[i].Key == Event.key.code)
+                    pInterpreter->CallScript(Callbacks[i].Script, "", SYMBOL_CHAPTER);
+            if (Event.key.code == sf::Keyboard::F8)
+                pInterpreter->DumpState();
+            else if (Event.key.code == sf::Keyboard::LControl)
+                IgnoreText = !IgnoreText;
+            break;
+        case sf::Event::MouseButtonPressed:
+            if (pText && Event.mouseButton.button == sf::Mouse::Left)
+                if (!pText->NextLine())
+                    pInterpreter->Start();
+            pInterpreter->MouseClicked(Event.mouseButton);
+            break;
+        case sf::Event::MouseMoved:
+                pInterpreter->MouseMoved(sf::Mouse::getPosition(*this));
+            break;
+        case sf::Event::Closed:
+            IsRunning = false;
+            break;
+        default:
+            break;
+    }
 }
 
 void Game::GLCallback(const std::function<void()>& Func)
