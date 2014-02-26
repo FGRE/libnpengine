@@ -30,8 +30,6 @@
 #include <boost/thread/thread.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 
-void gst_init(int* argc, char** argv[]);
-
 static const std::string SpecialPos[SPECIAL_POS_NUM] =
 {
     "Center", "InBottom", "Middle",
@@ -96,9 +94,6 @@ NsbInterpreter::NsbInterpreter() :
 StopInterpreter(false),
 pGame(nullptr)
 {
-    // TODO: Move this somewhere else
-    gst_init(nullptr, nullptr);
-
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
     Builtins[MAGIC_SUBSTRACT] = &NsbInterpreter::Substract;
     Builtins[MAGIC_TEXTURE_WIDTH] = &NsbInterpreter::TextureWidth;
