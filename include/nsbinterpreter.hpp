@@ -106,6 +106,7 @@ class NsbInterpreter
 public:
     NsbInterpreter();
     virtual ~NsbInterpreter();
+    virtual void Initialize(Game* pGame);
 
     void Stop();
     void Pause();
@@ -116,12 +117,13 @@ public:
     virtual void MouseMoved(sf::Vector2i Pos) {}
     virtual void MouseClicked(sf::Event::MouseButtonEvent Event) {}
 
+    void ExecuteScriptLocal(const string& InitScript);
+
 protected:
     void Run();
     void Sleep(int32_t ms);
     void LoadScript(const string& FileName);
     void ExecuteScript(const string& InitScript);
-    void ExecuteScriptLocal(const string& InitScript);
 
     // Magic handlers
     void CreateProcess();

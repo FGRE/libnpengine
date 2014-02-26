@@ -169,14 +169,6 @@ pGame(nullptr)
     Builtins[MAGIC_UNK2] = &NsbInterpreter::UNK2;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
 
-    // TODO: include.nss/herpderp.nss from .map files instead
-    LoadScript("nss/macrosys2.nsb");
-    LoadScript("nss/function_steinsgate.nsb");
-    LoadScript("nss/function.nsb");
-    LoadScript("nss/extra_achievements.nsb");
-    LoadScript("nss/function_select.nsb");
-    LoadScript("nss/function_stand.nsb");
-
     // Hack
     SetVariable("#SYSTEM_cosplay_patch", Variable{"STRING", "false"});
 
@@ -187,6 +179,24 @@ pGame(nullptr)
 
 NsbInterpreter::~NsbInterpreter()
 {
+}
+
+extern "C" { void gst_init(int* argc, char** argv[]); }
+
+void NsbInterpreter::Initialize(Game* pGame)
+{
+    this->pGame = pGame;
+    gst_init(nullptr, nullptr);
+    Text::Initialize("/usr/share/fonts/cjkuni-uming/uming.ttc");
+    sResourceMgr = new ResourceMgr({"cg.npa", "nss.npa", "voice.npa", "sound.npa"});
+
+    // TODO: include.nss/herpderp.nss from .map files instead
+    LoadScript("nss/macrosys2.nsb");
+    LoadScript("nss/function_steinsgate.nsb");
+    LoadScript("nss/function.nsb");
+    LoadScript("nss/extra_achievements.nsb");
+    LoadScript("nss/function_select.nsb");
+    LoadScript("nss/function_stand.nsb");
 }
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
