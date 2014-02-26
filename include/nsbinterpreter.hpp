@@ -49,7 +49,6 @@ class DrawableBase;
 class ArrayVariable;
 class Text;
 class Playable;
-class Phone;
 
 typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 
@@ -104,10 +103,9 @@ struct NsbContext
 class NsbInterpreter
 {
     typedef void (NsbInterpreter::*BuiltinFunc)();
-    friend void NitroscriptMain(NsbInterpreter* pInterpreter);
 public:
-    NsbInterpreter(Game* pGame);
-    ~NsbInterpreter();
+    NsbInterpreter();
+    virtual ~NsbInterpreter();
 
     void Stop();
     void Pause();
@@ -115,10 +113,10 @@ public:
 
     void CallScript(const string& FileName, const string& Symbol, SymbolType Type);
     void DumpState();
-    void PhoneToggle();
-    void MouseMoved(sf::Vector2i Pos);
-    void MouseClicked(sf::Event::MouseButtonEvent Event);
-private:
+    virtual void MouseMoved(sf::Vector2i Pos) {}
+    virtual void MouseClicked(sf::Event::MouseButtonEvent Event) {}
+
+protected:
     void Run();
     void Sleep(int32_t ms);
     void LoadScript(const string& FileName);
@@ -164,7 +162,7 @@ private:
     void Request();
     void RegisterCallback();
     void ArrayRead();
-    void Set();
+    virtual void Set();
     void Negative();
     void PlaceholderParam();
     void Zoom();
@@ -231,12 +229,6 @@ private:
     void GLApplyBlur(Drawable* pDrawable, const string& Heaviness);
     void GLParseText(const string& Box, const string& XML);
     void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
-
-    // Steins gate hardcoded functions
-    Phone* pPhone;
-    void SGPhoneOpen();
-    void SGPhoneMode();
-    void SGPhonePriority();
 
     void BinaryOperator(std::function<int32_t(int32_t, int32_t)> Func); // +,-,*,/
     template <class T> T GetParam(int32_t Index); // If parameter is identifier, it is transformed to value
