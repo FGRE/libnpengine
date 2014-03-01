@@ -161,6 +161,7 @@ pGame(nullptr)
     Builtins[MAGIC_WRITE_FILE] = &NsbInterpreter::WriteFile;
     Builtins[MAGIC_DIVIDE] = &NsbInterpreter::Divide;
     Builtins[MAGIC_MULTIPLY] = &NsbInterpreter::Multiply;
+    Builtins[MAGIC_RETURN] = &NsbInterpreter::Return;
     //Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
@@ -857,6 +858,11 @@ void NsbInterpreter::Format()
     // Remove arguments used by Format
     Params.resize(Params.size() - (pContext->pLine->Params.size() - 1));
     Params.back().Value = Fmt.str();
+}
+
+void NsbInterpreter::Return()
+{
+    End();
 }
 
 void NsbInterpreter::Substract()
