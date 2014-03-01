@@ -190,6 +190,7 @@ protected:
     void TextureHeight();
     void Multiply();
     void Substract();
+    void Return();
 
     // Stubs
     void UNK1();
