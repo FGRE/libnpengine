@@ -237,18 +237,13 @@ protected:
     template <class T> T GetParam(int32_t Index); // If parameter is identifier, it is transformed to value
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
-    bool JumpTo(uint16_t Magic);  // Skips instructions untill first occurence of Magic
+    bool JumpTo(uint16_t Magic); // Skips instructions untill first occurence of Magic
     void ReverseJumpTo(uint16_t Magic); // Backwards JumpTo (TODO: Merge functions?)
     void SetVariable(const string& Identifier, const Variable& Var); // Sets value of global variable
     void CallScriptSymbol(SymbolType Type);
 
-    void Recover();
     void WriteTrace(std::ostream& Stream);
-    void Crash();
-    bool NsbAssert(bool expr, const char* fmt);
-    void NsbAssert(const char* fmt);
-    template<typename T, typename... A> void NsbAssert(const char* fmt, T value, A... args);
-    template<typename T, typename... A> bool NsbAssert(bool expr, const char* fmt, T value, A... args);
+    bool NsbAssert(bool expr, string error);
 
     Game* pGame;
     NsbContext* pContext;
@@ -267,7 +262,6 @@ protected:
 };
 
 template <> bool NsbInterpreter::GetParam(int32_t Index);
-template <> bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, string value);
 
 sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
 sf::Texture* LoadTextureFromColor(string Color, int32_t Width, int32_t Height);

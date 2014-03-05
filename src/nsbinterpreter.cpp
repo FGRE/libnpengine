@@ -902,8 +902,7 @@ void NsbInterpreter::BinaryOperator(std::function<int32_t(int32_t, int32_t)> Fun
 {
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
     if (NsbAssert(Params[First].Type == Params[Second].Type,
-                  "BianryOperator: Params of different types (% and %)",
-                  Params[First].Type, Params[Second].Type))
+                  "BianryOperator: Params of different types"))
         return;
 
     Params[First].Value = boost::lexical_cast<string>(Func(boost::lexical_cast<int32_t>(Params[First].Value),
@@ -968,7 +967,7 @@ template <> bool NsbInterpreter::GetParam(int32_t Index)
         return true;
     else if (String == "false")
         return false;
-    NsbAssert(false, "Invalid boolification of string: ", String);
+    NsbAssert(false, "Boolification of string failed");
     return false; // Silence gcc
 }
 
@@ -1053,8 +1052,12 @@ void NsbInterpreter::DumpState()
     WriteTrace(Log);
 }
 
-void NsbInterpreter::Crash()
+bool NsbInterpreter::NsbAssert(bool expr, string error)
 {
+    if (expr)
+        return false;
+
+    std::cout << error << std::endl;
     std::cout << "\n**STACK TRACE BEGIN**\n";
     WriteTrace(std::cout);
     std::cout << "**STACK TRACE END**\nRecovering...\n" << std::endl;
@@ -1062,65 +1065,9 @@ void NsbInterpreter::Crash()
 #ifdef DEBUG
     abort();
 #else
-    Recover();
-#endif
-}
-
-void NsbInterpreter::Recover()
-{
     // It is generally segfault-safe to jump to next ClearParams()
     if (pContext->pScript)
         JumpTo(MAGIC_CLEAR_PARAMS);
-}
-
-// Rename/eliminate pls?
-void NsbInterpreter::NsbAssert(const char* fmt)
-{
-    std::cout << fmt << std::endl;
-}
-
-template<typename T, typename... A>
-bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, T value, A... args)
-{
-    if (expr)
-        return false;
-
-    NsbAssert(fmt, value, args...);
-    Crash();
+#endif
     return true;
-}
-
-template<typename T, typename... A>
-void NsbInterpreter::NsbAssert(const char* fmt, T value, A... args)
-{
-    while (*fmt)
-    {
-        if (*fmt == '%')
-        {
-            if (*(fmt + 1) == '%')
-                ++fmt;
-            else
-            {
-                std::cout << value;
-                NsbAssert(fmt + 1, args...);
-                return;
-            }
-        }
-        std::cout << *fmt++;
-    }
-}
-
-bool NsbInterpreter::NsbAssert(bool expr, const char* fmt)
-{
-    if (expr)
-        return false;
-
-    NsbAssert(fmt);
-    Crash();
-    return true;
-}
-
-template <> bool NsbInterpreter::NsbAssert(bool expr, const char* fmt, string value)
-{
-    return NsbAssert(expr, fmt, value.c_str());
 }
