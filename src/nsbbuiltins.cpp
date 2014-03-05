@@ -286,7 +286,7 @@ void NsbInterpreter::NSBRequest(const string& State)
     {
         if (State == "Smoothing")
         {
-            if (NsbAssert(pDrawable->Type == DRAWABLE_TEXTURE, "Smoothing non-texture drawable %", HandleName))
+            if (NsbAssert(pDrawable->Type == DRAWABLE_TEXTURE, "Smoothing non-texture drawable"))
                 return;
 
             pGame->GLCallback([pDrawable]()
@@ -346,7 +346,7 @@ void NsbInterpreter::NSBCreateSound(const string& Type, const string& File)
         delete pMusic;
 
     NpaIterator AudioFile = sResourceMgr->GetFile(File);
-    if (NsbAssert(AudioFile.GetFileSize() > 0, "Attempting to create Playable from empty file %", File.c_str()))
+    if (NsbAssert(AudioFile.GetFileSize() > 0, "Attempting to create Playable from empty file"))
         return;
 
     CacheHolder<Playable>::Write(HandleName, new Playable(AudioFile));
@@ -458,8 +458,7 @@ void NsbInterpreter::NSBCreateArray()
     {
         // Check if tree already exists
         auto iter = Arrays.find(pContext->pLine->Params[0]);
-        if (NsbAssert(iter == Arrays.end(),
-            "Cannot create tree % as it already exists", pContext->pLine->Params[0]))
+        if (NsbAssert(iter == Arrays.end(), "Cannot create tree because it already exists"))
             return;
 
         for (uint32_t i = 1; i < Params.size(); ++i)
@@ -479,7 +478,7 @@ void NsbInterpreter::NSBBindIdentifier()
     {
         // Check if identifiers are already bound
         if (NsbAssert(Arrays[pContext->pLine->Params[0]].Members[0].first.empty(),
-            "Cannot bind identifiers to tree as they are already bound"))
+            "Cannot bind identifiers to tree because they are already bound"))
             return;
 
         for (uint32_t i = 1; i < Params.size(); ++i)

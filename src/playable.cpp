@@ -107,7 +107,7 @@ void Playable::InitAudio()
     GstElement* AudioSink = gst_element_factory_make("autoaudiosink", "sink");
     VolumeFilter = gst_element_factory_make("volume", "afilter");
     gst_bin_add_many(GST_BIN(AudioBin), AudioConv, VolumeFilter, AudioSink, NULL);
-    gst_element_link_many(AudioConv, VolumeFilter, AudioSink);
+    gst_element_link_many(AudioConv, VolumeFilter, AudioSink, NULL);
     gst_element_add_pad(AudioBin, gst_ghost_pad_new("sink", AudioPad));
     gst_object_unref(AudioPad);
     gst_bin_add(GST_BIN(Pipeline), AudioBin);
