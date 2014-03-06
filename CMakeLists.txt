@@ -7,7 +7,7 @@ find_package(Boost REQUIRED COMPONENTS locale thread)
 find_package(GStreamer REQUIRED)
 find_package(GLIB REQUIRED)
 
-add_definitions(-std=c++11)
+add_definitions(-std=c++11 -O2)
 
 set(CMAKE_BUILD_TYPE Debug)
 include_directories(
