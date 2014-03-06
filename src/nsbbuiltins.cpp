@@ -347,7 +347,10 @@ void NsbInterpreter::NSBCreateSound(const string& Type, const string& File)
 
     NpaIterator AudioFile = sResourceMgr->GetFile(File);
     if (NsbAssert(AudioFile.GetFileSize() > 0, "Attempting to create Playable from empty file"))
+    {
+        CacheHolder<Playable>::Write(HandleName, nullptr);
         return;
+    }
 
     CacheHolder<Playable>::Write(HandleName, new Playable(AudioFile));
 }
