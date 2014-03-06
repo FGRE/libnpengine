@@ -51,8 +51,9 @@ sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area = s
     {
         std::cout << "Failed to load pixels from " << File << " in memory" << std::endl;
         delete pTexture;
-        return nullptr;
+        pTexture = nullptr;
     }
+    delete pPixels;
     return pTexture;
 }
 
