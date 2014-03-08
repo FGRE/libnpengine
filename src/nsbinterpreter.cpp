@@ -998,7 +998,7 @@ bool NsbInterpreter::JumpTo(uint16_t Magic)
     if (!pContext->pLine)
         return false;
 
-    do
+    while (pContext->NextLine())
     {
         // Just in case, jumping beyond scope end can be very bad
         // TODO: Perhaps it should be logged instead
@@ -1011,8 +1011,7 @@ bool NsbInterpreter::JumpTo(uint16_t Magic)
             // pContext->PrevLine();
             return true;
         }
-
-    } while (pContext->NextLine());
+    }
     return false;
 }
 
