@@ -173,6 +173,10 @@ protected:
     void LogicalNot();
     void LogicalEqual();
     void LogicalNotEqual();
+    void LogicalAnd();
+    void LogicalOr();
+    void LogicalGreaterEqual();
+    void LogicalLessEqual();
     void CallChapter();
     void Center();
     void System();
@@ -193,8 +197,6 @@ protected:
     void Return();
 
     // Stubs
-    void UNK1();
-    void UNK2();
     void UNK77();
 
     // Builtin functions
