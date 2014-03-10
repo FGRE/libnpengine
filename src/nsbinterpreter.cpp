@@ -388,8 +388,8 @@ void NsbInterpreter::LogicalLessEqual()
 void NsbInterpreter::LogicalOperator(std::function<bool(int32_t, int32_t)> Func)
 {
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
-    if (NsbAssert(Params[First].Type == Params[Second].Type,
-                  "LogicalOperator: Params of different types"))
+    if (NsbAssert(Params[First].Type == Params[Second].Type && Params[First].Type == "INT",
+                  "LogicalOperator: Params of different or non-integer types"))
         return;
 
     pContext->BranchCondition = Func(GetVariable<int32_t>(Params[First].Value),
