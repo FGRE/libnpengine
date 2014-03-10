@@ -95,6 +95,10 @@ StopInterpreter(false),
 pGame(nullptr)
 {
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
+    Builtins[MAGIC_LOGICAL_AND] = &NsbInterpreter::LogicalAnd;
+    Builtins[MAGIC_LOGICAL_OR] = &NsbInterpreter::LogicalOr;
+    Builtins[MAGIC_LOGICAL_GREATER_EQUAL] = &NsbInterpreter::LogicalGreaterEqual;
+    Builtins[MAGIC_LOGICAL_LESS_EQUAL] = &NsbInterpreter::LogicalLessEqual;
     Builtins[MAGIC_SUBSTRACT] = &NsbInterpreter::Substract;
     Builtins[MAGIC_TEXTURE_WIDTH] = &NsbInterpreter::TextureWidth;
     Builtins[MAGIC_TEXTURE_HEIGHT] = &NsbInterpreter::TextureHeight;
@@ -166,8 +170,6 @@ pGame(nullptr)
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
     // Stubs
-    Builtins[MAGIC_UNK1] = &NsbInterpreter::UNK1;
-    Builtins[MAGIC_UNK2] = &NsbInterpreter::UNK2;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
 
     // Hack
@@ -353,6 +355,15 @@ void NsbInterpreter::Increment()
     Params[Index].Value = boost::lexical_cast<string>(boost::lexical_cast<int32_t>(Params[Index].Value) + 1);
 }
 
+void NsbInterpreter::LogicalGreaterEqual()
+{
+    if (NsbAssert(Params[0].Type == Params[1].Type && Params[0].Type == "INT",
+        "Comparing variables of different or non-integer types"))
+        return;
+
+    pContext->BranchCondition = GetVariable<int32_t>(Params[0].Value) >= GetVariable<int32_t>(Params[1].Value);
+}
+
 void NsbInterpreter::LogicalGreater()
 {
     if (NsbAssert(Params[0].Type == Params[1].Type && Params[0].Type == "INT",
@@ -369,6 +380,25 @@ void NsbInterpreter::LogicalLess()
         return;
 
     pContext->BranchCondition = GetVariable<int32_t>(Params[0].Value) < GetVariable<int32_t>(Params[1].Value);
+}
+
+void NsbInterpreter::LogicalLessEqual()
+{
+    if (NsbAssert(Params[0].Type == Params[1].Type && Params[0].Type == "INT",
+        "Comparing variables of different or non-integer types"))
+        return;
+
+    pContext->BranchCondition = GetVariable<int32_t>(Params[0].Value) <= GetVariable<int32_t>(Params[1].Value);
+}
+
+void NsbInterpreter::LogicalAnd()
+{
+    // TODO
+}
+
+void NsbInterpreter::LogicalOr()
+{
+    // TODO
 }
 
 void NsbInterpreter::ArraySize()
@@ -498,15 +528,6 @@ void NsbInterpreter::Zoom()
     if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
         pGame->GLCallback(std::bind(&NsbInterpreter::GLZoom, this, pDrawable, GetParam<int32_t>(1),
                           GetParam<float>(2), GetParam<float>(3), GetParam<string>(4), GetParam<bool>(5)));
-}
-
-void NsbInterpreter::UNK1()
-{
-}
-
-// LogicalOr, probably
-void NsbInterpreter::UNK2()
-{
 }
 
 // BlockBegin, called after Function/Chapter/Scene begin or If
