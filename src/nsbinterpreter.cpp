@@ -355,42 +355,6 @@ void NsbInterpreter::Increment()
     Params[Index].Value = boost::lexical_cast<string>(boost::lexical_cast<int32_t>(Params[Index].Value) + 1);
 }
 
-void NsbInterpreter::LogicalGreaterEqual()
-{
-    if (NsbAssert(Params[0].Type == Params[1].Type && Params[0].Type == "INT",
-        "Comparing variables of different or non-integer types"))
-        return;
-
-    pContext->BranchCondition = GetVariable<int32_t>(Params[0].Value) >= GetVariable<int32_t>(Params[1].Value);
-}
-
-void NsbInterpreter::LogicalGreater()
-{
-    if (NsbAssert(Params[0].Type == Params[1].Type && Params[0].Type == "INT",
-        "Comparing variables of different or non-integer types"))
-        return;
-
-    pContext->BranchCondition = GetVariable<int32_t>(Params[0].Value) > GetVariable<int32_t>(Params[1].Value);
-}
-
-void NsbInterpreter::LogicalLess()
-{
-    if (NsbAssert(Params[0].Type == Params[1].Type && Params[0].Type == "INT",
-        "Comparing variables of different or non-integer types"))
-        return;
-
-    pContext->BranchCondition = GetVariable<int32_t>(Params[0].Value) < GetVariable<int32_t>(Params[1].Value);
-}
-
-void NsbInterpreter::LogicalLessEqual()
-{
-    if (NsbAssert(Params[0].Type == Params[1].Type && Params[0].Type == "INT",
-        "Comparing variables of different or non-integer types"))
-        return;
-
-    pContext->BranchCondition = GetVariable<int32_t>(Params[0].Value) <= GetVariable<int32_t>(Params[1].Value);
-}
-
 void NsbInterpreter::LogicalAnd()
 {
     // TODO
@@ -399,6 +363,37 @@ void NsbInterpreter::LogicalAnd()
 void NsbInterpreter::LogicalOr()
 {
     // TODO
+}
+
+void NsbInterpreter::LogicalGreaterEqual()
+{
+    LogicalOperator([](int32_t a, int32_t b) { return a >= b; });
+}
+
+void NsbInterpreter::LogicalGreater()
+{
+    LogicalOperator([](int32_t a, int32_t b) { return a > b; });
+}
+
+void NsbInterpreter::LogicalLess()
+{
+    LogicalOperator([](int32_t a, int32_t b) { return a < b; });
+}
+
+void NsbInterpreter::LogicalLessEqual()
+{
+    LogicalOperator([](int32_t a, int32_t b) { return a <= b; });
+}
+
+void NsbInterpreter::LogicalOperator(std::function<bool(int32_t, int32_t)> Func)
+{
+    uint32_t First = Params.size() - 2, Second = Params.size() - 1;
+    if (NsbAssert(Params[First].Type == Params[Second].Type,
+                  "LogicalOperator: Params of different types"))
+        return;
+
+    pContext->BranchCondition = Func(GetVariable<int32_t>(Params[First].Value),
+                                     GetVariable<int32_t>(Params[Second].Value));
 }
 
 void NsbInterpreter::ArraySize()
