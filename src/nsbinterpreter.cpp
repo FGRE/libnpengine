@@ -149,7 +149,7 @@ pGame(nullptr)
     Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::NSBBindIdentifier;
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_CALL_CHAPTER] = &NsbInterpreter::CallChapter;
-    //Builtins[MAGIC_IF] = &NsbInterpreter::If;
+    Builtins[MAGIC_IF] = &NsbInterpreter::If;
     //Builtins[MAGIC_WHILE] = &NsbInterpreter::While;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
     //Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
@@ -414,15 +414,7 @@ void NsbInterpreter::If()
     if (pContext->BranchCondition)
         return;
 
-    string Label = GetParam<string>(0);
-    Label.pop_back();
-    Label.insert(Label.find_last_of('.') + 1, "end");
-    do
-    {
-        // TODO: This can be done faster with symbol lookup table (.map)
-        if (!JumpTo(MAGIC_LABEL))
-            return;
-    } while (pContext->pLine->Params[0] != Label);
+    pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(GetParam<string>(0)));
 }
 
 void NsbInterpreter::While()
