@@ -510,6 +510,9 @@ void NsbInterpreter::LogicalEqual()
 
 void NsbInterpreter::LogicalNot()
 {
+    if (NsbAssert(!Params.empty(), "No parameter passed to LogicalNot"))
+        return;
+
     if (Params.back().Value == "true")
         pContext->BranchCondition = false;
     else if (Params.back().Value == "false")
