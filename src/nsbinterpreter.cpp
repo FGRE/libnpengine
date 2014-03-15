@@ -411,28 +411,15 @@ void NsbInterpreter::If()
         pContext->BranchCondition = false;
 
     // Jump to end of block only if condition is not met
-    if (pContext->BranchCondition)
-        return;
-
-    pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(GetParam<string>(0)));
+    if (!pContext->BranchCondition)
+        pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(GetParam<string>(0)));
 }
 
 void NsbInterpreter::While()
 {
-    if (pContext->BranchCondition)
-        return;
-
-    // Use the fact that labels are consistently named
-    string Label = GetParam<string>(0);
-    size_t i = Label.find("begin");
-    Label.erase(i, 5);
-    Label.insert(i, "end");
-
-    do
-    {
-        if (!JumpTo(MAGIC_LABEL))
-            return;
-    } while (pContext->pLine->Params[0] != Label);
+    // If condition is not met, jump to end of block
+    if (!pContext->BranchCondition)
+        pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(GetParam<string>(0)));
 }
 
 void NsbInterpreter::LoopJump()
