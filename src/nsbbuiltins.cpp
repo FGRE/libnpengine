@@ -24,6 +24,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <boost/lexical_cast.hpp>
+#include <fstream>
 
 const std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
 {
@@ -510,7 +511,7 @@ void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, 
     pContext->Identifier = HandleName;
     pThread->Active = false;
     pThread->pScript = nullptr;
-    pThread->CallSubroutine(pContext->pScript, Function.c_str(), SYMBOL_FUNCTION);
+    pThread->CallSubroutine(pContext->pScript, Function.c_str());
     CacheHolder<NsbContext>::Write(HandleName, pThread);
     Threads.push_back(pThread);
 }

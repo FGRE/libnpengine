@@ -26,9 +26,8 @@
 #include <algorithm>
 #include <cstring>
 
-typedef std::map<std::string, uint32_t> Registry;
-
 class NpaFile;
+class ScriptFile;
 
 struct MapDeleter
 {
@@ -99,35 +98,14 @@ public:
     ResourceMgr(const std::vector<std::string>& AchieveFileNames);
     ~ResourceMgr();
 
-    void ClearCache();
-
     NpaIterator GetFile(std::string Path);
-    char* Read(std::string Path, uint32_t* Size);
-    template <class T> T* GetResource(const std::string& Path);
+    char* Read(const std::string& Path, uint32_t* Size);
+    ScriptFile* GetScriptFile(const std::string& Path);
 
 private:
     std::map<std::string, NpaIterator> FileRegistry;
     std::vector<NpaFile*> Achieves;
 };
-
-template <class T> T* ResourceMgr::GetResource(const std::string& Path)
-{
-    // Check cache
-    if (T* pCache = CacheHolder<T>::Read(Path))
-        return pCache;
-
-    uint32_t Size;
-
-    // Check achieves
-    if (char* Data = Read(Path, &Size))
-    {
-        T* pScript = new T(Path, Data, Size);
-        CacheHolder<T>::Write(Path, pScript);
-        return pScript;
-    }
-
-    return nullptr;
-}
 
 extern ResourceMgr* sResourceMgr;
 
