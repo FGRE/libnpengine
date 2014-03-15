@@ -488,7 +488,7 @@ void NsbInterpreter::CallScriptSymbol(SymbolType Type)
         Symbol = ScriptName.substr(i + 2);
         ScriptName.erase(i);
     }
-    ScriptName.back() = 'b';
+    ScriptName.back() = 'b'; // .nss -> .nsb
     CallScript(ScriptName, Symbol, Type);
 }
 
@@ -599,7 +599,9 @@ void NsbInterpreter::ArrayRead()
 
 void NsbInterpreter::RegisterCallback()
 {
-    pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pContext->pLine->Params[0][0] - 'A'), pContext->pLine->Params[1]);
+    string Script = pContext->pLine->Params[1];
+    Script.back() = 'b'; // .nss -> .nsb
+    pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pContext->pLine->Params[0][0] - 'A'), Script);
 }
 
 void NsbInterpreter::Request()
