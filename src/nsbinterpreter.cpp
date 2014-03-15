@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#include "nsbfile.hpp"
 #include "game.hpp"
 #include "drawable.hpp"
 #include "resourcemgr.hpp"
@@ -23,6 +22,7 @@
 #include "text.hpp"
 #include "playable.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
@@ -42,13 +42,12 @@ BranchCondition(true)
 {
 }
 
-bool NsbContext::CallSubroutine(NsbFile* pDestScript, const char* Symbol, SymbolType Type)
+bool NsbContext::CallSubroutine(ScriptFile* pDestScript, string Symbol)
 {
     if (!pDestScript)
         return false;
 
-    uint32_t CodeLine = pDestScript->GetSymbol(Symbol, Type);
-
+    uint32_t CodeLine = pDestScript->GetSymbol(Symbol);
     if (CodeLine != NSB_INVALIDE_LINE)
     {
         if (pScript)
@@ -150,7 +149,7 @@ pGame(nullptr)
     Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::NSBBindIdentifier;
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_CALL_CHAPTER] = &NsbInterpreter::CallChapter;
-    Builtins[MAGIC_IF] = &NsbInterpreter::If;
+    //Builtins[MAGIC_IF] = &NsbInterpreter::If;
     //Builtins[MAGIC_WHILE] = &NsbInterpreter::While;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
     //Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
@@ -204,14 +203,14 @@ void NsbInterpreter::Initialize(Game* pGame)
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
 {
-    pMainContext->pScript = sResourceMgr->GetResource<NsbFile>(ScriptName);
+    pMainContext->pScript = sResourceMgr->GetScriptFile(ScriptName);
     Run();
 }
 
 void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 {
     // This leaks memory but nobody really cares
-    pMainContext->pScript = new NsbFile(ScriptName);
+    pMainContext->pScript = new ScriptFile(ScriptName);
     Run();
 }
 
@@ -220,7 +219,7 @@ void NsbInterpreter::Run()
     // Hack: boot script should call StArray()
     pContext = pMainContext;
     for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
-        if (pContext->CallSubroutine(LoadedScripts[i], "StArray", SYMBOL_FUNCTION))
+        if (pContext->CallSubroutine(LoadedScripts[i], "function.StArray"))
             break;
 
     Threads.push_back(pMainContext);
@@ -472,15 +471,17 @@ void NsbInterpreter::Center()
 
 void NsbInterpreter::CallScene()
 {
-    CallScriptSymbol(SYMBOL_SCENE);
+    Params[0].Value = string("scene.") + Params[0].Value;
+    CallScriptSymbol();
 }
 
 void NsbInterpreter::CallChapter()
 {
-    CallScriptSymbol(SYMBOL_CHAPTER);
+    Params[0].Value = string("chapter.") + Params[0].Value;
+    CallScriptSymbol();
 }
 
-void NsbInterpreter::CallScriptSymbol(SymbolType Type)
+void NsbInterpreter::CallScriptSymbol()
 {
     string ScriptName = GetParam<string>(0), Symbol;
     if (size_t i = ScriptName.find("->"))
@@ -489,7 +490,7 @@ void NsbInterpreter::CallScriptSymbol(SymbolType Type)
         ScriptName.erase(i);
     }
     ScriptName.back() = 'b'; // .nss -> .nsb
-    CallScript(ScriptName, Symbol, Type);
+    CallScript(ScriptName, Symbol);
 }
 
 void NsbInterpreter::LogicalNotEqual()
@@ -832,6 +833,7 @@ void NsbInterpreter::Delete()
 void NsbInterpreter::Call()
 {
     const char* FuncName = pContext->pLine->Params[0].c_str();
+    string FuncNameFull = string("function.") + FuncName;
 
     // Find function override (i.e. a hack)
     if (std::strcmp(FuncName, "MovieWaitSG") == 0 && pGame->pMovie)
@@ -857,12 +859,12 @@ void NsbInterpreter::Call()
         Params[0].Value = "STBUF1";
 
     // Find function locally
-    if (pContext->CallSubroutine(pContext->pScript, FuncName, SYMBOL_FUNCTION))
+    if (pContext->CallSubroutine(pContext->pScript, FuncNameFull))
         return;
 
     // Find function globally
     for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
-        if (pContext->CallSubroutine(LoadedScripts[i], FuncName, SYMBOL_FUNCTION))
+        if (pContext->CallSubroutine(LoadedScripts[i], FuncNameFull))
             return;
 
     std::cout << "Failed to lookup function symbol " << FuncName << std::endl;
@@ -1004,13 +1006,13 @@ void NsbInterpreter::SetVariable(const string& Identifier, const Variable& Var)
 
 void NsbInterpreter::LoadScript(const string& FileName)
 {
-    if (NsbFile* pScript = sResourceMgr->GetResource<NsbFile>(FileName))
+    if (ScriptFile* pScript = sResourceMgr->GetScriptFile(FileName))
         LoadedScripts.push_back(pScript);
 }
 
-void NsbInterpreter::CallScript(const string& FileName, const string& Symbol, SymbolType Type)
+void NsbInterpreter::CallScript(const string& FileName, const string& Symbol)
 {
-    pContext->CallSubroutine(sResourceMgr->GetResource<NsbFile>(FileName), Symbol.c_str(), Type);
+    pContext->CallSubroutine(sResourceMgr->GetScriptFile(FileName), Symbol.c_str());
 }
 
 bool NsbInterpreter::JumpTo(uint16_t Magic)

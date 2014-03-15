@@ -17,7 +17,7 @@
  * */
 #include "resourcemgr.hpp"
 #include "npafile.hpp"
-#include "nsbfile.hpp"
+#include "scriptfile.hpp"
 
 #include <memory>
 
@@ -38,15 +38,10 @@ ResourceMgr::ResourceMgr(const std::vector<std::string>& AchieveFileNames)
 ResourceMgr::~ResourceMgr()
 {
     std::for_each(Achieves.begin(), Achieves.end(), std::default_delete<NpaFile>());
-    ClearCache();
+    CacheHolder<ScriptFile>::Clear();
 }
 
-void ResourceMgr::ClearCache()
-{
-    // TODO
-}
-
-char* ResourceMgr::Read(std::string Path, uint32_t* Size)
+char* ResourceMgr::Read(const std::string& Path, uint32_t* Size)
 {
     NpaIterator File = GetFile(Path);
     if (File)
@@ -65,4 +60,33 @@ NpaIterator ResourceMgr::GetFile(std::string Path)
     if (iter != FileRegistry.end())
         return iter->second;
     return NpaIterator();
+}
+
+ScriptFile* ResourceMgr::GetScriptFile(const std::string& Path)
+{
+    // Check cache
+    if (ScriptFile* pCache = CacheHolder<ScriptFile>::Read(Path))
+        return pCache;
+
+    std::string MapPath(Path, 0, Path.size() - 3);
+    MapPath += "map";
+
+    // Check achieves
+    uint32_t NsbSize;
+    char* NsbData = Read(Path, &NsbSize);
+    uint32_t MapSize;
+    char* MapData = Read(MapPath, &MapSize);
+
+    // Both files found
+    if (NsbData && MapData)
+    {
+        ScriptFile* pScript = new ScriptFile(Path, NsbData, NsbSize, MapData, MapSize);
+        CacheHolder<ScriptFile>::Write(Path, pScript);
+        return pScript;
+    }
+
+    // Either file not found
+    delete NsbData;
+    delete MapData;
+    return nullptr;
 }

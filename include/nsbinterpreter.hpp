@@ -18,7 +18,7 @@
 #ifndef NSB_INTERPRETER_HPP
 #define NSB_INTERPRETER_HPP
 
-#include "nsbfile.hpp"
+#include "scriptfile.hpp"
 
 #include <stack>
 #include <cstdint>
@@ -40,7 +40,6 @@ namespace sf
     class Texture;
 }
 
-class NsbFile;
 class Game;
 class ResourceMgr;
 class Line;
@@ -74,7 +73,7 @@ struct ArrayVariable : Variable
 // Contains script and line to which function will return upon ending
 struct FuncReturn
 {
-    NsbFile* pScript;
+    ScriptFile* pScript;
     uint32_t SourceLine;
 };
 
@@ -86,7 +85,7 @@ struct NsbContext
     string Identifier; // Thread name
     bool Active; // If true, code in this context is exected
     Line* pLine; // Line of code which is currently being executed
-    NsbFile* pScript; // Script which is currently being executed (top of call stack)
+    ScriptFile* pScript; // Script which is currently being executed (top of call stack)
     sf::Clock SleepClock; // SleepTime clock
     sf::Time SleepTime; // How long should interpreter wait before executing next line
     bool BranchCondition; // If false, code block after If/While is not executed
@@ -96,7 +95,7 @@ struct NsbContext
     bool NextLine(); // Next instruction
     void Sleep(int32_t ms);
 
-    bool CallSubroutine(NsbFile* pDestScript, const char* Symbol, SymbolType Type); // Attempts to call specified symbol in specified script
+    bool CallSubroutine(ScriptFile* pDestScript, string Symbol); // Attempts to call specified symbol in specified script
     void ReturnSubroutine(); // Function return: pop the call stack
 };
 
@@ -112,7 +111,7 @@ public:
     void Pause();
     void Start();
 
-    void CallScript(const string& FileName, const string& Symbol, SymbolType Type);
+    void CallScript(const string& FileName, const string& Symbol);
     void DumpState();
     virtual void MouseMoved(sf::Vector2i Pos) {}
     virtual void MouseClicked(sf::Event::MouseButtonEvent Event) {}
@@ -243,7 +242,7 @@ protected:
     bool JumpTo(uint16_t Magic); // Skips instructions untill first occurence of Magic
     void ReverseJumpTo(uint16_t Magic); // Backwards JumpTo (TODO: Merge functions?)
     void SetVariable(const string& Identifier, const Variable& Var); // Sets value of global variable
-    void CallScriptSymbol(SymbolType Type);
+    void CallScriptSymbol();
 
     void WriteTrace(std::ostream& Stream);
     bool NsbAssert(bool expr, string error);
@@ -255,7 +254,7 @@ protected:
     volatile bool StopInterpreter;
 
     string HandleName; // Identifier of current Drawable/Playable used by NSB and GL functions
-    std::vector<NsbFile*> LoadedScripts; // Scripts considered in symbol lookup
+    std::vector<ScriptFile*> LoadedScripts; // Scripts considered in symbol lookup
     std::map<string, Variable> Variables; // All local and global variables (TODO: respect scope?)
     std::map<string, ArrayVariable> Arrays; // Same as above, except these are trees
     std::vector<Variable> Params; // Builtin function parameters
