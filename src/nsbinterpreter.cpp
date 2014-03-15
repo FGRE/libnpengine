@@ -1075,14 +1075,10 @@ bool NsbInterpreter::NsbAssert(bool expr, string error)
     std::cout << error << std::endl;
     std::cout << "\n**STACK TRACE BEGIN**\n";
     WriteTrace(std::cout);
-    std::cout << "**STACK TRACE END**\nRecovering...\n" << std::endl;
+    std::cout << "**STACK TRACE END**\n" << std::endl;
 
-#ifdef DEBUG
-    abort();
-#else
     // It is generally segfault-safe to jump to next ClearParams()
     if (pContext->pScript)
         JumpTo(MAGIC_CLEAR_PARAMS);
-#endif
     return true;
 }
