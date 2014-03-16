@@ -32,3 +32,6 @@ ${CMAKE_SOURCE_DIR}/../libnpa/
 add_library(npengine SHARED ${LIBNPENGINE_SRC})
 target_link_libraries(npengine npa)
 set_target_properties(npengine PROPERTIES LINKER_LANGUAGE CXX)
+
+# install target
+install(TARGETS npengine DESTINATION lib)
