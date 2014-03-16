@@ -94,6 +94,7 @@ StopInterpreter(false),
 pGame(nullptr)
 {
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
+    //Builtins[MAGIC_JUMP] = &NsbInterpreter::Jump;
     Builtins[MAGIC_LOGICAL_AND] = &NsbInterpreter::LogicalAnd;
     Builtins[MAGIC_LOGICAL_OR] = &NsbInterpreter::LogicalOr;
     Builtins[MAGIC_LOGICAL_GREATER_EQUAL] = &NsbInterpreter::LogicalGreaterEqual;
@@ -165,7 +166,7 @@ pGame(nullptr)
     Builtins[MAGIC_DIVIDE] = &NsbInterpreter::Divide;
     Builtins[MAGIC_MULTIPLY] = &NsbInterpreter::Multiply;
     Builtins[MAGIC_RETURN] = &NsbInterpreter::Return;
-    //Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
+    Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
     // Stubs
@@ -412,34 +413,23 @@ void NsbInterpreter::If()
 
     // Jump to end of block only if condition is not met
     if (!pContext->BranchCondition)
-        pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(GetParam<string>(0)));
+        Jump();
 }
 
 void NsbInterpreter::While()
 {
     // If condition is not met, jump to end of block
     if (!pContext->BranchCondition)
-        pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(GetParam<string>(0)));
+        Jump();
+}
+
+void NsbInterpreter::Jump()
+{
+    pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(pContext->pLine->Params[0]));
 }
 
 void NsbInterpreter::LoopJump()
 {
-    if (!pContext->NextLine())
-        return;
-
-    // Opposite of While()
-    string Label = GetParam<string>(0);
-    size_t i = Label.find("end");
-    Label.erase(i, 3);
-    Label.insert(i, "begin");
-
-    do
-    {
-        ReverseJumpTo(MAGIC_WHILE);
-    } while (pContext->pLine->Params[0] != Label);
-
-    // Jump before logical condition
-    ReverseJumpTo(MAGIC_CLEAR_PARAMS);
 }
 
 void NsbInterpreter::Center()
@@ -994,6 +984,7 @@ void NsbInterpreter::CallScript(const string& FileName, const string& Symbol)
     pContext->CallSubroutine(sResourceMgr->GetScriptFile(FileName), Symbol.c_str());
 }
 
+// TODO: Obsolete?
 bool NsbInterpreter::JumpTo(uint16_t Magic)
 {
 #warning Remove return value. Its a hack for If() hack
@@ -1015,22 +1006,6 @@ bool NsbInterpreter::JumpTo(uint16_t Magic)
         }
     }
     return false;
-}
-
-void NsbInterpreter::ReverseJumpTo(uint16_t Magic)
-{
-    do
-    {
-        // Don't jump outside scope
-        // TODO: Log this?
-        if (pContext->pLine->Magic == MAGIC_SCOPE_BEGIN ||
-            pContext->pLine->Magic == Magic)
-        {
-            // TODO: Do not skip this line in Run()
-            // pContext->PrevLine();
-            return;
-        }
-    } while (pContext->PrevLine());
 }
 
 void NsbInterpreter::WriteTrace(std::ostream& Stream)

@@ -125,6 +125,7 @@ protected:
     void ExecuteScript(const string& InitScript);
 
     // Magic handlers
+    void Jump();
     void CreateProcess();
     void LoadTextureClip();
     void Increment();
@@ -240,7 +241,6 @@ protected:
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
     bool JumpTo(uint16_t Magic); // Skips instructions untill first occurence of Magic
-    void ReverseJumpTo(uint16_t Magic); // Backwards JumpTo (TODO: Merge functions?)
     void SetVariable(const string& Identifier, const Variable& Var); // Sets value of global variable
     void CallScriptSymbol();
 
