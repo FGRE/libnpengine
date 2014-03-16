@@ -352,7 +352,14 @@ void NsbInterpreter::Increment()
     if (NsbAssert(Params[Index].Type == "INT", "Incrementing non-integer type"))
         return;
 
-    Params[Index].Value = boost::lexical_cast<string>(boost::lexical_cast<int32_t>(Params[Index].Value) + 1);
+    // HACK: Since this->Params contains a copy of real variable, incrementing it has no effect
+    //       These copies do not contain identifiers or references to original variable, we must go
+    //       back one line to find identifier.
+    // TODO: Sometimes, ArrayRead can be found before Increment (instead of Get)
+    //       In that case, this code is incorrect
+    pContext->PrevLine();
+    SetVariable(pContext->pLine->Params[0], { "INT", boost::lexical_cast<string>(boost::lexical_cast<int32_t>(Params[Index].Value) + 1) });
+    pContext->NextLine();
 }
 
 void NsbInterpreter::LogicalAnd()
@@ -393,12 +400,12 @@ void NsbInterpreter::LogicalOperator(std::function<bool(int32_t, int32_t)> Func)
         return;
 
     pContext->BranchCondition = Func(GetVariable<int32_t>(Params[First].Value),
-                                     GetVariable<int32_t>(Params[Second].Value));
+                                         GetVariable<int32_t>(Params[Second].Value));
 }
 
 void NsbInterpreter::ArraySize()
 {
-    Params.push_back(Variable("INT", boost::lexical_cast<string>(Arrays[GetParam<string>(0)].Members.size())));
+    Params.back() = Variable("INT", boost::lexical_cast<string>(Arrays[pContext->pLine->Params[0]].Members.size()));
 }
 
 void NsbInterpreter::If()
@@ -464,18 +471,12 @@ void NsbInterpreter::CallScriptSymbol()
 
 void NsbInterpreter::LogicalNotEqual()
 {
-    if (NsbAssert(Params[0].Type == Params[1].Type, "Comparing variables of different types for non-equality"))
-        return;
-
-    pContext->BranchCondition = GetVariable<string>(Params[0].Value) != GetVariable<string>(Params[1].Value);
+    LogicalOperator([](int32_t a, int32_t b) { return a != b; });
 }
 
 void NsbInterpreter::LogicalEqual()
 {
-    if (NsbAssert(Params[0].Type == Params[1].Type, "Comparing variables of different types for equality"))
-        return;
-
-    pContext->BranchCondition = GetVariable<string>(Params[0].Value) == GetVariable<string>(Params[1].Value);
+    LogicalOperator([](int32_t a, int32_t b) { return a == b; });
 }
 
 void NsbInterpreter::LogicalNot()
