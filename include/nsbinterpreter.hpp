@@ -195,6 +195,7 @@ protected:
     void Multiply();
     void Substract();
     void Return();
+    void StringToVariable();
 
     // Stubs
     void UNK77();
