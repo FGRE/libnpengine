@@ -373,8 +373,8 @@ void NsbInterpreter::StringToVariable()
     // Get
     else if (Params.size() == 2)
     {
-        Params.clear();
-        Params.push_back({ "STRING", GetVariable<string>(Params[0].Value + Params[1].Value) });
+        Params[0] = { "STRING", GetVariable<string>(Params[0].Value + Params[1].Value) };
+        Params.resize(1);
     }
     else
         assert(false && "This will trigger when we get new season of Haruhi");
