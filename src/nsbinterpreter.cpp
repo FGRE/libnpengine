@@ -167,6 +167,7 @@ pGame(nullptr)
     Builtins[MAGIC_MULTIPLY] = &NsbInterpreter::Multiply;
     Builtins[MAGIC_RETURN] = &NsbInterpreter::Return;
     Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
+    Builtins[MAGIC_STRING_TO_VARIABLE] = &NsbInterpreter::StringToVariable;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
     // Stubs
@@ -360,6 +361,23 @@ void NsbInterpreter::Increment()
     pContext->PrevLine();
     SetVariable(pContext->pLine->Params[0], { "INT", boost::lexical_cast<string>(boost::lexical_cast<int32_t>(Params[Index].Value) + 1) });
     pContext->NextLine();
+}
+
+void NsbInterpreter::StringToVariable()
+{
+    // TODO: Type may be INT!
+
+    // Set
+    if (Params.size() == 3)
+        SetVariable(Params[0].Value + Params[1].Value, { "STRING", GetParam<string>(2) });
+    // Get
+    else if (Params.size() == 2)
+    {
+        Params.clear();
+        Params.push_back({ "STRING", GetVariable<string>(Params[0].Value + Params[1].Value) });
+    }
+    else
+        assert(false && "This will trigger when we get new season of Haruhi");
 }
 
 void NsbInterpreter::LogicalAnd()
