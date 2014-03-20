@@ -188,7 +188,6 @@ protected:
     void ScopeBegin();
     void ScopeEnd();
     void WriteFile();
-    void LoopJump();
     void Divide();
     void TextureWidth();
     void TextureHeight();
