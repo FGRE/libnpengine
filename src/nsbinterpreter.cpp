@@ -166,7 +166,6 @@ pGame(nullptr)
     Builtins[MAGIC_DIVIDE] = &NsbInterpreter::Divide;
     Builtins[MAGIC_MULTIPLY] = &NsbInterpreter::Multiply;
     Builtins[MAGIC_RETURN] = &NsbInterpreter::Return;
-    Builtins[MAGIC_LOOP_JUMP] = &NsbInterpreter::LoopJump;
     Builtins[MAGIC_STRING_TO_VARIABLE] = &NsbInterpreter::StringToVariable;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
@@ -451,10 +450,6 @@ void NsbInterpreter::While()
 void NsbInterpreter::Jump()
 {
     pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(pContext->pLine->Params[0]));
-}
-
-void NsbInterpreter::LoopJump()
-{
 }
 
 void NsbInterpreter::Center()
