@@ -20,18 +20,22 @@
 #include "scriptfile.hpp"
 
 #include <memory>
+#include <boost/locale.hpp>
+using namespace boost::locale;
+using namespace boost::locale::conv;
 
 ResourceMgr* sResourceMgr;
 
 ResourceMgr::ResourceMgr(const std::vector<std::string>& AchieveFileNames)
 {
+    std::locale loc = generator().generate("ja_JP.SHIFT-JIS");
     Achieves.resize(AchieveFileNames.size());
     for (uint32_t i = 0; i < AchieveFileNames.size(); ++i)
     {
         NpaFile* pAchieve = new NpaFile(AchieveFileNames[i], NPA_READ);
         Achieves[i] = pAchieve;
         for (NpaIterator File = pAchieve->Begin(); File != pAchieve->End(); ++File)
-            FileRegistry.insert(std::pair<std::string, NpaIterator>(File.GetFileName(), File));
+            FileRegistry.insert(std::pair<std::string, NpaIterator>(to_utf<char>(File.GetFileNameRaw(), File.GetFileNameRaw() + File.GetFileNameSize(), loc), File));
     }
 }
 
