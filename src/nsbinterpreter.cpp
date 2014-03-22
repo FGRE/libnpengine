@@ -906,6 +906,9 @@ void NsbInterpreter::Multiply()
 
 void NsbInterpreter::BinaryOperator(std::function<int32_t(int32_t, int32_t)> Func)
 {
+    if (Params.size() < 2)
+        return;
+
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
     if (NsbAssert(Params[First].Type == Params[Second].Type,
                   "BianryOperator: Params of different types"))
