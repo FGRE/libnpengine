@@ -200,12 +200,18 @@ void NsbInterpreter::Initialize(Game* pGame)
     LoadScript("nss/extra_achievements.nsb");
     LoadScript("nss/function_select.nsb");
     LoadScript("nss/function_stand.nsb");
+    LoadScript("nss/sys_title.nsb");
 }
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
 {
-    pMainContext->pScript = sResourceMgr->GetScriptFile(ScriptName);
-    Run();
+    if (ScriptFile* pScript = sResourceMgr->GetScriptFile(ScriptName))
+    {
+        pMainContext->pScript = pScript;
+        Run();
+    }
+    else
+        StopInterpreter = true;
 }
 
 void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
