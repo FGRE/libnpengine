@@ -125,6 +125,7 @@ protected:
     void ExecuteScript(const string& InitScript);
 
     // Magic handlers
+    void LoadImage();
     void Jump();
     void CreateProcess();
     void LoadTextureClip();
@@ -234,6 +235,7 @@ protected:
     void GLApplyBlur(Drawable* pDrawable, const string& Heaviness);
     void GLParseText(const string& Box, const string& XML);
     void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
+    void GLLoadImage(const string& File);
 
     void LogicalOperator(std::function<bool(int32_t, int32_t)> Func);
     void BinaryOperator(std::function<int32_t(int32_t, int32_t)> Func); // +,-,*,/

@@ -167,6 +167,7 @@ pGame(nullptr)
     Builtins[MAGIC_MULTIPLY] = &NsbInterpreter::Multiply;
     Builtins[MAGIC_RETURN] = &NsbInterpreter::Return;
     Builtins[MAGIC_STRING_TO_VARIABLE] = &NsbInterpreter::StringToVariable;
+    Builtins[MAGIC_LOAD_IMAGE] = &NsbInterpreter::LoadImage;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
     // Stubs
@@ -318,6 +319,12 @@ void NsbInterpreter::Shake()
 
 void NsbInterpreter::CreateScrollbar()
 {
+}
+
+void NsbInterpreter::LoadImage()
+{
+    HandleName = GetParam<string>(0);
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadImage, this, GetParam<string>(1)));
 }
 
 void NsbInterpreter::TextureWidth()
