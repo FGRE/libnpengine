@@ -466,17 +466,15 @@ void NsbInterpreter::Center()
 
 void NsbInterpreter::CallScene()
 {
-    Params[0].Value = string("scene.") + Params[0].Value;
-    CallScriptSymbol();
+    CallScriptSymbol("scene.");
 }
 
 void NsbInterpreter::CallChapter()
 {
-    Params[0].Value = string("chapter.") + Params[0].Value;
-    CallScriptSymbol();
+    CallScriptSymbol("chapter.");
 }
 
-void NsbInterpreter::CallScriptSymbol()
+void NsbInterpreter::CallScriptSymbol(const string& Prefix)
 {
     string ScriptName = GetParam<string>(0), Symbol;
     if (size_t i = ScriptName.find("->"))
@@ -485,7 +483,7 @@ void NsbInterpreter::CallScriptSymbol()
         ScriptName.erase(i);
     }
     ScriptName.back() = 'b'; // .nss -> .nsb
-    CallScript(ScriptName, Symbol);
+    CallScript(ScriptName, Prefix + Symbol);
 }
 
 void NsbInterpreter::LogicalNotEqual()
@@ -1007,30 +1005,6 @@ void NsbInterpreter::CallScript(const string& FileName, const string& Symbol)
     pContext->CallSubroutine(sResourceMgr->GetScriptFile(FileName), Symbol.c_str());
 }
 
-// TODO: Obsolete?
-bool NsbInterpreter::JumpTo(uint16_t Magic)
-{
-#warning Remove return value. Its a hack for If() hack
-    if (!pContext->pLine)
-        return false;
-
-    while (pContext->NextLine())
-    {
-        // Just in case, jumping beyond scope end can be very bad
-        // TODO: Perhaps it should be logged instead
-        if (pContext->pLine->Magic == MAGIC_SCOPE_END)
-            return false;
-
-        if (pContext->pLine->Magic == Magic)
-        {
-            // TODO: Do not skip this line in Run()
-            // pContext->PrevLine();
-            return true;
-        }
-    }
-    return false;
-}
-
 void NsbInterpreter::WriteTrace(std::ostream& Stream)
 {
     if (!pContext->pScript)
@@ -1056,13 +1030,7 @@ bool NsbInterpreter::NsbAssert(bool expr, string error)
     if (expr)
         return false;
 
-    std::cout << error << std::endl;
-    std::cout << "\n**STACK TRACE BEGIN**\n";
+    std::cout << error << '\n';
     WriteTrace(std::cout);
-    std::cout << "**STACK TRACE END**\n" << std::endl;
-
-    // It is generally segfault-safe to jump to next ClearParams()
-    if (pContext->pScript)
-        JumpTo(MAGIC_CLEAR_PARAMS);
     return true;
 }
