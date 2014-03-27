@@ -168,6 +168,7 @@ pGame(nullptr)
     Builtins[MAGIC_RETURN] = &NsbInterpreter::Return;
     Builtins[MAGIC_STRING_TO_VARIABLE] = &NsbInterpreter::StringToVariable;
     Builtins[MAGIC_LOAD_IMAGE] = &NsbInterpreter::LoadImage;
+    Builtins[MAGIC_READ_FILE] = &NsbInterpreter::ReadFile;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
 
     // Stubs
@@ -358,6 +359,11 @@ void NsbInterpreter::CreateProcess()
 void NsbInterpreter::WriteFile()
 {
     NSBWriteFile(GetParam<string>(0), GetParam<string>(1));
+}
+
+void NsbInterpreter::ReadFile()
+{
+    NSBReadFile(GetParam<string>(0));
 }
 
 void NsbInterpreter::Increment()

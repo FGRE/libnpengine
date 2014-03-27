@@ -543,6 +543,18 @@ void NsbInterpreter::NSBWriteFile(const string& Filename, const string& Data)
     File.close();
 }
 
+void NsbInterpreter::NSBReadFile(const string& Filename)
+{
+    std::ifstream File(Filename, std::ios::binary);
+    File.seekg(0, std::ios::end);
+    string Data;
+    Data.resize(File.tellg());
+    File.seekg(0, std::ios::beg);
+    File.read(&Data[0], Data.size());
+    File.close();
+    Params.push_back(Variable("STRING", Data));
+}
+
 void NsbInterpreter::NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1,
                                              const string& Color1, const string& Color2,
                                              int32_t unk2, const string& unk3)
