@@ -120,6 +120,26 @@ void NsbInterpreter::GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int
     }
 }
 
+// Just a fancy combo of GLCreateRenderTexture and GLDrawToTexture
+void NsbInterpreter::GLLoadImage(const string& File)
+{
+    if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
+        delete pTexture;
+
+    sf::Texture* pTempTexture = LoadTextureFromFile(File);
+    if (!pTempTexture)
+        return;
+
+    sf::Sprite TempSprite(*pTempTexture);
+    TempSprite.setPosition(0, 0);
+    sf::RenderTexture* pTexture = new sf::RenderTexture;
+    pTexture->create(pTempTexture->getSize().x, pTempTexture->getSize().y);
+    pTexture->draw(TempSprite);
+    pTexture->display();
+    delete pTempTexture;
+    CacheHolder<sf::RenderTexture>::Write(HandleName, pTexture);
+}
+
 void NsbInterpreter::GLApplyBlur(Drawable* pDrawable, const string& Heaviness)
 {
     pDrawable->SetBlur(Heaviness);
