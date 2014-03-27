@@ -311,6 +311,7 @@ void NsbInterpreter::Start()
 
 void NsbInterpreter::Time()
 {
+    Params.push_back(Variable("INT", boost::lexical_cast<string>(time(0))));
 }
 
 void NsbInterpreter::Shake()
