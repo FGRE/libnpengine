@@ -240,9 +240,8 @@ protected:
     template <class T> T GetParam(int32_t Index); // If parameter is identifier, it is transformed to value
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
-    bool JumpTo(uint16_t Magic); // Skips instructions untill first occurence of Magic
     void SetVariable(const string& Identifier, const Variable& Var); // Sets value of global variable
-    void CallScriptSymbol();
+    void CallScriptSymbol(const string& Prefix);
 
     void WriteTrace(std::ostream& Stream);
     bool NsbAssert(bool expr, string error);
