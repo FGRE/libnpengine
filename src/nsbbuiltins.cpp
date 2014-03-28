@@ -421,12 +421,8 @@ void NsbInterpreter::NSBSetVolume(Playable* pMusic, int32_t NumSeconds, int32_t 
 
 void NsbInterpreter::GLZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait)
 {
-    if (x == 0 || y == 0)
-    {
-        std::cout << "Script attempted to Zoom with x or y scale value 0" << std::endl;
-        WriteTrace(std::cout);
+    if (NsbAssert(x != 0 && y != 0, "Script attempted to Zoom with x or y scale value 0"))
         return;
-    }
 
     pDrawable->AddLerpEffect(LERP_ZOOM, x / 1000.0f, y / 1000.0f, Time);
     if (Wait)

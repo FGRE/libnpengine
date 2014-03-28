@@ -746,6 +746,7 @@ void NsbInterpreter::Begin()
 {
     // Turn params into global variables
     // TODO: Should scope be respected instead?
+    // TODO: Can second parameter be a variable and not a literal?
     for (uint32_t i = 1; i < pContext->pLine->Params.size(); ++i)
         SetVariable(pContext->pLine->Params[i], Params[i - 1]);
 }
