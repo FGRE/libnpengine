@@ -156,6 +156,8 @@ pGame(nullptr)
     //Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
     Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NsbInterpreter::LogicalNotEqual;
     Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
+    Builtins[MAGIC_SCENE_END] = &NsbInterpreter::End;
+    Builtins[MAGIC_CHAPTER_END] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
     Builtins[MAGIC_GET_SCRIPT_NAME] = &NsbInterpreter::GetScriptName;
@@ -225,12 +227,6 @@ void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 
 void NsbInterpreter::Run()
 {
-    // Hack: boot script should call StArray()
-    pContext = pMainContext;
-    for (uint32_t i = 0; i < LoadedScripts.size(); ++i)
-        if (pContext->CallSubroutine(LoadedScripts[i], "function.StArray"))
-            break;
-
     Threads.push_back(pMainContext);
     do
     {
@@ -491,12 +487,16 @@ void NsbInterpreter::CallChapter()
 void NsbInterpreter::CallScriptSymbol(const string& Prefix)
 {
     string ScriptName = GetParam<string>(0), Symbol;
-    if (size_t i = ScriptName.find("->"))
+    size_t i = ScriptName.find("->");
+    if (i != string::npos)
     {
         Symbol = ScriptName.substr(i + 2);
         ScriptName.erase(i);
     }
-    ScriptName.back() = 'b'; // .nss -> .nsb
+    if (!ScriptName.empty()) // TODO: Where did @ disappear?
+        ScriptName.back() = 'b'; // .nss -> .nsb
+    else
+        ScriptName = pContext->pScript->GetName();
     CallScript(ScriptName, Prefix + Symbol);
 }
 
