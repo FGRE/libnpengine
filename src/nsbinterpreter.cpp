@@ -94,7 +94,7 @@ StopInterpreter(false),
 pGame(nullptr)
 {
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
-    //Builtins[MAGIC_JUMP] = &NsbInterpreter::Jump;
+    Builtins[MAGIC_JUMP] = &NsbInterpreter::Jump;
     Builtins[MAGIC_LOGICAL_AND] = &NsbInterpreter::LogicalAnd;
     Builtins[MAGIC_LOGICAL_OR] = &NsbInterpreter::LogicalOr;
     Builtins[MAGIC_LOGICAL_GREATER_EQUAL] = &NsbInterpreter::LogicalGreaterEqual;
@@ -151,9 +151,9 @@ pGame(nullptr)
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_CALL_CHAPTER] = &NsbInterpreter::CallChapter;
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
-    //Builtins[MAGIC_WHILE] = &NsbInterpreter::While;
+    Builtins[MAGIC_WHILE] = &NsbInterpreter::While;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
-    //Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
+    Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
     Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NsbInterpreter::LogicalNotEqual;
     Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
     Builtins[MAGIC_SCENE_END] = &NsbInterpreter::End;
@@ -407,33 +407,30 @@ void NsbInterpreter::LogicalOr()
 
 void NsbInterpreter::LogicalGreaterEqual()
 {
-    LogicalOperator([](int32_t a, int32_t b) { return a >= b; });
+    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a >= b; });
 }
 
 void NsbInterpreter::LogicalGreater()
 {
-    LogicalOperator([](int32_t a, int32_t b) { return a > b; });
+    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a > b; });
 }
 
 void NsbInterpreter::LogicalLess()
 {
-    LogicalOperator([](int32_t a, int32_t b) { return a < b; });
+    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a < b; });
 }
 
 void NsbInterpreter::LogicalLessEqual()
 {
-    LogicalOperator([](int32_t a, int32_t b) { return a <= b; });
+    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a <= b; });
 }
 
-void NsbInterpreter::LogicalOperator(std::function<bool(int32_t, int32_t)> Func)
+template <class T>
+void NsbInterpreter::LogicalOperator(std::function<bool(T, T)> Func)
 {
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
-    if (NsbAssert(Params[First].Type == Params[Second].Type && Params[First].Type == "INT",
-                  "LogicalOperator: Params of different or non-integer types"))
-        return;
-
-    pContext->BranchCondition = Func(GetVariable<int32_t>(Params[First].Value),
-                                         GetVariable<int32_t>(Params[Second].Value));
+    pContext->BranchCondition = Func(GetVariable<T>(Params[First].Value),
+                                         GetVariable<T>(Params[Second].Value));
 }
 
 void NsbInterpreter::ArraySize()
@@ -502,12 +499,17 @@ void NsbInterpreter::CallScriptSymbol(const string& Prefix)
 
 void NsbInterpreter::LogicalNotEqual()
 {
-    LogicalOperator([](int32_t a, int32_t b) { return a != b; });
+    LogicalEqual();
+    pContext->BranchCondition = !pContext->BranchCondition;
 }
 
 void NsbInterpreter::LogicalEqual()
 {
-    LogicalOperator([](int32_t a, int32_t b) { return a == b; });
+    uint32_t First = Params.size() - 2, Second = Params.size() - 1;
+    if (Params[First].Type == "STRING" || Params[Second].Type == "STRING")
+        LogicalOperator<string>([](const string& a, const string& b) { return a == b; });
+    else
+        LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a == b; });
 }
 
 void NsbInterpreter::LogicalNot()
@@ -897,8 +899,9 @@ void NsbInterpreter::Substract()
 
 void NsbInterpreter::Add()
 {
-    // If parameters are strings, concat
     uint32_t First = Params.size() - 2, Second = Params.size() - 1;
+    // STRING + STRING = STRING
+    // STRING + INT = STRING
     if (Params[First].Type == "STRING")
     {
         Params[First].Value += Params[Second].Value;
