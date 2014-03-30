@@ -27,6 +27,7 @@
 #include <queue>
 #include <vector>
 #include <functional>
+#include <boost/variant.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
@@ -54,18 +55,15 @@ typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 // Represents Nitroscript variable
 struct Variable
 {
-    Variable() : Type("STRING") {}
-    Variable(const string& Type, const string& Value) : Type(Type), Value(Value) {}
-
-    string Type;
-    string Value;
+    Variable(int32_t Int, bool IsPtr = false) : Value(Int), IsPtr(IsPtr) {}
+    Variable(const string& String, bool IsPtr = false) : Value(String), IsPtr(IsPtr) {}
+    bool IsPtr;
+    boost::variant<int32_t, float, string> Value;
 };
 
 // Note that this structure is actually a tree. See: ArrayMembers typedef
 struct ArrayVariable : Variable
 {
-    ArrayVariable() : Variable() {}
-    ArrayVariable(const Variable& Var) : Variable(Var.Type, Var.Value) {}
     ArrayMembers Members;
 };
 
@@ -88,7 +86,6 @@ struct NsbContext
     ScriptFile* pScript; // Script which is currently being executed (top of call stack)
     sf::Clock SleepClock; // SleepTime clock
     sf::Time SleepTime; // How long should interpreter wait before executing next line
-    bool BranchCondition; // If false, code block after If/While is not executed
     std::stack<FuncReturn> Returns; // Call stack
 
     bool PrevLine(); // Prev instruction
@@ -170,7 +167,6 @@ protected:
     void PlaceholderParam();
     void Zoom();
     void If();
-    void While();
     void LogicalNot();
     void LogicalEqual();
     void LogicalNotEqual();
@@ -194,7 +190,6 @@ protected:
     void TextureHeight();
     void Multiply();
     void Substract();
-    void Return();
     void StringToVariable();
     void ReadFile();
 
@@ -209,9 +204,9 @@ protected:
     void NSBWaitText(Text* pText, const string& unk);
     void NSBSetVolume(Playable* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo);
     void NSBSetLoopPoint(Playable* pMusic, int32_t Begin, int32_t End);
-    void NSBSetFontAttributes(const string& Font, int32_t Size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
+    //void NSBSetFontAttributes(const string& Font, int32_t Size, const string& Color1, const string& Color2, int32_t unk0, const string& unk1);
     void NSBCreateSound(const string& Type, const string& File);
-    void NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
+    //void NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
     void NSBCreateWindow(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void NSBGetMovieTime();
     void NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
@@ -239,9 +234,9 @@ protected:
     void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
     void GLLoadImage(const string& File);
 
+    template <class T> T Pop();
     template <class T> void LogicalOperator(std::function<bool(T, T)> Func);
     void BinaryOperator(std::function<int32_t(int32_t, int32_t)> Func); // +,-,*,/
-    template <class T> T GetParam(int32_t Index); // If parameter is identifier, it is transformed to value
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
     void SetVariable(const string& Identifier, const Variable& Var); // Sets value of global variable
@@ -260,13 +255,13 @@ protected:
     std::vector<ScriptFile*> LoadedScripts; // Scripts considered in symbol lookup
     std::map<string, Variable> Variables; // All local and global variables (TODO: respect scope?)
     std::map<string, ArrayVariable> Arrays; // Same as above, except these are trees
-    std::vector<Variable> Params; // Builtin function parameters
+    std::stack<Variable*> Stack; // Variable stack (builtin function parameters)
     std::vector<ArrayVariable*> ArrayParams; // Tree node parameters
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
     std::list<NsbContext*> Threads;
 };
 
-template <> bool NsbInterpreter::GetParam(int32_t Index);
+template <> bool NsbInterpreter::Pop();
 
 sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
 sf::Texture* LoadTextureFromColor(string Color, int32_t Width, int32_t Height);

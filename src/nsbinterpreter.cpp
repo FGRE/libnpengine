@@ -113,9 +113,8 @@ pGame(nullptr)
     Builtins[MAGIC_LOGICAL_GREATER] = &NsbInterpreter::LogicalGreater;
     Builtins[MAGIC_LOGICAL_LESS] = &NsbInterpreter::LogicalLess;
     Builtins[MAGIC_ARRAY_SIZE] = &NsbInterpreter::ArraySize;
-    Builtins[MAGIC_CENTER] = &NsbInterpreter::Center;
+    Builtins[MAGIC_SET_VERTEX] = &NsbInterpreter::SetVertex;
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
-    //Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
     Builtins[MAGIC_NEGATIVE] = &NsbInterpreter::Negative;
     Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::NSBCreateArray;
     Builtins[MAGIC_SET] = &NsbInterpreter::Set;
@@ -129,9 +128,7 @@ pGame(nullptr)
     Builtins[MAGIC_WAIT_TEXT] = &NsbInterpreter::WaitText;
     Builtins[MAGIC_SET_VOLUME] = &NsbInterpreter::SetVolume;
     Builtins[MAGIC_SET_LOOP_POINT] = &NsbInterpreter::SetLoopPoint;
-    Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
     Builtins[MAGIC_CREATE_SOUND] = &NsbInterpreter::CreateSound;
-    Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
     Builtins[MAGIC_CREATE_WINDOW] = &NsbInterpreter::CreateWindow;
     Builtins[MAGIC_APPLY_BLUR] = &NsbInterpreter::ApplyBlur;
     Builtins[MAGIC_GET_MOVIE_TIME] = &NsbInterpreter::GetMovieTime;
@@ -151,7 +148,7 @@ pGame(nullptr)
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_CALL_CHAPTER] = &NsbInterpreter::CallChapter;
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
-    Builtins[MAGIC_WHILE] = &NsbInterpreter::While;
+    Builtins[MAGIC_WHILE] = &NsbInterpreter::If;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
     Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
     Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NsbInterpreter::LogicalNotEqual;
@@ -167,17 +164,20 @@ pGame(nullptr)
     Builtins[MAGIC_WRITE_FILE] = &NsbInterpreter::WriteFile;
     Builtins[MAGIC_DIVIDE] = &NsbInterpreter::Divide;
     Builtins[MAGIC_MULTIPLY] = &NsbInterpreter::Multiply;
-    Builtins[MAGIC_RETURN] = &NsbInterpreter::Return;
+    Builtins[MAGIC_RETURN] = &NsbInterpreter::End;
     Builtins[MAGIC_STRING_TO_VARIABLE] = &NsbInterpreter::StringToVariable;
     Builtins[MAGIC_LOAD_IMAGE] = &NsbInterpreter::LoadImage;
     Builtins[MAGIC_READ_FILE] = &NsbInterpreter::ReadFile;
     //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
+    //Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
+    //Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
+    //Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
 
     // Stubs
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
 
     // Hack
-    SetVariable("#SYSTEM_cosplay_patch", Variable{"STRING", "false"});
+    SetVariable("#SYSTEM_cosplay_patch", Variable("false"));
 
     // Main script thread
     pMainContext = new NsbContext;
@@ -306,87 +306,15 @@ void NsbInterpreter::Start()
     RunInterpreter = true;
 }
 
-void NsbInterpreter::Time()
-{
-    Params.push_back(Variable("INT", boost::lexical_cast<string>(time(0))));
-}
-
-void NsbInterpreter::Shake()
-{
-}
-
-void NsbInterpreter::CreateScrollbar()
-{
-}
-
-void NsbInterpreter::LoadImage()
-{
-    HandleName = GetParam<string>(0);
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadImage, this, GetParam<string>(1)));
-}
-
-void NsbInterpreter::TextureWidth()
-{
-    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        Params.push_back({"INT", boost::lexical_cast<string>(pDrawable->ToSprite()->getTexture()->getSize().x)});
-}
-
-void NsbInterpreter::TextureHeight()
-{
-    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        Params.push_back({"INT", boost::lexical_cast<string>(pDrawable->ToSprite()->getTexture()->getSize().y)});
-}
-
-void NsbInterpreter::LoadTextureClip()
-{
-    HandleName = GetParam<string>(0);
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTextureClip, this,
-                      GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
-                      GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<int32_t>(6),
-                      GetParam<int32_t>(7), GetParam<string>(8)));
-}
-
-void NsbInterpreter::CreateProcess()
-{
-    HandleName = GetParam<string>(0);
-    NSBCreateProcess(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3), GetParam<string>(4));
-}
-
-void NsbInterpreter::WriteFile()
-{
-    NSBWriteFile(GetParam<string>(0), GetParam<string>(1));
-}
-
-void NsbInterpreter::ReadFile()
-{
-    NSBReadFile(GetParam<string>(0));
-}
-
-void NsbInterpreter::Increment()
-{
-    uint32_t Index = Params.size() - 1;
-    if (NsbAssert(Params[Index].Type == "INT", "Incrementing non-integer type"))
-        return;
-
-    // HACK: Since this->Params contains a copy of real variable, incrementing it has no effect
-    //       These copies do not contain identifiers or references to original variable, we must go
-    //       back one line to find identifier.
-    // TODO: Sometimes, ArrayRead can be found before Increment (instead of Get)
-    //       In that case, this code is incorrect
-    pContext->PrevLine();
-    SetVariable(pContext->pLine->Params[0], { "INT", boost::lexical_cast<string>(boost::lexical_cast<int32_t>(Params[Index].Value) + 1) });
-    pContext->NextLine();
-}
-
 void NsbInterpreter::StringToVariable()
 {
     // TODO: Type may be INT!
 
     // Set
-    if (Params.size() == 3)
+    if (pContext->pLine->Params.size() == 3)
         SetVariable(Params[0].Value + Params[1].Value, { "STRING", GetParam<string>(2) });
     // Get
-    else if (Params.size() == 2)
+    else if (pContext->pLine->Params.size() == 2)
     {
         Params[0] = { "STRING", GetVariable<string>(Params[0].Value + Params[1].Value) };
         Params.resize(1);
@@ -395,42 +323,14 @@ void NsbInterpreter::StringToVariable()
         assert(false && "This will trigger when we get new season of Haruhi");
 }
 
-void NsbInterpreter::LogicalAnd()
-{
-    // TODO
-}
-
-void NsbInterpreter::LogicalOr()
-{
-    // TODO
-}
-
-void NsbInterpreter::LogicalGreaterEqual()
-{
-    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a >= b; });
-}
-
-void NsbInterpreter::LogicalGreater()
-{
-    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a > b; });
-}
-
-void NsbInterpreter::LogicalLess()
-{
-    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a < b; });
-}
-
-void NsbInterpreter::LogicalLessEqual()
-{
-    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a <= b; });
-}
-
 template <class T>
 void NsbInterpreter::LogicalOperator(std::function<bool(T, T)> Func)
 {
-    uint32_t First = Params.size() - 2, Second = Params.size() - 1;
-    pContext->BranchCondition = Func(GetVariable<T>(Params[First].Value),
-                                         GetVariable<T>(Params[Second].Value));
+    T First = Pop<T>();
+    T Second = Pop<T>();
+    bool Val = Func(First, Second);
+    if (Val) Stack.push(new Variable("true"));
+    else Stack.push(new Variable("false"));
 }
 
 void NsbInterpreter::ArraySize()
@@ -438,34 +338,12 @@ void NsbInterpreter::ArraySize()
     Params.back() = Variable("INT", boost::lexical_cast<string>(Arrays[pContext->pLine->Params[0]].Members.size()));
 }
 
-void NsbInterpreter::If()
-{
-    // TODO: Check if Params evaluate to true
-    //      (Set BranchCondition before check)
-    // Hack: Propertly implementing If breaks a lot of stuff
-    //       because of other bugs, however this check is essential
-    // See:  #SYSTEM_cosplay_patch in constructor
-    if (Params.size() == 1 && Params[0].Value == "false")
-        pContext->BranchCondition = false;
-
-    // Jump to end of block only if condition is not met
-    if (!pContext->BranchCondition)
-        Jump();
-}
-
-void NsbInterpreter::While()
-{
-    // If condition is not met, jump to end of block
-    if (!pContext->BranchCondition)
-        Jump();
-}
-
 void NsbInterpreter::Jump()
 {
     pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(pContext->pLine->Params[0]));
 }
 
-void NsbInterpreter::Center()
+void NsbInterpreter::SetVertex()
 {
     if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
         pDrawable->SetCenter(GetParam<int32_t>(1), GetParam<int32_t>(2));
@@ -497,39 +375,16 @@ void NsbInterpreter::CallScriptSymbol(const string& Prefix)
     CallScript(ScriptName, Prefix + Symbol);
 }
 
-void NsbInterpreter::LogicalNotEqual()
-{
-    LogicalEqual();
-    pContext->BranchCondition = !pContext->BranchCondition;
-}
-
-void NsbInterpreter::LogicalEqual()
-{
-    uint32_t First = Params.size() - 2, Second = Params.size() - 1;
-    if (Params[First].Type == "STRING" || Params[Second].Type == "STRING")
-        LogicalOperator<string>([](const string& a, const string& b) { return a == b; });
-    else
-        LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a == b; });
-}
-
-void NsbInterpreter::LogicalNot()
-{
-    if (NsbAssert(!Params.empty(), "No parameter passed to LogicalNot"))
-        return;
-
-    if (Params.back().Value == "true")
-        pContext->BranchCondition = false;
-    else if (Params.back().Value == "false")
-        pContext->BranchCondition = true;
-    else
-        std::cout << "LogicalNot(): Applying to " << Params.back().Value << std::endl;
-}
-
 void NsbInterpreter::Zoom()
 {
-    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        pGame->GLCallback(std::bind(&NsbInterpreter::GLZoom, this, pDrawable, GetParam<int32_t>(1),
-                          GetParam<float>(2), GetParam<float>(3), GetParam<string>(4), GetParam<bool>(5)));
+    bool Wait = Pop<bool>();
+    string Tempo = Pop<string>();
+    int32_t Y = Pop<int32_t>();
+    int32_t X = Pop<int32_t>();
+    int32_t Time = Pop<int32_t>();
+    string HandleName = Pop<string>();
+    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLZoom, this, pDrawable, Time, X, Y, Tempo, Wait));
 }
 
 // BlockBegin, called after Function/Chapter/Scene begin or If
@@ -558,7 +413,10 @@ void NsbInterpreter::UNK77()
 // WinAPI ShellExecute: Only OPEN:https://www.somewhere.derp is actually used
 void NsbInterpreter::System()
 {
-    NSBSystem(GetParam<string>(0), GetParam<string>(1), GetParam<string>(2));
+    string Directory = Pop<string>();
+    string Parameters = Pop<string>();
+    string Command = Pop<string>();
+    NSBSystem(Command, Parameters, Directory);
 }
 
 void NsbInterpreter::PlaceholderParam()
@@ -604,51 +462,6 @@ void NsbInterpreter::ArrayRead()
     NSBArrayRead(GetParam<int32_t>(1));
 }
 
-void NsbInterpreter::RegisterCallback()
-{
-    string Script = pContext->pLine->Params[1];
-    Script.back() = 'b'; // .nss -> .nsb
-    pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pContext->pLine->Params[0][0] - 'A'), Script);
-}
-
-void NsbInterpreter::Request()
-{
-    HandleName = GetParam<string>(0);
-    NSBRequest(GetParam<string>(1));
-}
-
-void NsbInterpreter::ParseText()
-{
-    HandleName = GetParam<string>(0);
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLParseText, this,
-                      GetParam<string>(1), GetParam<string>(2)));
-}
-
-void NsbInterpreter::SetLoop()
-{
-    HandleName = GetParam<string>(0);
-    if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
-        NSBSetLoop(pMusic, GetParam<bool>(1));
-}
-
-void NsbInterpreter::Wait()
-{
-    Sleep(GetVariable<int32_t>(Params[0].Value));
-}
-
-void NsbInterpreter::Move()
-{
-    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        pGame->GLCallback(std::bind(&NsbInterpreter::GLMove, this, pDrawable, GetParam<int32_t>(1),
-                          GetParam<int32_t>(2), GetParam<int32_t>(3), GetParam<string>(4), GetParam<bool>(5)));
-}
-
-void NsbInterpreter::WaitText()
-{
-    if (Text* pText = (Text*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        NSBWaitText(pText, GetParam<string>(1));
-}
-
 void NsbInterpreter::SetVolume()
 {
     HandleName = GetParam<string>(0);
@@ -669,57 +482,32 @@ void NsbInterpreter::SetLoopPoint()
         NSBSetLoopPoint(pMusic, GetParam<int32_t>(1), GetParam<int32_t>(2));
 }
 
-void NsbInterpreter::SetFontAttributes()
-{
-    NSBSetFontAttributes(GetParam<string>(0), GetParam<int32_t>(1), GetParam<string>(2),
-                         GetParam<string>(3), GetParam<int32_t>(4), GetParam<string>(5));
-}
-
 void NsbInterpreter::CreateSound()
 {
+    string File = Pop<string>(0);
+    string Type = Pop<string>(0);
     HandleName = GetParam<string>(0);
-    NSBCreateSound(GetParam<string>(1), GetParam<string>(2) + ".ogg");
-}
-
-void NsbInterpreter::SetTextboxAttributes()
-{
-    HandleName = GetParam<string>(0);
-    NSBSetTextboxAttributes(GetParam<int32_t>(1), GetParam<string>(2), GetParam<int32_t>(3),
-                            GetParam<string>(4), GetParam<string>(5), GetParam<int32_t>(6), GetParam<string>(7));
+    NSBCreateSound(Type, File + ".ogg");
 }
 
 void NsbInterpreter::CreateWindow()
 {
-    HandleName = GetParam<string>(0);
-    NSBCreateWindow(GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<int32_t>(3),
-                    GetParam<int32_t>(4), GetParam<int32_t>(5), GetParam<bool>(6));
+    bool unk1 = Pop<bool>();
+    int32_t Height = Pop<int32_t>();
+    int32_t Width = Pop<int32_t>();
+    int32_t Y = Pop<int32_t>();
+    int32_t X = Pop<int32_t>();
+    int32_t unk0 = Pop<int32_t>();
+    HandleName = Pop<string>();
+    NSBCreateWindow(unk0, X, Y, Width, Height, unk1);
 }
 
 void NsbInterpreter::ApplyBlur()
 {
-    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(GetParam<string>(0)))
-        pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyBlur, this, pDrawable, GetParam<string>(1)));
-    else
-    {
-        std::cout << "Applying blur to NULL drawable!" << std::endl;
-        WriteTrace(std::cout);
-    }
-}
-
-void NsbInterpreter::GetMovieTime()
-{
-    HandleName = GetParam<string>(0);
-    NSBGetMovieTime();
-}
-
-void NsbInterpreter::SetParam()
-{
-    Params.push_back({pContext->pLine->Params[0], pContext->pLine->Params[1]});
-}
-
-void NsbInterpreter::Get()
-{
-    Params.push_back(Variables[pContext->pLine->Params[0]]);
+    string Heaviness = Pop<string>();
+    string HandleName = Pop<string>();
+    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyBlur, this, pDrawable, Heaviness);
 }
 
 void NsbInterpreter::DrawToTexture()
@@ -830,7 +618,7 @@ void NsbInterpreter::CreateTexture()
 
 void NsbInterpreter::Delete()
 {
-    HandleName = GetParam<string>(0);
+    HandleName = Pop<string>();
     NSBDelete();
 }
 
@@ -885,11 +673,6 @@ void NsbInterpreter::Format()
     // Remove arguments used by Format
     Params.resize(Params.size() - (pContext->pLine->Params.size() - 1));
     Params.back().Value = Fmt.str();
-}
-
-void NsbInterpreter::Return()
-{
-    End();
 }
 
 void NsbInterpreter::Substract()
@@ -981,25 +764,24 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
     }
 }
 
-template <class T> T NsbInterpreter::GetParam(int32_t Index)
+template <class T> T NsbInterpreter::Pop()
 {
-    // "WTF" is workaround for Nitroplus bug
-    // See: NsbInterpreter::Negative
-    // TODO: Should probably take all from parameter list but currently it may regress
-    if (Params.size() > Index && Params[Index].Type == "WTF")
-        return GetVariable<T>(Params[Index].Value);
-    return GetVariable<T>(pContext->pLine->Params[Index]);
+    Variable* pVar = Stack.top();
+    T Ret;
+    if (T* pT = boost::get<T>(pVar->Value))
+        Ret = *pT;
+    if (!pVar->IsPtr)
+        delete pVar;
+    Stack.pop();
+    return Ret;
 }
 
-template <> bool NsbInterpreter::GetParam(int32_t Index)
+template <> bool NsbInterpreter::Pop()
 {
-    std::string String = GetParam<string>(Index);
-    if (String == "true")
-        return true;
-    else if (String == "false")
-        return false;
-    NsbAssert(false, "Boolification of string failed");
-    return false; // Silence gcc
+    string Val = Pop<string>();
+    if (Val == "true") return true;
+    if (Val == "false") return false;
+    assert(false && "Boolean must be either true or false!");
 }
 
 void NsbInterpreter::Sleep(int32_t ms)
