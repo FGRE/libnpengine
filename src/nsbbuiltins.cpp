@@ -550,15 +550,3 @@ void NsbInterpreter::NSBReadFile(const string& Filename)
     File.close();
     Params.push_back(Variable("STRING", Data));
 }
-
-void NsbInterpreter::NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1,
-                                             const string& Color1, const string& Color2,
-                                             int32_t unk2, const string& unk3)
-{
-}
-
-void NsbInterpreter::NSBSetFontAttributes(const string& Font, int32_t Size,
-                                          const string& Color1, const string& Color2,
-                                          int32_t unk0, const string& unk1)
-{
-}
