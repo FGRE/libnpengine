@@ -78,8 +78,6 @@ struct FuncReturn
 // Interpreter thread context
 struct NsbContext
 {
-    NsbContext();
-
     string Identifier; // Thread name
     bool Active; // If true, code in this context is exected
     Line* pLine; // Line of code which is currently being executed
@@ -139,7 +137,7 @@ protected:
     void End();
     void CreateTexture();
     void Delete();
-    void Call();
+    void CallFunction();
     void Add();
     void Format();
     void CreateMovie();
@@ -175,7 +173,7 @@ protected:
     void LogicalGreaterEqual();
     void LogicalLessEqual();
     void CallChapter();
-    void Center();
+    void SetVertex();
     void System();
     void CreateScrollbar();
     void CallScene();
@@ -234,12 +232,13 @@ protected:
     void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
     void GLLoadImage(const string& File);
 
+    template <class T> void Push(T Val);
     template <class T> T Pop();
     template <class T> void LogicalOperator(std::function<bool(T, T)> Func);
     void BinaryOperator(std::function<int32_t(int32_t, int32_t)> Func); // +,-,*,/
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
-    void SetVariable(const string& Identifier, const Variable& Var); // Sets value of global variable
+    void SetVariable(const string& Identifier, Variable* pVar); // Sets value of global variable
     void CallScriptSymbol(const string& Prefix);
 
     void WriteTrace(std::ostream& Stream);
@@ -253,8 +252,8 @@ protected:
 
     string HandleName; // Identifier of current Drawable/Playable used by NSB and GL functions
     std::vector<ScriptFile*> LoadedScripts; // Scripts considered in symbol lookup
-    std::map<string, Variable> Variables; // All local and global variables (TODO: respect scope?)
-    std::map<string, ArrayVariable> Arrays; // Same as above, except these are trees
+    std::map<string, Variable*> Variables; // All local and global variables (TODO: respect scope?)
+    std::map<string, ArrayVariable*> Arrays; // Same as above, except these are trees
     std::stack<Variable*> Stack; // Variable stack (builtin function parameters)
     std::vector<ArrayVariable*> ArrayParams; // Tree node parameters
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
@@ -262,6 +261,7 @@ protected:
 };
 
 template <> bool NsbInterpreter::Pop();
+template <> void NsbInterpreter::Push(bool Val);
 
 sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
 sf::Texture* LoadTextureFromColor(string Color, int32_t Width, int32_t Height);
