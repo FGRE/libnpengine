@@ -16,26 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "game.hpp"
-#include "drawable.hpp"
 #include "resourcemgr.hpp"
 #include "nsbmagic.hpp"
 #include "text.hpp"
-#include "playable.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <boost/chrono.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/format.hpp>
 #include <boost/thread/thread.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-
-static const std::string SpecialPos[SPECIAL_POS_NUM] =
-{
-    "Center", "InBottom", "Middle",
-    "OnLeft", "OutTop", "InTop",
-    "OutRight"
-};
 
 bool NsbContext::CallSubroutine(ScriptFile* pDestScript, string Symbol)
 {
@@ -220,6 +209,7 @@ void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
     Run();
 }
 
+// TODO: What the fuck is going on here?
 void NsbInterpreter::Run()
 {
     Threads.push_back(pMainContext);
@@ -346,9 +336,6 @@ template <class T> void NsbInterpreter::WildcardCall(std::string Handle, std::fu
 
 template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 {
-    if (Identifier == "@")
-        return T();
-
     if (Identifier[0] == '@')
         return boost::lexical_cast<T>(string(Identifier.c_str() + 1));
 
@@ -359,11 +346,11 @@ template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
         if (iter == Variables.end())
             return boost::lexical_cast<T>(Identifier);
         // Special variable. I don't know why this works...
-        else if (iter->second.Value[0] == '@')
-            return boost::lexical_cast<T>(string(iter->second.Value.c_str() + 1));
+        //else if (iter->second.Value[0] == '@')
+            //return boost::lexical_cast<T>(string(iter->second.Value.c_str() + 1));
         // Regular variable, TODO: Only dereference if $?
         else
-            return boost::lexical_cast<T>(iter->second.Value);
+            return boost::get<T>(iter->second->Value);
     }
     catch (...)
     {
