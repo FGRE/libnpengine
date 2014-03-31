@@ -239,7 +239,7 @@ void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, i
 void NsbInterpreter::GLParseText(const string& Box, const string& XML)
 {
     string NewHandle = Box + "/" + HandleName;
-    SetVariable("$SYSTEM_present_text", { "STRING", NewHandle });
+    SetVariable("$SYSTEM_present_text", new Variable(NewHandle));
     if (DrawableBase* pText = CacheHolder<DrawableBase>::Read(NewHandle))
         delete pText;
     Text* pText = new Text(XML);

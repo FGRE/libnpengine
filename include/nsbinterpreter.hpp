@@ -55,6 +55,7 @@ typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
 // Represents Nitroscript variable
 struct Variable
 {
+    Variable() : IsPtr(false) {}
     Variable(int32_t Int, bool IsPtr = false) : Value(Int), IsPtr(IsPtr) {}
     Variable(const string& String, bool IsPtr = false) : Value(String), IsPtr(IsPtr) {}
     bool IsPtr;
@@ -255,7 +256,6 @@ protected:
     std::map<string, Variable*> Variables; // All local and global variables (TODO: respect scope?)
     std::map<string, ArrayVariable*> Arrays; // Same as above, except these are trees
     std::stack<Variable*> Stack; // Variable stack (builtin function parameters)
-    std::vector<ArrayVariable*> ArrayParams; // Tree node parameters
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
     std::list<NsbContext*> Threads;
 };

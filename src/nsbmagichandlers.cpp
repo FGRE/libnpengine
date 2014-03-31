@@ -16,6 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "nsbinterpreter.hpp"
+#include "resourcemgr.hpp"
+#include "game.hpp"
+#include "drawable.hpp"
+#include "playable.hpp"
+#include "text.hpp"
+
+#include <SFML/Graphics/Sprite.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/format.hpp>
+
+static const std::string SpecialPos[SPECIAL_POS_NUM] =
+{
+    "Center", "InBottom", "Middle",
+    "OnLeft", "OutTop", "InTop",
+    "OutRight"
+};
 
 void NsbInterpreter::Time()
 {
@@ -60,7 +76,7 @@ void NsbInterpreter::LoadTextureClip()
     int32_t Y = Pop<int32_t>();
     int32_t Priority = Pop<int32_t>();
     HandleName = Pop<string>();
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTextureClip, this, X, Y, Tx, Ty, Width, Height, File));
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTextureClip, this, Priority, X, Y, Tx, Ty, Width, Height, File));
 }
 
 void NsbInterpreter::CreateProcess()
@@ -89,7 +105,7 @@ void NsbInterpreter::ReadFile()
 void NsbInterpreter::Increment()
 {
     Variable* pVar = Stack.top();
-    if (int32_t* pInt = boost::get<int32_t>(pVar->Value))
+    if (int32_t* pInt = boost::get<int32_t>(&pVar->Value))
         *pInt += 1;
 }
 
@@ -150,7 +166,7 @@ void NsbInterpreter::LogicalNotEqual()
 void NsbInterpreter::LogicalEqual()
 {
     Variable* pVar = Stack.top();
-    if (boost::get<string>(pVar->Value))
+    if (boost::get<string>(&pVar->Value))
         LogicalOperator<string>([](const string& a, const string& b) { return a == b; });
     else
         LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a == b; });
@@ -208,7 +224,7 @@ void NsbInterpreter::ParseText()
     string XML = Pop<string>();
     string Box = Pop<string>();
     HandleName = Pop<string>();
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLParseText, this, Box, XML);
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLParseText, this, Box, XML));
 }
 
 void NsbInterpreter::SetLoop()
@@ -253,15 +269,15 @@ void NsbInterpreter::GetMovieTime()
 
 void NsbInterpreter::SetParam()
 {
-    if (strcmp(pContext->pLine->Params[0], "STRING") == 0)
+    if (pContext->pLine->Params[0] == "STRING")
         Stack.push(new Variable(pContext->pLine->Params[1]));
-    else if (strcmp(pContext->pLine->Params[0], "INT") == 0)
+    else if (pContext->pLine->Params[0] == "INT")
         Stack.push(new Variable(boost::lexical_cast<int32_t>(pContext->pLine->Params[1])));
 }
 
 void NsbInterpreter::Get()
 {
-    Stack.push(Variables[pContext->pLine->Params[0]], true);
+    Stack.push(Variables[pContext->pLine->Params[0]]);
 }
 
 void NsbInterpreter::Zoom()
@@ -294,7 +310,7 @@ void NsbInterpreter::System()
 void NsbInterpreter::Negative()
 {
     int32_t Val = Pop<int32_t>();
-    Stack.push(Variable(-Val));
+    Stack.push(new Variable(-Val));
     // Negative integers are incorrectly compiled by Nitroplus
     PlaceholderParam();
 }
@@ -350,7 +366,7 @@ void NsbInterpreter::ApplyBlur()
     string Heaviness = Pop<string>();
     string HandleName = Pop<string>();
     if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
-        pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyBlur, this, pDrawable, Heaviness);
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyBlur, this, pDrawable, Heaviness));
 }
 
 // BlockBegin, called after Function/Chapter/Scene begin or If
@@ -371,9 +387,8 @@ void NsbInterpreter::UNK77()
 
 void NsbInterpreter::PlaceholderParam()
 {
-    // Parameters with this flag are @ in MAGIC_CALL argument list
+    // Parameters with this flag are @ in MAGIC_FUNCTION_CALL argument list
     // This works around the issue: See: NsbInterpreter::GetParam<T>
-    Params.back().Type = "WTF";
 }
 
 void NsbInterpreter::Set()
@@ -401,23 +416,28 @@ void NsbInterpreter::Set()
 
 void NsbInterpreter::ArrayRead()
 {
+    int32_t Index = pContext->pLine->Params[1]; // TODO: Sometimes a variable, not a literal
     HandleName = pContext->pLine->Params[0];
-    NSBArrayRead(GetParam<int32_t>(1));
+    NSBArrayRead(Index);
 }
 
 void NsbInterpreter::DrawToTexture()
 {
-    HandleName = GetParam<string>(0);
+    string File = Pop<string>();
+    int32_t Y = Pop<int32_t>();
+    int32_t X = Pop<int32_t>();
+    HandleName = Pop<string>();
     if (sf::RenderTexture* pTexture = CacheHolder<sf::RenderTexture>::Read(HandleName))
-        pGame->GLCallback(std::bind(&NsbInterpreter::GLDrawToTexture, this, pTexture,
-                         GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3)));
+        pGame->GLCallback(std::bind(&NsbInterpreter::GLDrawToTexture, this, pTexture, X, Y, File));
 }
 
 void NsbInterpreter::CreateRenderTexture()
 {
+    string Color = Pop<string>();
+    int32_t Height = Pop<int32_t>();
+    int32_t Width = Pop<int32_t>();
     HandleName = GetParam<string>(0);
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateRenderTexture, this,
-                      GetParam<int32_t>(1), GetParam<int32_t>(2), GetParam<string>(3)));
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateRenderTexture, this, Width, Height, Color));
 }
 
 void NsbInterpreter::ClearParams()
@@ -476,18 +496,20 @@ void NsbInterpreter::CreateColor()
 
 void NsbInterpreter::Fade()
 {
+    bool Wait = Pop<bool>();
+    string Tempo = Pop<string>();
+    int32_t Opacity = Pop<int32_t>();
+    int32_t Time = Pop<int32_t>();
     HandleName = Pop<string>();
     if (HandleName.back() == '*')
     {
-        WildcardCall<DrawableBase>(HandleName, [this] (DrawableBase* pDrawable)
+        WildcardCall<DrawableBase>(HandleName, [this, Time, Opacity, Tempo, Wait] (DrawableBase* pDrawable)
         {
-            NSBFade(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                    GetParam<string>(3), GetParam<bool>(4));
+            NSBFade(pDrawable, Time, Opacity, Tempo, Wait);
         });
     }
     else if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
-        NSBFade(pDrawable, GetParam<int32_t>(1), GetParam<int32_t>(2),
-                GetParam<string>(3), GetParam<bool>(4));
+        NSBFade(pDrawable, Time, Opacity, Tempo, Wait);
 }
 
 void NsbInterpreter::End()
@@ -497,6 +519,11 @@ void NsbInterpreter::End()
 
 void NsbInterpreter::CreateTexture()
 {
+    string File = Pop<string>();
+    int32_t Y = Pop<int32_t>();
+    int32_t X = Pop<int32_t>();
+    int32_t Priority = Pop<int32_t>();
+
     // Represent special position as negative index to function
     // in SpecialPosTable. See: NsbInterpreter::GLLoadTexture
     int32_t Pos[2];
@@ -513,8 +540,7 @@ void NsbInterpreter::CreateTexture()
     }
 
     HandleName = Pop<string>();
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this,
-                      GetParam<int32_t>(1), Pos[0], Pos[1], GetParam<string>(4)));
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this, Priority, Pos[0], Pos[1], File));
 }
 
 void NsbInterpreter::Delete()
@@ -536,8 +562,7 @@ void NsbInterpreter::CallFunction()
         NSBGetMovieTime();
         if (!std::ifstream("NOMOVIE"))
             Wait();
-        pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame,
-                          CacheHolder<DrawableBase>::Read("ムービー")));
+        pGame->GLCallback(std::bind(&Game::RemoveDrawable, pGame, CacheHolder<DrawableBase>::Read("ムービー")));
         return;
     }
     else if (std::strcmp(FuncName, "DeleteAllSt") == 0)
@@ -607,16 +632,23 @@ void NsbInterpreter::SetVertex()
 
 void NsbInterpreter::StringToVariable()
 {
-    // TODO: Type may be INT!
-
     // Set
     if (pContext->pLine->Params.size() == 3)
-        SetVariable(Params[0].Value + Params[1].Value, { "STRING", GetParam<string>(2) });
+    {
+        Variable* pVar = Stack.top();
+        Variable* pNew = new Variable;
+        pNew->Value = pVar->Value;
+        Pop<string>(); // Type doesn't matter, just cleanup propertly
+        string Identifier = Pop<string>();
+        string Type = Pop<string>();
+        SetVariable(Type + Identifier, pNew);
+    }
     // Get
     else if (pContext->pLine->Params.size() == 2)
     {
-        Params[0] = { "STRING", GetVariable<string>(Params[0].Value + Params[1].Value) };
-        Params.resize(1);
+        string Identifier = Pop<string>();
+        string Type = Pop<string>(); // "$" or "#"
+        Push(Variables[Type + Identifier]);
     }
     else
         assert(false && "This will trigger when we get new season of Haruhi");
