@@ -25,6 +25,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
+#include <fstream>
 
 static const std::string SpecialPos[SPECIAL_POS_NUM] =
 {
@@ -104,33 +105,29 @@ void NsbInterpreter::ReadFile()
 
 void NsbInterpreter::Increment()
 {
-    Variable* pVar = Stack.top();
-    if (int32_t* pInt = boost::get<int32_t>(&pVar->Value))
-        *pInt += 1;
+    int32_t* pInt = boost::get<int32_t>(&Stack.top()->Value);
+    assert(pInt); // Do not increment strings
+    *pInt += 1;
+    Pop<int32_t>();
 }
 
 void NsbInterpreter::Substract()
 {
-    BinaryOperator([](int32_t a, int32_t b) -> int32_t { return a - b; });
+    BinaryOperator<int32_t, int32_t>([](int32_t a, int32_t b) -> int32_t { return a - b; });
 }
 
 void NsbInterpreter::Add()
 {
-    uint32_t First = Params.size() - 2, Second = Params.size() - 1;
-    // STRING + STRING = STRING
-    // STRING + INT = STRING
-    if (Params[First].Type == "STRING")
-    {
-        Params[First].Value += Params[Second].Value;
-        Params.resize(Second);
-    }
+    // TODO: STRING + INT = STRING
+    if (string* pString = boost::get<string>(&Stack.top()->Value))
+        BinaryOperator<string, string>([](const string& a, const string& b) -> string { return a + b; });
     else
-        BinaryOperator([](int32_t a, int32_t b) -> int32_t { return a + b; });
+        BinaryOperator<int32_t, int32_t>([](int32_t a, int32_t b) -> int32_t { return a + b; });
 }
 
 void NsbInterpreter::Divide()
 {
-    BinaryOperator([](int32_t a, int32_t b) -> int32_t
+    BinaryOperator<int32_t, int32_t>([](int32_t a, int32_t b) -> int32_t
     {
         if (b == 0)
             return 0;
@@ -140,7 +137,7 @@ void NsbInterpreter::Divide()
 
 void NsbInterpreter::Multiply()
 {
-    BinaryOperator([](int32_t a, int32_t b) -> int32_t { return a + b; });
+    BinaryOperator<int32_t, int32_t>([](int32_t a, int32_t b) -> int32_t { return a + b; });
 }
 
 void NsbInterpreter::LogicalAnd()
@@ -167,9 +164,9 @@ void NsbInterpreter::LogicalEqual()
 {
     Variable* pVar = Stack.top();
     if (boost::get<string>(&pVar->Value))
-        LogicalOperator<string>([](const string& a, const string& b) { return a == b; });
+        BinaryOperator<string, bool>([](const string& a, const string& b) { return a == b; });
     else
-        LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a == b; });
+        BinaryOperator<int32_t, bool>([](int32_t a, int32_t b) { return a == b; });
 }
 
 void NsbInterpreter::LogicalNot()
@@ -181,22 +178,22 @@ void NsbInterpreter::LogicalNot()
 
 void NsbInterpreter::LogicalGreaterEqual()
 {
-    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a >= b; });
+    BinaryOperator<int32_t, bool>([](int32_t a, int32_t b) { return a >= b; });
 }
 
 void NsbInterpreter::LogicalGreater()
 {
-    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a > b; });
+    BinaryOperator<int32_t, bool>([](int32_t a, int32_t b) { return a > b; });
 }
 
 void NsbInterpreter::LogicalLess()
 {
-    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a < b; });
+    BinaryOperator<int32_t, bool>([](int32_t a, int32_t b) { return a < b; });
 }
 
 void NsbInterpreter::LogicalLessEqual()
 {
-    LogicalOperator<int32_t>([](int32_t a, int32_t b) { return a <= b; });
+    BinaryOperator<int32_t, bool>([](int32_t a, int32_t b) { return a <= b; });
 }
 
 void NsbInterpreter::If()
@@ -393,30 +390,32 @@ void NsbInterpreter::PlaceholderParam()
 
 void NsbInterpreter::Set()
 {
-    const string& Identifier = pContext->pLine->Params[0];
     if (pContext->pLine->Params.back() == "__array_variable__")
     {
-        if (ArrayParams.empty())
-            return;
+        Variable* pSecond = Stack.top(); Stack.pop();
+        Variable* pFirst = Stack.top(); Stack.pop();
+        pFirst->Value = pSecond->Value;
 
-        ArrayParams.back()->Type = Params.back().Type;
-        ArrayParams.back()->Value = Params.back().Value;
+        // Cannot change value of literal!
+        assert(pFirst->IsPtr);
+
+        // Manual cleanup :(
+        if (!pSecond->IsPtr)
+            delete pSecond;
     }
     else
     {
-        if (Params.empty())
-            return;
-
         // SetParam(STRING, value1)
         // SetParam(STRING, value2); <- Take last param
         // Set($var); <- Put it into first argument
-        SetVariable(Identifier, Params.back());
+        SetVariable(pContext->pLine->Params[0], Stack.top());
+        Stack.pop();
     }
 }
 
 void NsbInterpreter::ArrayRead()
 {
-    int32_t Index = pContext->pLine->Params[1]; // TODO: Sometimes a variable, not a literal
+    int32_t Index = GetVariable<int32_t>(pContext->pLine->Params[1]);
     HandleName = pContext->pLine->Params[0];
     NSBArrayRead(Index);
 }
@@ -436,14 +435,13 @@ void NsbInterpreter::CreateRenderTexture()
     string Color = Pop<string>();
     int32_t Height = Pop<int32_t>();
     int32_t Width = Pop<int32_t>();
-    HandleName = GetParam<string>(0);
+    HandleName = Pop<string>();
     pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateRenderTexture, this, Width, Height, Color));
 }
 
 void NsbInterpreter::ClearParams()
 {
-    Params.clear();
-    ArrayParams.clear();
+    assert(Stack.empty());
 }
 
 void NsbInterpreter::Begin()
@@ -451,8 +449,12 @@ void NsbInterpreter::Begin()
     // Turn params into global variables
     // TODO: Should scope be respected instead?
     // TODO: Can second parameter be a variable and not a literal?
-    for (uint32_t i = 1; i < pContext->pLine->Params.size(); ++i)
-        SetVariable(pContext->pLine->Params[i], Params[i - 1]);
+    for (int i = pContext->pLine->Params.size() - 1; i > 0; ++i)
+    {
+        Variable* pVar = Stack.top();
+        SetVariable(pContext->pLine->Params[i], pVar);
+        Stack.pop(); // TODO: Deallocate?
+    }
 }
 
 void NsbInterpreter::DrawTransition()
@@ -526,7 +528,7 @@ void NsbInterpreter::CreateTexture()
 
     // Represent special position as negative index to function
     // in SpecialPosTable. See: NsbInterpreter::GLLoadTexture
-    int32_t Pos[2];
+    /*int32_t Pos[2];
     for (int32_t i = 2; i <= 3; ++i)
     {
         if (Params[i].Type == "STRING")
@@ -537,10 +539,10 @@ void NsbInterpreter::CreateTexture()
         }
         else
             Pos[i - 2] = GetParam<int32_t>(i);
-    }
+    }*/
 
     HandleName = Pop<string>();
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this, Priority, Pos[0], Pos[1], File));
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this, Priority, X, Y, File));
 }
 
 void NsbInterpreter::Delete()
@@ -572,9 +574,8 @@ void NsbInterpreter::CallFunction()
         NSBDelete();
         return;
     }
-    else if (std::strcmp(FuncName, "St") == 0 ||
-             std::strcmp(FuncName, "PosSt") == 0)
-        Params[0].Value = "STBUF1";
+    else if (std::strcmp(FuncName, "St") == 0 || std::strcmp(FuncName, "PosSt") == 0)
+        Stack.top()->Value = "STBUF1";
 
     // Find function locally
     if (pContext->CallSubroutine(pContext->pScript, FuncNameFull))
@@ -600,20 +601,19 @@ void NsbInterpreter::CallChapter()
 
 void NsbInterpreter::Format()
 {
-    boost::format Fmt(Params[0].Value);
-
-    // Don't format more Params than specified by argument list (pLine->Params)
-    for (uint8_t i = Params.size() - (pContext->pLine->Params.size() - 1); i < Params.size(); ++i)
-        Fmt % Params[i].Value;
-
-    // Remove arguments used by Format
-    Params.resize(Params.size() - (pContext->pLine->Params.size() - 1));
-    Params.back().Value = Fmt.str();
+    std::stack<string> Params = ReverseStack(pContext->pLine->Params.size());
+    boost::format Fmt(Params.top());
+    Params.pop();
+    while (!Params.empty())
+    {
+        Fmt % Params.top();
+        Params.pop();
+    }
 }
 
 void NsbInterpreter::ArraySize()
 {
-    Push(Arrays[pContext->pLine->Params[0]].Members.size());
+    Push(Arrays[pContext->pLine->Params[0]]->Members.size());
 }
 
 void NsbInterpreter::Jump()
