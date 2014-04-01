@@ -113,6 +113,7 @@ DbgStepping(false)
 
     // Stubs
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
+    Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
 
     // Hack
     SetVariable("#SYSTEM_cosplay_patch", new Variable("false"));
@@ -169,6 +170,7 @@ void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 // TODO: What the fuck is going on here?
 void NsbInterpreter::Run()
 {
+    StartDebugger();
     Threads.push_back(pMainContext);
     do
     {
@@ -314,8 +316,17 @@ void NsbInterpreter::Sleep(int32_t ms)
 
 void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar)
 {
-    pVar->IsPtr = true;
-    Variables[Identifier] = pVar; // TODO: This leaks. Badly.
+    assert(!pVar->IsPtr);
+    auto iter = Variables.find(Identifier);
+    if (iter == Variables.end())
+    {
+        Variables[Identifier] = pVar;
+    }
+    else
+    {
+        delete iter->second;
+        iter->second = pVar;
+    }
 }
 
 void NsbInterpreter::LoadScript(const string& FileName)
