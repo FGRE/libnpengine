@@ -327,7 +327,7 @@ template <class T> void NsbInterpreter::Push(T Val)
 
 template <class T> T NsbInterpreter::Pop()
 {
-    assert(!Stack.empty());
+    NsbAssert(!Stack.empty(), "Poping from empty stack");
     Variable* pVar = Stack.top();
     T Ret;
     if (T* pT = boost::get<T>(&pVar->Value))

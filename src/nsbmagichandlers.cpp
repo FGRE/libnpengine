@@ -279,7 +279,15 @@ void NsbInterpreter::Get()
 {
     const string& Identifier = pContext->pLine->Params[0];
     auto iter = Variables.find(Identifier);
-    assert(iter != Variables.end());
+
+    // HACK: If variable doesn't exist, set it to itself
+    if (iter == Variables.end())
+    {
+        std::cout << "HACK: Setting " << Identifier << " to itself..." << std::endl;
+        SetVariable(Identifier, new Variable(Identifier));
+        iter = Variables.find(Identifier);
+    }
+
     Stack.push(iter->second);
 }
 
@@ -623,7 +631,7 @@ void NsbInterpreter::Format()
 
 void NsbInterpreter::ArraySize()
 {
-    Push(Arrays[pContext->pLine->Params[0]]->Members.size());
+    Push(Arrays[Pop<string>()]->Members.size());
 }
 
 void NsbInterpreter::Jump()

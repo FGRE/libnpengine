@@ -115,7 +115,7 @@ DbgStepping(false)
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
 
-    // Hack
+    // Hack (TODO: S;G?)
     SetVariable("#SYSTEM_cosplay_patch", new Variable("false"));
 
     // Main script thread
@@ -267,7 +267,7 @@ void NsbInterpreter::Start()
 
 void NsbInterpreter::CallScriptSymbol(const string& Prefix)
 {
-    string ScriptName = Pop<string>(), Symbol;
+    string ScriptName = pContext->pLine->Params[0], Symbol;
     size_t i = ScriptName.find("->");
     if (i != string::npos)
     {
@@ -318,15 +318,13 @@ void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar)
 {
     assert(!pVar->IsPtr);
     auto iter = Variables.find(Identifier);
-    if (iter == Variables.end())
+    if (iter != Variables.end())
     {
-        Variables[Identifier] = pVar;
+        iter->second->Value = pVar->Value;
+        delete pVar;
     }
     else
-    {
-        delete iter->second;
-        iter->second = pVar;
-    }
+        Variables[Identifier] = pVar;
 }
 
 void NsbInterpreter::LoadScript(const string& FileName)
