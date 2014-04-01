@@ -202,6 +202,7 @@ protected:
 
     // Stubs
     void UNK77();
+    void UNK101();
 
     // Builtin functions
     void NSBDelete();

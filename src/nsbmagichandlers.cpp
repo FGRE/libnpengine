@@ -32,6 +32,11 @@ static const std::string SpecialPos[SPECIAL_POS_NUM] =
     "OutRight"
 };
 
+void NsbInterpreter::UNK101()
+{
+    string unk = Pop<string>();
+}
+
 void NsbInterpreter::Time()
 {
     Stack.push(new Variable(time(0)));
@@ -202,9 +207,9 @@ void NsbInterpreter::If()
 
 void NsbInterpreter::RegisterCallback()
 {
-    string Script = pContext->pLine->Params[1];
-    Script.back() = 'b'; // .nss -> .nsb
-    pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(pContext->pLine->Params[0][0] - 'A'), Script);
+    string Script = Pop<string>();
+    string Key = Pop<string>();
+    pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(Key[0] - 'A'), Script);
 }
 
 void NsbInterpreter::Request()
@@ -406,10 +411,14 @@ void NsbInterpreter::Set()
     }
     else
     {
-        // SetParam(STRING, value1)
-        // SetParam(STRING, value2); <- Take last param
-        // Set($var); <- Put it into first argument
-        SetVariable(pContext->pLine->Params[0], Stack.top());
+        Variable* pVar = Stack.top();
+        if (pVar->IsPtr)
+        {
+            Variable* pNew = new Variable;
+            pNew->Value = pVar->Value;
+            pVar = pNew;
+        }
+        SetVariable(pContext->pLine->Params[0], pVar);
         Stack.pop();
     }
 }
@@ -442,7 +451,7 @@ void NsbInterpreter::CreateRenderTexture()
 
 void NsbInterpreter::ClearParams()
 {
-    assert(Stack.empty());
+    NsbAssert(Stack.empty(), "Not all parameters were used!");
 }
 
 void NsbInterpreter::Begin()

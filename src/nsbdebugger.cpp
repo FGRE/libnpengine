@@ -43,10 +43,15 @@ void NsbInterpreter::StartDebugger()
 
 void NsbInterpreter::DebuggerMain()
 {
+    string OldCommand;
     while (!StopInterpreter)
     {
         string Command;
-        std::cin >> Command;
+        std::getline(std::cin, Command);
+        if (Command.empty())
+            Command = OldCommand;
+        else OldCommand = Command;
+
         if (Command == "s")
             RunInterpreter = true;
         else if (Command == "c")
