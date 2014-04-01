@@ -291,8 +291,7 @@ void NsbInterpreter::Start()
     RunInterpreter = true;
 }
 
-template <class T>
-void NsbInterpreter::LogicalOperator(std::function<bool(T, T)> Func)
+template <class T, class U> void NsbInterpreter::BinaryOperator(std::function<U(T, T)> Func)
 {
     T First = Pop<T>();
     T Second = Pop<T>();
@@ -313,13 +312,6 @@ void NsbInterpreter::CallScriptSymbol(const string& Prefix)
     else
         ScriptName = pContext->pScript->GetName();
     CallScript(ScriptName, Prefix + Symbol);
-}
-
-void NsbInterpreter::BinaryOperator(std::function<int32_t(int32_t, int32_t)> Func)
-{
-    int32_t Val1 = Pop<int32_t>();
-    int32_t Val2 = Pop<int32_t>();
-    Push(Func(Val1, Val2));
 }
 
 template <class T> void NsbInterpreter::WildcardCall(std::string Handle, std::function<void(T*)> Func)
@@ -372,6 +364,7 @@ template <> void NsbInterpreter::Push(bool Val)
 
 template <class T> T NsbInterpreter::Pop()
 {
+    assert(!Stack.empty());
     Variable* pVar = Stack.top();
     T Ret;
     if (T* pT = boost::get<T>(&pVar->Value))
@@ -390,6 +383,20 @@ template <> bool NsbInterpreter::Pop()
     assert(false && "Boolean must be either true or false!");
 }
 
+std::stack<string> NsbInterpreter::ReverseStack(int32_t Size)
+{
+    std::stack<string> Params;
+    for (int i = 0; i < Size; ++i)
+    {
+        if (string* pString = boost::get<string>(&Stack.top()->Value))
+            Params.push(GetVariable<string>(*pString));
+        else if (int32_t* pInt = boost::get<int32_t>(&Stack.top()->Value))
+            Params.push(boost::lexical_cast<string>(*pInt));
+        Pop<string>(); // Type doesn't matter, just cleanup
+    }
+    return Params;
+}
+
 void NsbInterpreter::Sleep(int32_t ms)
 {
     boost::this_thread::sleep_for(boost::chrono::milliseconds(ms));
@@ -398,7 +405,7 @@ void NsbInterpreter::Sleep(int32_t ms)
 void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar)
 {
     pVar->IsPtr = true;
-    Variables[Identifier] = pVar;
+    Variables[Identifier] = pVar; // TODO: This leaks. Badly.
 }
 
 void NsbInterpreter::LoadScript(const string& FileName)

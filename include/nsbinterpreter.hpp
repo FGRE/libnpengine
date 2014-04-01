@@ -50,7 +50,7 @@ class ArrayVariable;
 class Text;
 class Playable;
 
-typedef std::vector<std::pair<string, ArrayVariable>> ArrayMembers;
+typedef std::list<std::pair<string, ArrayVariable*>> ArrayMembers;
 
 // Represents Nitroscript variable
 struct Variable
@@ -58,6 +58,7 @@ struct Variable
     Variable() : IsPtr(false) {}
     Variable(int32_t Int, bool IsPtr = false) : Value(Int), IsPtr(IsPtr) {}
     Variable(const string& String, bool IsPtr = false) : Value(String), IsPtr(IsPtr) {}
+    virtual ~Variable() {}
     bool IsPtr;
     boost::variant<int32_t, float, string> Value;
 };
@@ -235,12 +236,12 @@ protected:
 
     template <class T> void Push(T Val);
     template <class T> T Pop();
-    template <class T> void LogicalOperator(std::function<bool(T, T)> Func);
-    void BinaryOperator(std::function<int32_t(int32_t, int32_t)> Func); // +,-,*,/
+    template <class T, class U> void BinaryOperator(std::function<U(T, T)> Func);
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
     void SetVariable(const string& Identifier, Variable* pVar); // Sets value of global variable
     void CallScriptSymbol(const string& Prefix);
+    std::stack<string> ReverseStack(int32_t Size); // Return new stack containing Size topmost variables in reverse order
 
     void WriteTrace(std::ostream& Stream);
     bool NsbAssert(bool expr, string error);
@@ -254,7 +255,7 @@ protected:
     string HandleName; // Identifier of current Drawable/Playable used by NSB and GL functions
     std::vector<ScriptFile*> LoadedScripts; // Scripts considered in symbol lookup
     std::map<string, Variable*> Variables; // All local and global variables (TODO: respect scope?)
-    std::map<string, ArrayVariable*> Arrays; // Same as above, except these are trees
+    std::map<string, ArrayVariable*> Arrays; // Same as above, except these are trees (TODO: merge?)
     std::stack<Variable*> Stack; // Variable stack (builtin function parameters)
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
     std::list<NsbContext*> Threads;

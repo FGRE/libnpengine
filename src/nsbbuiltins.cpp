@@ -253,55 +253,6 @@ void NsbInterpreter::GLDelete(DrawableBase* pDrawable)
     delete pDrawable;
 }
 
-// Reads data from tree at specified depth
-void NsbInterpreter::NSBArrayRead(int32_t Depth)
-{
-    ArrayVariable* pVariable = &Arrays[HandleName];
-    int32_t Size = Params.size() - Depth;
-
-    // Not enough parameters provided
-    if (Size < 0)
-        return;
-
-    while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
-    {
-        ArrayMembers& Members = pVariable->Members;
-        Variable Index = Params[Params.size() - Depth - 1];
-
-        if (Index.Type == "STRING")
-        {
-            // Parameters contain identifiers of child nodes
-            // for each level specifying which path to take
-            for (uint32_t i = 0; i < Members.size(); ++i)
-            {
-                // Node is found
-                if (Members[i].first == Index.Value)
-                {
-                    pVariable = &Members[i].second;
-                    break; // Go to next level (if needed)
-                }
-                // TODO: Handle case when Identifier is not found
-            }
-        }
-        else if (Index.Type == "INT")
-        {
-            int32_t i = boost::lexical_cast<int32_t>(Index.Value);
-            if (i >= Members.size())
-                return;
-            pVariable = &Members[i].second;
-        }
-    }
-
-    // Remove ArrayRead arguments from parameter list
-    Params.resize(Size);
-
-    if (!pVariable)
-        return;
-
-    ArrayParams.push_back(pVariable);
-    Params.push_back(*pVariable);
-}
-
 void NsbInterpreter::NSBRequest(const string& State)
 {
     if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
@@ -340,7 +291,7 @@ void NsbInterpreter::NSBCreateWindow(int32_t unk0, int32_t x, int32_t y, int32_t
 void NsbInterpreter::NSBGetMovieTime()
 {
     if (Playable* pPlayable = CacheHolder<Playable>::Read(HandleName))
-        Params.push_back({"INT", boost::lexical_cast<string>(pPlayable->GetDuration())});
+        Push(pPlayable->GetDuration());
     else
         std::cout << "Failed to get movie time because there is no Playable " << HandleName << std::endl;
 }
@@ -459,9 +410,9 @@ void NsbInterpreter::NSBDelete()
     }
 }
 
+// ShellExecute
 void NsbInterpreter::NSBSystem(string Command, string Parameters, string Directory)
 {
-    // OPEN: is only known command
     static const string OpenStr = "OPEN:";
     if (Command.substr(0, OpenStr.size()) != OpenStr)
         return;
@@ -472,43 +423,95 @@ void NsbInterpreter::NSBSystem(string Command, string Parameters, string Directo
         execlp("/usr/bin/xdg-open", "/usr/bin/xdg-open", Command.c_str(), NULL);
 }
 
+// Reads data from tree at specified depth
+void NsbInterpreter::NSBArrayRead(int32_t Depth)
+{
+    auto iter = Arrays.find(HandleName);
+    assert(iter != Arrays.end()); // Non-existing arrays are bad
+    ArrayVariable* pVariable = iter->second;
+    std::stack<string> Params = ReverseStack(Depth);
+
+    while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
+    {
+        ArrayMembers& Members = pVariable->Members;
+        string Index = Params.top();
+        Params.pop();
+
+        // Parameters contain identifiers of child nodes
+        // for each level specifying which path to take
+        for (auto i = Members.begin(); i != Members.end(); ++i)
+        {
+            // Node is found
+            if (i->first == Index)
+            {
+                pVariable = i->second;
+                break; // Go to next level (if needed)
+            }
+            // TODO: Handle case when Identifier is not found
+        }
+    }
+
+    if (!pVariable)
+        return;
+
+    Stack.push(pVariable);
+}
+
 void NsbInterpreter::NSBCreateArray()
 {
-    // Create new tree
-    if (ArrayParams.empty())
+    ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack.top());
+
+    if (!pArr)
     {
         // Check if tree already exists
         auto iter = Arrays.find(pContext->pLine->Params[0]);
         if (NsbAssert(iter == Arrays.end(), "Cannot create tree because it already exists"))
             return;
 
-        for (uint32_t i = 1; i < Params.size(); ++i)
-            Arrays[pContext->pLine->Params[0]].Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+        // Create new tree
+        pArr = new ArrayVariable;
+        Arrays[pContext->pLine->Params[0]] = pArr;
     }
-    // Create subtree
-    else
-        for (uint32_t i = 1; i < Params.size(); ++i)
-            ArrayParams.back()->Members.push_back(std::make_pair(string(), ArrayVariable(Params[i])));
+
+    for (uint32_t i = 1; i < pContext->pLine->Params.size(); ++i)
+    {
+        Variable* pVar = Stack.top(); Stack.pop();
+        ArrayVariable* pNew = new ArrayVariable;
+        pNew->Value = pVar->Value;
+        pNew->IsPtr = true;
+        Pop<string>(); // Cleanup
+        pArr->Members.push_front(std::make_pair(string(), pNew)); // Params are in reverse order, so push_front
+    }
+
+    Stack.pop();
 }
 
 
 void NsbInterpreter::NSBBindIdentifier()
 {
-    // Bind to first level of tree
-    if (ArrayParams.empty())
+    ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack.top());
+
+    if (!pArr)
     {
+        // Check if tree exists
+        auto iter = Arrays.find(pContext->pLine->Params[0]);
+        if (NsbAssert(iter != Arrays.end(), "Cannot bind identifiers to tree because it doesn't exist"))
+            return;
+
+        // TODO: Check if sufficient number of parameters is passed
+
         // Check if identifiers are already bound
-        if (NsbAssert(Arrays[pContext->pLine->Params[0]].Members[0].first.empty(),
+        if (NsbAssert(Arrays[pContext->pLine->Params[0]]->Members.begin()->first.empty(),
             "Cannot bind identifiers to tree because they are already bound"))
             return;
 
-        for (uint32_t i = 1; i < Params.size(); ++i)
-            Arrays[pContext->pLine->Params[0]].Members[i - 1].first = Params[i].Value;
+        // Bind to first level of tree
+        pArr = Arrays[pContext->pLine->Params[0]];
     }
-    // Bind to subtree
-    else
-        for (uint32_t i = 1; i < Params.size(); ++i)
-            ArrayParams.back()->Members[i - 1].first = Params[i].Value;
+
+    // Parameters are in reverse order, so start from rbegin
+    for (auto iter = pArr->Members.rbegin(); iter != pArr->Members.rend(); ++iter)
+        iter->first = Pop<string>();
 }
 
 void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function)
@@ -548,5 +551,5 @@ void NsbInterpreter::NSBReadFile(const string& Filename)
     File.seekg(0, std::ios::beg);
     File.read(&Data[0], Data.size());
     File.close();
-    Params.push_back(Variable("STRING", Data));
+    Push(Data);
 }
