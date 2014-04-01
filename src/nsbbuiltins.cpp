@@ -457,30 +457,22 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
 
 void NsbInterpreter::NSBCreateArray()
 {
-    ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack.top());
+    // Check if tree already exists
+    auto iter = Arrays.find(pContext->pLine->Params[0]);
+    if (NsbAssert(iter == Arrays.end(), "Cannot create tree because it already exists"))
+        return;
 
-    if (!pArr)
-    {
-        // Check if tree already exists
-        auto iter = Arrays.find(pContext->pLine->Params[0]);
-        if (NsbAssert(iter == Arrays.end(), "Cannot create tree because it already exists"))
-            return;
-
-        // Create new tree
-        pArr = new ArrayVariable;
-        Arrays[pContext->pLine->Params[0]] = pArr;
-    }
-
+    ArrayVariable* pArr = new ArrayVariable;
+    Arrays[pContext->pLine->Params[0]] = pArr;
     for (uint32_t i = 1; i < pContext->pLine->Params.size(); ++i)
     {
-        Variable* pVar = Stack.top(); Stack.pop();
+        Variable* pVar = Stack.top();
         ArrayVariable* pNew = new ArrayVariable;
         pNew->Value = pVar->Value;
         pNew->IsPtr = true;
         Pop<string>(); // Cleanup
         pArr->Members.push_front(std::make_pair(string(), pNew)); // Params are in reverse order, so push_front
     }
-
     Stack.pop();
 }
 
