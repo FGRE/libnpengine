@@ -17,13 +17,11 @@
  * */
 #include "drawable.hpp"
 #include "game.hpp"
-#include "resourcemgr.hpp"
 #include "text.hpp"
 #include "movie.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
-#include <boost/lexical_cast.hpp>
 #include <fstream>
 
 const std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =

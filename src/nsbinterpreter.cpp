@@ -16,14 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "game.hpp"
-#include "resourcemgr.hpp"
 #include "nsbmagic.hpp"
 #include "text.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <boost/chrono.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/thread/thread.hpp>
 
 bool NsbContext::CallSubroutine(ScriptFile* pDestScript, string Symbol)
@@ -291,13 +289,6 @@ void NsbInterpreter::Start()
     RunInterpreter = true;
 }
 
-template <class T, class U> void NsbInterpreter::BinaryOperator(std::function<U(T, T)> Func)
-{
-    T First = Pop<T>();
-    T Second = Pop<T>();
-    Push(Func(First, Second));
-}
-
 void NsbInterpreter::CallScriptSymbol(const string& Prefix)
 {
     string ScriptName = Pop<string>(), Symbol;
@@ -314,65 +305,10 @@ void NsbInterpreter::CallScriptSymbol(const string& Prefix)
     CallScript(ScriptName, Prefix + Symbol);
 }
 
-template <class T> void NsbInterpreter::WildcardCall(std::string Handle, std::function<void(T*)> Func)
-{
-    for (auto i = CacheHolder<T>::ReadFirstMatch(Handle);
-         i != CacheHolder<T>::Cache.end();
-         i = CacheHolder<T>::ReadNextMatch(Handle, i))
-    {
-        HandleName = i->first;
-        if (i->second)
-            Func(i->second);
-    }
-}
-
-template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
-{
-    if (Identifier[0] == '@')
-        return boost::lexical_cast<T>(string(Identifier.c_str() + 1));
-
-    auto iter = Variables.find(Identifier);
-    try
-    {
-        // Not a variable but a literal
-        if (iter == Variables.end())
-            return boost::lexical_cast<T>(Identifier);
-        // Special variable. I don't know why this works...
-        //else if (iter->second.Value[0] == '@')
-            //return boost::lexical_cast<T>(string(iter->second.Value.c_str() + 1));
-        // Regular variable, TODO: Only dereference if $?
-        else
-            return boost::get<T>(iter->second->Value);
-    }
-    catch (...)
-    {
-        std::cout << "Failed to cast " << Identifier << " to correct type." << std::endl;
-        return T();
-    }
-}
-
-template <class T> void NsbInterpreter::Push(T Val)
-{
-    Stack.push(new Variable(Val));
-}
-
 template <> void NsbInterpreter::Push(bool Val)
 {
     if (Val) Push("true");
     else Push("false");
-}
-
-template <class T> T NsbInterpreter::Pop()
-{
-    assert(!Stack.empty());
-    Variable* pVar = Stack.top();
-    T Ret;
-    if (T* pT = boost::get<T>(&pVar->Value))
-        Ret = *pT;
-    if (!pVar->IsPtr)
-        delete pVar;
-    Stack.pop();
-    return Ret;
 }
 
 template <> bool NsbInterpreter::Pop()

@@ -16,14 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "nsbinterpreter.hpp"
-#include "resourcemgr.hpp"
 #include "game.hpp"
 #include "drawable.hpp"
 #include "playable.hpp"
 #include "text.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 #include <fstream>
 
@@ -648,7 +646,8 @@ void NsbInterpreter::StringToVariable()
     {
         string Identifier = Pop<string>();
         string Type = Pop<string>(); // "$" or "#"
-        Push(Variables[Type + Identifier]);
+        // TODO: Check if exists
+        Stack.push(Variables[Type + Identifier]);
     }
     else
         assert(false && "This will trigger when we get new season of Haruhi");
