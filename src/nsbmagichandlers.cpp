@@ -272,7 +272,10 @@ void NsbInterpreter::SetParam()
 
 void NsbInterpreter::Get()
 {
-    Stack.push(Variables[pContext->pLine->Params[0]]);
+    const string& Identifier = pContext->pLine->Params[0];
+    auto iter = Variables.find(Identifier);
+    assert(iter != Variables.end());
+    Stack.push(iter->second);
 }
 
 void NsbInterpreter::Zoom()

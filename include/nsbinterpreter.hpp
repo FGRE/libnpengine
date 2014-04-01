@@ -43,6 +43,11 @@ namespace sf
     class Texture;
 }
 
+namespace std
+{
+    class thread;
+}
+
 class Game;
 class ResourceMgr;
 class Line;
@@ -90,7 +95,6 @@ struct NsbContext
     sf::Time SleepTime; // How long should interpreter wait before executing next line
     std::stack<FuncReturn> Returns; // Call stack
 
-    bool PrevLine(); // Prev instruction
     bool NextLine(); // Next instruction
     void Sleep(int32_t ms);
 
@@ -109,6 +113,7 @@ public:
     void Stop();
     void Pause();
     void Start();
+    void StartDebugger();
 
     void CallScript(const string& FileName, const string& Symbol);
     void DumpState();
@@ -261,6 +266,12 @@ protected:
     std::stack<Variable*> Stack; // Variable stack (builtin function parameters)
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
     std::list<NsbContext*> Threads;
+
+private:
+    string Disassemble(Line* pLine);
+    void DebuggerMain();
+    std::thread* pDebuggerThread;
+    volatile bool DbgStepping;
 };
 
 template <> bool NsbInterpreter::Pop();
@@ -269,7 +280,7 @@ template <> void NsbInterpreter::Push(bool Val);
 sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area);
 sf::Texture* LoadTextureFromColor(string Color, int32_t Width, int32_t Height);
 
-//
+/* Template member function definitions */
 
 template <class T> void NsbInterpreter::WildcardCall(std::string Handle, std::function<void(T*)> Func)
 {

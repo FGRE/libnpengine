@@ -21,59 +21,15 @@
 
 #include <fstream>
 #include <iostream>
+#include <thread>
 #include <boost/chrono.hpp>
 #include <boost/thread/thread.hpp>
 
-bool NsbContext::CallSubroutine(ScriptFile* pDestScript, string Symbol)
-{
-    if (!pDestScript)
-        return false;
-
-    uint32_t CodeLine = pDestScript->GetSymbol(Symbol);
-    if (CodeLine != NSB_INVALIDE_LINE)
-    {
-        if (pScript)
-            Returns.push({pScript, pScript->GetNextLineEntry()});
-        pScript = pDestScript;
-        pScript->SetSourceIter(CodeLine);
-        return true;
-    }
-    return false;
-}
-
-void NsbContext::ReturnSubroutine()
-{
-    if (!Returns.empty())
-    {
-        pScript = Returns.top().pScript;
-        pScript->SetSourceIter(Returns.top().SourceLine);
-        Returns.pop();
-    }
-    else
-        pScript = nullptr;
-}
-
-void NsbContext::Sleep(int32_t ms)
-{
-    SleepTime = sf::milliseconds(ms);
-    SleepClock.restart();
-}
-
-bool NsbContext::NextLine()
-{
-    pLine = pScript->GetNextLine();
-    return pLine != nullptr;
-}
-
-bool NsbContext::PrevLine()
-{
-    pLine = pScript->GetPrevLine();
-    return pLine != nullptr;
-}
-
 NsbInterpreter::NsbInterpreter() :
 StopInterpreter(false),
-pGame(nullptr)
+pGame(nullptr),
+pDebuggerThread(nullptr),
+DbgStepping(false)
 {
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
     Builtins[MAGIC_JUMP] = &NsbInterpreter::Jump;
@@ -168,6 +124,9 @@ pGame(nullptr)
 
 NsbInterpreter::~NsbInterpreter()
 {
+    if (pDebuggerThread)
+        pDebuggerThread->join();
+    delete pDebuggerThread;
 }
 
 extern "C" { void gst_init(int* argc, char** argv[]); }
@@ -261,9 +220,23 @@ void NsbInterpreter::Run()
 
                 try
                 {
+                    if (DbgStepping)
+                    {
+                        std::cout << pContext->pScript->GetName() << ":"
+                                   << pContext->pScript->GetNextLineEntry() - 1
+                                   << " "
+                                   << Disassemble(pContext->pLine);
+                    }
+
                     if (pContext->pLine->Magic < Builtins.size())
                         if (BuiltinFunc pFunc = Builtins[pContext->pLine->Magic])
                             (this->*pFunc)();
+
+                    if (DbgStepping)
+                    {
+                        Pause();
+                        break;
+                    }
                 }
                 catch (...)
                 {
@@ -286,7 +259,8 @@ void NsbInterpreter::Pause()
 
 void NsbInterpreter::Start()
 {
-    RunInterpreter = true;
+    if (!DbgStepping)
+        RunInterpreter = true;
 }
 
 void NsbInterpreter::CallScriptSymbol(const string& Prefix)
