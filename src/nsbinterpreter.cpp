@@ -116,9 +116,6 @@ DbgStepping(false)
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
 
-    // Hack (TODO: S;G?)
-    SetVariable("#SYSTEM_cosplay_patch", new Variable("false"));
-
     // Main script thread
     pMainContext = new NsbContext;
     pMainContext->Active = true;
@@ -293,7 +290,7 @@ template <> bool NsbInterpreter::Pop()
     string Val = Pop<string>();
     if (Val == "true") return true;
     if (Val == "false") return false;
-    assert(false && "Boolean must be either true or false!");
+    NsbAssert(false, "Boolean must be either true or false!");
 }
 
 void NsbInterpreter::Sleep(int32_t ms)
