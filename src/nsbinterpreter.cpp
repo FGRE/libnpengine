@@ -112,6 +112,7 @@ DbgStepping(false)
     //Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
 
     // Stubs
+    Builtins[MAGIC_UNK66] = &NsbInterpreter::UNK66;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
 

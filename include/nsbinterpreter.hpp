@@ -220,6 +220,7 @@ protected:
     void CreateArray();
 
     // Stubs
+    void UNK66();
     void UNK77();
     void UNK101();
 
