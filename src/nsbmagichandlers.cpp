@@ -52,6 +52,51 @@ void NsbInterpreter::UNK101()
     string unk = Pop<string>();
 }
 
+void NsbInterpreter::UNK103()
+{
+    int32_t unk = Pop<int32_t>();
+}
+
+void NsbInterpreter::UNK104()
+{
+    int32_t unk = Pop<int32_t>();
+}
+
+void NsbInterpreter::UNK106()
+{
+    string unk = Pop<string>();
+}
+
+void NsbInterpreter::SetFrequency()
+{
+    string unk0 = Pop<string>();
+    int32_t unk1 = Pop<int32_t>();
+    int32_t unk2 = Pop<int32_t>();
+    HandleName = Pop<string>();
+}
+
+void NsbInterpreter::SetPan()
+{
+    string unk0 = Pop<string>();
+    int32_t unk1 = Pop<int32_t>();
+    int32_t unk2 = Pop<int32_t>();
+    HandleName = Pop<string>();
+}
+
+void NsbInterpreter::SetNextFocus()
+{
+    string Direction = Pop<string>();
+    string unk1 = Pop<string>();
+    string unk2 = Pop<string>();
+}
+
+void NsbInterpreter::CreateChoice()
+{
+    for (int i = 0; i < pContext->pLine->Params.size() - 1; ++i)
+        Pop<int32_t>(); // Unused optional params, always 0
+    HandleName = Pop<string>();
+}
+
 void NsbInterpreter::SetAlias()
 {
     string unk0 = Pop<string>();

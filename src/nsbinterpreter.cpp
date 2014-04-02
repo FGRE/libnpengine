@@ -106,7 +106,11 @@ DbgStepping(false)
     Builtins[MAGIC_LOAD_IMAGE] = &NsbInterpreter::LoadImage;
     Builtins[MAGIC_READ_FILE] = &NsbInterpreter::ReadFile;
     Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
-    //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
+    Builtins[MAGIC_CREATE_CHOICE] = &NsbInterpreter::CreateChoice;
+    Builtins[MAGIC_SET_NEXT_FOCUS] = &NsbInterpreter::SetNextFocus;
+    Builtins[MAGIC_SET_FREQUENCY] = &NsbInterpreter::SetFrequency;
+    Builtins[MAGIC_SET_PAN] = &NsbInterpreter::SetPan;
+    Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
     //Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
     //Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
     //Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
@@ -117,6 +121,9 @@ DbgStepping(false)
     Builtins[MAGIC_UNK66] = &NsbInterpreter::UNK66;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
+    Builtins[MAGIC_UNK103] = &NsbInterpreter::UNK103;
+    Builtins[MAGIC_UNK104] = &NsbInterpreter::UNK104;
+    Builtins[MAGIC_UNK106] = &NsbInterpreter::UNK106;
 
     // Main script thread
     pMainContext = new NsbContext;
