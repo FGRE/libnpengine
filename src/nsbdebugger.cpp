@@ -97,6 +97,7 @@ void NsbInterpreter::DebuggerMain()
         {
             std::vector<string> Tokens;
             boost::split(Tokens, Command, boost::is_any_of(" :"));
+
             // Breakpoint
             if (Tokens.size() == 3 && Tokens[0] == "b")
             {
@@ -104,6 +105,20 @@ void NsbInterpreter::DebuggerMain()
                 {
                     SetBreakpoint(Tokens[1], boost::lexical_cast<int32_t>(Tokens[2]));
                 } catch (...) { std::cout << "Bad command!" << std::endl; }
+            }
+            // Print
+            else if (Tokens.size() == 2 && Tokens[0] == "p")
+            {
+                auto iter = Variables.find(Tokens[1]);
+                if (iter != Variables.end())
+                {
+                    if (string* pString = boost::get<string>(&iter->second->Value))
+                        std::cout << Tokens[1] << " = " << *pString << std::endl;
+                    else if (int32_t* pInt = boost::get<int32_t>(&iter->second->Value))
+                        std::cout << Tokens[1] << " = " << *pInt << std::endl;
+                    else assert(false);
+                }
+                else std::cout << "Variable " << Tokens[1] << " not found!" << std::endl;
             }
         }
     }
