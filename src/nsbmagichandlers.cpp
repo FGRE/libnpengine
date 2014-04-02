@@ -413,7 +413,8 @@ void NsbInterpreter::Set()
         pFirst->Value = pSecond->Value;
 
         // Cannot change value of literal!
-        assert(pFirst->IsPtr);
+        if (NsbAssert(pFirst->IsPtr, "Changing value of a literal"))
+            return;
 
         // Manual cleanup :(
         if (!pSecond->IsPtr)
@@ -462,6 +463,7 @@ void NsbInterpreter::CreateRenderTexture()
 void NsbInterpreter::ClearParams()
 {
     NsbAssert(Stack.empty(), "Not all parameters were used!");
+    while (!Stack.empty()) Pop<string>();
 }
 
 void NsbInterpreter::Begin()
