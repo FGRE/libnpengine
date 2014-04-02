@@ -219,6 +219,10 @@ protected:
     void BindIdentifier();
     void CreateArray();
     void SetAlias();
+    void CreateChoice();
+    void SetNextFocus();
+    void SetFrequency();
+    void SetPan();
 
     // Stubs
     void UNK20();
@@ -226,6 +230,9 @@ protected:
     void UNK66();
     void UNK77();
     void UNK101();
+    void UNK103();
+    void UNK104();
+    void UNK106();
 
     // Builtin functions
     void NSBDelete();

@@ -458,10 +458,6 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
 
 void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function)
 {
-    // TODO: Log error
-    if (Function.empty())
-        return;
-
     if (NsbContext* pThread = CacheHolder<NsbContext>::Read(HandleName))
     {
         Threads.remove(pThread);
