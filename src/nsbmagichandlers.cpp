@@ -32,6 +32,16 @@ static const std::string SpecialPos[SPECIAL_POS_NUM] =
     "OutRight"
 };
 
+void NsbInterpreter::UNK20()
+{
+    int32_t unk = Pop<int32_t>();
+}
+
+void NsbInterpreter::UNK61()
+{
+    int32_t unk = Pop<int32_t>();
+}
+
 void NsbInterpreter::UNK66()
 {
     bool unk = Pop<bool>();
@@ -40,6 +50,12 @@ void NsbInterpreter::UNK66()
 void NsbInterpreter::UNK101()
 {
     string unk = Pop<string>();
+}
+
+void NsbInterpreter::SetAlias()
+{
+    string unk0 = Pop<string>();
+    string unk1 = Pop<string>();
 }
 
 void NsbInterpreter::Time()

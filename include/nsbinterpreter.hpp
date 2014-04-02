@@ -218,8 +218,11 @@ protected:
     void ReadFile();
     void BindIdentifier();
     void CreateArray();
+    void SetAlias();
 
     // Stubs
+    void UNK20();
+    void UNK61();
     void UNK66();
     void UNK77();
     void UNK101();
