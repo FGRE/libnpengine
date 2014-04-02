@@ -306,8 +306,7 @@ void NsbInterpreter::Zoom()
 void NsbInterpreter::GetScriptName()
 {
     string Name = pContext->pScript->GetName();
-    Name = Name.substr(4, Name.size() - 8); // Remove nss/ and .nsb
-    Stack.push(new Variable(Name));
+    Push(Name.substr(4, Name.size() - 8)); // Remove nss/ and .nsb
 }
 
 void NsbInterpreter::System()
@@ -320,10 +319,7 @@ void NsbInterpreter::System()
 
 void NsbInterpreter::Negative()
 {
-    int32_t Val = Pop<int32_t>();
-    Stack.push(new Variable(-Val));
-    // Negative integers are incorrectly compiled by Nitroplus
-    PlaceholderParam();
+    Push(-Pop<int32_t>());
 }
 
 void NsbInterpreter::SetVolume()
@@ -619,14 +615,20 @@ void NsbInterpreter::CallChapter()
 
 void NsbInterpreter::Format()
 {
-    std::stack<string> Params = ReverseStack(pContext->pLine->Params.size());
-    boost::format Fmt(Params.top());
-    Params.pop();
-    while (!Params.empty())
+    size_t Index = Stack.size() - pContext->pLine->Params.size();
+    boost::format Fmt(boost::get<string>(Stack[Index]->Value));
+    for (size_t i = Index + 1; i < Stack.size(); ++i)
     {
-        Fmt % Params.top();
-        Params.pop();
+        if (string* pString = boost::get<string>(&Stack[i]->Value))
+            Fmt % *pString;
+        else if (int32_t* pInt = boost::get<int32_t>(&Stack[i]->Value))
+            Fmt % *pInt;
+        else assert(false);
     }
+
+    // Cleanup
+    for (size_t i = Index; i < Stack.size(); ++i)
+        Pop<string>();
 }
 
 void NsbInterpreter::ArraySize()
