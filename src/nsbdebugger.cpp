@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <thread>
+#include <boost/algorithm/string.hpp>
 
 string NsbInterpreter::Disassemble(Line* pLine)
 {
@@ -41,6 +42,40 @@ void NsbInterpreter::StartDebugger()
     DbgStepping = true;
 }
 
+void NsbInterpreter::SetBreakpoint(const string& Script, int32_t LineNumber)
+{
+    if (sResourceMgr->GetScriptFile(Script))
+        Breakpoints.push_back(std::make_pair(Script, LineNumber));
+    else
+        std::cout << "Cannot set breakpoint " << Script << ":" << LineNumber << std::endl;
+}
+
+bool NsbInterpreter::DebuggerTick()
+{
+    bool DoPause = false;
+
+    if (!DbgStepping)
+    {
+        for (auto iter = Breakpoints.begin(); iter != Breakpoints.end(); ++iter)
+        {
+            if (iter->first == pContext->pScript->GetName() &&
+                iter->second == pContext->pScript->GetNextLineEntry())
+            {
+                std::cout << "Breakpoint hit!" << std::endl;
+                DbgStepping = true;
+                DoPause = true;
+                break;
+            }
+        }
+    }
+    else
+        DoPause = true;
+
+    if (DoPause)
+        Pause();
+    return DoPause;
+}
+
 void NsbInterpreter::DebuggerMain()
 {
     string OldCommand;
@@ -52,9 +87,24 @@ void NsbInterpreter::DebuggerMain()
             Command = OldCommand;
         else OldCommand = Command;
 
+        // Step
         if (Command == "s")
             RunInterpreter = true;
+        // Continue
         else if (Command == "c")
             DbgStepping = false;
+        else
+        {
+            std::vector<string> Tokens;
+            boost::split(Tokens, Command, boost::is_any_of(" :"));
+            // Breakpoint
+            if (Tokens.size() == 3 && Tokens[0] == "b")
+            {
+                try
+                {
+                    SetBreakpoint(Tokens[1], boost::lexical_cast<int32_t>(Tokens[2]));
+                } catch (...) { std::cout << "Bad command!" << std::endl; }
+            }
+        }
     }
 }

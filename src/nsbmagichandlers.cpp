@@ -281,6 +281,7 @@ void NsbInterpreter::Get()
     auto iter = Variables.find(Identifier);
 
     // HACK: If variable doesn't exist, set it to itself
+    // TODO: Blank variable maybe?
     if (iter == Variables.end())
     {
         std::cout << "HACK: Setting " << Identifier << " to itself..." << std::endl;
