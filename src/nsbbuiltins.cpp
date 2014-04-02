@@ -448,11 +448,12 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
             // TODO: Handle case when Identifier is not found
         }
     }
-    Stack.push(pVariable);
 
     // Cleanup
     for (size_t i = 0; i < _Depth; ++i)
         Pop<string>();
+
+    Stack.push(pVariable);
 }
 
 void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function)

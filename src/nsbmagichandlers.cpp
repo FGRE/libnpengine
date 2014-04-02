@@ -280,12 +280,12 @@ void NsbInterpreter::Get()
     const string& Identifier = pContext->pLine->Params[0];
     auto iter = Variables.find(Identifier);
 
-    // HACK: If variable doesn't exist, set it to itself
-    // TODO: Blank variable maybe?
+    // HACK: If variable doesn't exist, set it to itself for CreateArray?
     if (iter == Variables.end())
     {
-        std::cout << "HACK: Setting " << Identifier << " to itself..." << std::endl;
-        SetVariable(Identifier, new Variable(Identifier));
+        ArrayVariable* pVar = new ArrayVariable;
+        pVar->Value = Identifier;
+        SetVariable(Identifier, pVar);
         iter = Variables.find(Identifier);
     }
 
@@ -634,7 +634,9 @@ void NsbInterpreter::Format()
 
 void NsbInterpreter::ArraySize()
 {
-    Push(Arrays[Pop<string>()]->Members.size());
+    auto iter = Arrays.find(Pop<string>());
+    NsbAssert(iter != Arrays.end(), "Trying to get size of non-existing array");
+    Push(iter->second->Members.size());
 }
 
 void NsbInterpreter::Jump()
@@ -680,21 +682,13 @@ void NsbInterpreter::CreateArray()
 {
     size_t Index = Stack.size() - pContext->pLine->Params.size();
     ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack[Index]);
+    const string& Identifier = pContext->pLine->Params[0];
 
-    // It's not a subtree
-    if (!pArr)
-    {
-        const string& Identifier = pContext->pLine->Params[0];
+    assert(pArr);
 
-        // Check if tree already exists
-        auto iter = Arrays.find(Identifier);
-        if (NsbAssert(iter == Arrays.end(), "Cannot create tree because it already exists"))
-            return;
-
-        // Create new tree
-        pArr = new ArrayVariable;
+    // Map root
+    if (Arrays.find(Identifier) == Arrays.end())
         Arrays[Identifier] = pArr;
-    }
 
     for (uint32_t i = 1; i < pContext->pLine->Params.size(); ++i)
     {
