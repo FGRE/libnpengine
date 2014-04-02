@@ -53,7 +53,7 @@ DbgStepping(false)
     Builtins[MAGIC_SET_VERTEX] = &NsbInterpreter::SetVertex;
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
     Builtins[MAGIC_NEGATIVE] = &NsbInterpreter::Negative;
-    Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::NSBCreateArray;
+    Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::CreateArray;
     Builtins[MAGIC_SET] = &NsbInterpreter::Set;
     Builtins[MAGIC_ARRAY_READ] = &NsbInterpreter::ArrayRead;
     Builtins[MAGIC_REGISTER_CALLBACK] = &NsbInterpreter::RegisterCallback;
@@ -81,7 +81,7 @@ DbgStepping(false)
     Builtins[MAGIC_ADD] = &NsbInterpreter::Add;
     Builtins[MAGIC_DELETE] = &NsbInterpreter::Delete;
     Builtins[MAGIC_FADE] = &NsbInterpreter::Fade;
-    Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::NSBBindIdentifier;
+    Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_CALL_CHAPTER] = &NsbInterpreter::CallChapter;
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
@@ -324,7 +324,10 @@ void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar)
         delete pVar;
     }
     else
+    {
+        pVar->IsPtr = true;
         Variables[Identifier] = pVar;
+    }
 }
 
 void NsbInterpreter::LoadScript(const string& FileName)

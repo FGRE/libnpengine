@@ -672,3 +672,66 @@ void NsbInterpreter::StringToVariable()
     else
         assert(false && "This will trigger when we get new season of Haruhi");
 }
+
+void NsbInterpreter::CreateArray()
+{
+    size_t Index = Stack.size() - pContext->pLine->Params.size();
+    ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack[Index]);
+
+    // It's not a subtree
+    if (!pArr)
+    {
+        const string& Identifier = pContext->pLine->Params[0];
+
+        // Check if tree already exists
+        auto iter = Arrays.find(Identifier);
+        if (NsbAssert(iter == Arrays.end(), "Cannot create tree because it already exists"))
+            return;
+
+        // Create new tree
+        pArr = new ArrayVariable;
+        Arrays[Identifier] = pArr;
+    }
+
+    for (uint32_t i = 1; i < pContext->pLine->Params.size(); ++i)
+    {
+        Variable* pVar = Stack.top();
+        ArrayVariable* pNew = new ArrayVariable;
+        pNew->Value = pVar->Value;
+        pNew->IsPtr = true;
+        Pop<string>(); // Cleanup
+        pArr->Members.push_front(std::make_pair(string(), pNew)); // Params are in reverse order, so push_front
+    }
+
+    Stack.pop(); // Identifier
+}
+
+void NsbInterpreter::BindIdentifier()
+{
+    size_t Index = Stack.size() - pContext->pLine->Params.size();
+    ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack[Index]);
+
+    if (!pArr)
+    {
+        const string& Identifier = pContext->pLine->Params[0];
+
+        // Check if tree exists
+        auto iter = Arrays.find(Identifier);
+        if (NsbAssert(iter != Arrays.end(), "Cannot bind identifiers to tree because it doesn't exist"))
+            return;
+
+        // Check if identifiers are already bound
+        if (NsbAssert(Arrays[Identifier]->Members.begin()->first.empty(),
+            "Cannot bind identifiers to tree because they are already bound"))
+            return;
+
+        // Bind to first level of tree
+        pArr = Arrays[Identifier];
+    }
+
+    // Parameters are in reverse order, so start from rbegin
+    for (auto iter = pArr->Members.rbegin(); iter != pArr->Members.rend(); ++iter)
+        iter->first = Pop<string>();
+
+    Stack.pop(); // Identifier
+}
