@@ -234,11 +234,8 @@ void NsbInterpreter::Run()
                         if (BuiltinFunc pFunc = Builtins[pContext->pLine->Magic])
                             (this->*pFunc)();
 
-                    if (DbgStepping)
-                    {
-                        Pause();
+                    if (DebuggerTick())
                         break;
-                    }
                 }
                 catch (...)
                 {

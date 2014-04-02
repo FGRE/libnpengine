@@ -285,8 +285,11 @@ protected:
     std::list<NsbContext*> Threads;
 
 private:
+    bool DebuggerTick();
     string Disassemble(Line* pLine);
     void DebuggerMain();
+    void SetBreakpoint(const string& Script, int32_t LineNumber);
+    std::list<std::pair<string, int32_t> > Breakpoints;
     std::thread* pDebuggerThread;
     volatile bool DbgStepping;
 };
