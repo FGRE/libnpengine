@@ -455,55 +455,6 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
     Stack.push(pVariable);
 }
 
-void NsbInterpreter::NSBCreateArray()
-{
-    // Check if tree already exists
-    auto iter = Arrays.find(pContext->pLine->Params[0]);
-    if (NsbAssert(iter == Arrays.end(), "Cannot create tree because it already exists"))
-        return;
-
-    ArrayVariable* pArr = new ArrayVariable;
-    Arrays[pContext->pLine->Params[0]] = pArr;
-    for (uint32_t i = 1; i < pContext->pLine->Params.size(); ++i)
-    {
-        Variable* pVar = Stack.top();
-        ArrayVariable* pNew = new ArrayVariable;
-        pNew->Value = pVar->Value;
-        pNew->IsPtr = true;
-        Pop<string>(); // Cleanup
-        pArr->Members.push_front(std::make_pair(string(), pNew)); // Params are in reverse order, so push_front
-    }
-    Stack.pop();
-}
-
-
-void NsbInterpreter::NSBBindIdentifier()
-{
-    ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack.top());
-
-    if (!pArr)
-    {
-        // Check if tree exists
-        auto iter = Arrays.find(pContext->pLine->Params[0]);
-        if (NsbAssert(iter != Arrays.end(), "Cannot bind identifiers to tree because it doesn't exist"))
-            return;
-
-        // TODO: Check if sufficient number of parameters is passed
-
-        // Check if identifiers are already bound
-        if (NsbAssert(Arrays[pContext->pLine->Params[0]]->Members.begin()->first.empty(),
-            "Cannot bind identifiers to tree because they are already bound"))
-            return;
-
-        // Bind to first level of tree
-        pArr = Arrays[pContext->pLine->Params[0]];
-    }
-
-    // Parameters are in reverse order, so start from rbegin
-    for (auto iter = pArr->Members.rbegin(); iter != pArr->Members.rend(); ++iter)
-        iter->first = Pop<string>();
-}
-
 void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function)
 {
     // TODO: Log error

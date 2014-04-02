@@ -102,6 +102,23 @@ struct NsbContext
     void ReturnSubroutine(); // Function return: pop the call stack
 };
 
+template <class T>
+class _stack : public std::stack<T>
+{
+    typedef typename std::stack<T>::size_type size_type;
+public:
+    T& operator[] (size_type n)
+    {
+        assert(n < this->c.size());
+        return this->c[n];
+    }
+
+    size_type size()
+    {
+        return this->c.size();
+    }
+};
+
 class NsbInterpreter
 {
     typedef void (NsbInterpreter::*BuiltinFunc)();
@@ -199,6 +216,8 @@ protected:
     void Substract();
     void StringToVariable();
     void ReadFile();
+    void BindIdentifier();
+    void CreateArray();
 
     // Stubs
     void UNK77();
@@ -218,8 +237,6 @@ protected:
     void NSBCreateWindow(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
     void NSBGetMovieTime();
     void NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
-    void NSBBindIdentifier();
-    void NSBCreateArray();
     void NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function);
     void NSBSystem(string Command, string Parameters, string Directory);
     void NSBWriteFile(const string& FileName, const string& Data);
@@ -264,7 +281,7 @@ protected:
     std::vector<ScriptFile*> LoadedScripts; // Scripts considered in symbol lookup
     std::map<string, Variable*> Variables; // All local and global variables (TODO: respect scope?)
     std::map<string, ArrayVariable*> Arrays; // Same as above, except these are trees (TODO: merge?)
-    std::stack<Variable*> Stack; // Variable stack (builtin function parameters)
+    _stack<Variable*> Stack; // Variable stack (builtin function parameters)
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
     std::list<NsbContext*> Threads;
 
