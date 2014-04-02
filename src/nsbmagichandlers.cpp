@@ -470,12 +470,11 @@ void NsbInterpreter::Begin()
 {
     // Turn params into global variables
     // TODO: Should scope be respected instead?
-    // TODO: Can second parameter be a variable and not a literal?
-    for (int i = pContext->pLine->Params.size() - 1; i > 0; ++i)
+    for (int i = pContext->pLine->Params.size() - 1; i > 0; --i)
     {
         Variable* pVar = Stack.top();
         SetVariable(pContext->pLine->Params[i], pVar);
-        Stack.pop(); // TODO: Deallocate?
+        Stack.pop();
     }
 }
 
