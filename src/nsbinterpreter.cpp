@@ -295,20 +295,6 @@ template <> bool NsbInterpreter::Pop()
     assert(false && "Boolean must be either true or false!");
 }
 
-std::stack<string> NsbInterpreter::ReverseStack(int32_t Size)
-{
-    std::stack<string> Params;
-    for (int i = 0; i < Size; ++i)
-    {
-        if (string* pString = boost::get<string>(&Stack.top()->Value))
-            Params.push(GetVariable<string>(*pString));
-        else if (int32_t* pInt = boost::get<int32_t>(&Stack.top()->Value))
-            Params.push(boost::lexical_cast<string>(*pInt));
-        Pop<string>(); // Type doesn't matter, just cleanup
-    }
-    return Params;
-}
-
 void NsbInterpreter::Sleep(int32_t ms)
 {
     boost::this_thread::sleep_for(boost::chrono::milliseconds(ms));

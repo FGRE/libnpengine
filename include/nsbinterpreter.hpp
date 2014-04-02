@@ -266,7 +266,6 @@ protected:
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
     void SetVariable(const string& Identifier, Variable* pVar); // Sets value of global variable
     void CallScriptSymbol(const string& Prefix);
-    std::stack<string> ReverseStack(int32_t Size); // Return new stack containing Size topmost variables in reverse order
 
     void WriteTrace(std::ostream& Stream);
     bool NsbAssert(bool expr, string error);

@@ -427,13 +427,13 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
     auto iter = Arrays.find(HandleName);
     assert(iter != Arrays.end()); // Non-existing arrays are bad
     ArrayVariable* pVariable = iter->second;
-    std::stack<string> Params = ReverseStack(Depth);
+    size_t StackIndex = Stack.size() - Depth;
+    int32_t _Depth = Depth;
 
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
         ArrayMembers& Members = pVariable->Members;
-        string Index = Params.top();
-        Params.pop();
+        string Index = boost::get<string>(Stack[StackIndex++]->Value);
 
         // Parameters contain identifiers of child nodes
         // for each level specifying which path to take
@@ -448,11 +448,11 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
             // TODO: Handle case when Identifier is not found
         }
     }
-
-    if (!pVariable)
-        return;
-
     Stack.push(pVariable);
+
+    // Cleanup
+    for (size_t i = 0; i < _Depth; ++i)
+        Pop<string>();
 }
 
 void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function)
