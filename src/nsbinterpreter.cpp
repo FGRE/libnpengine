@@ -105,13 +105,15 @@ DbgStepping(false)
     Builtins[MAGIC_STRING_TO_VARIABLE] = &NsbInterpreter::StringToVariable;
     Builtins[MAGIC_LOAD_IMAGE] = &NsbInterpreter::LoadImage;
     Builtins[MAGIC_READ_FILE] = &NsbInterpreter::ReadFile;
+    Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
     //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
-    //Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;
     //Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
     //Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
     //Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
 
     // Stubs
+    Builtins[MAGIC_UNK20] = &NsbInterpreter::UNK20;
+    Builtins[MAGIC_UNK61] = &NsbInterpreter::UNK61;
     Builtins[MAGIC_UNK66] = &NsbInterpreter::UNK66;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
