@@ -248,7 +248,10 @@ void NsbInterpreter::Run()
 
 void NsbInterpreter::Stop()
 {
+    RunInterpreter = true;
+    DbgStepping = false;
     StopInterpreter = true;
+    pGame->IsRunning = false;
 }
 
 void NsbInterpreter::Pause()
