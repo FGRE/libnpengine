@@ -362,7 +362,7 @@ template <class T, class U> void NsbInterpreter::BinaryOperator(std::function<U(
 {
     T First = Pop<T>();
     T Second = Pop<T>();
-    Push(Func(First, Second));
+    Push(Func(Second, First));
 }
 
 #endif
