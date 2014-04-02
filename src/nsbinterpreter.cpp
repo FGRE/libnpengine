@@ -300,16 +300,27 @@ void NsbInterpreter::Sleep(int32_t ms)
 
 void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar)
 {
-    assert(!pVar->IsPtr);
+    NsbAssert(!pVar->IsPtr, "Non-literal passed to SetVariable");
     auto iter = Variables.find(Identifier);
+    // Variable exists, copy the value
     if (iter != Variables.end())
     {
         iter->second->Value = pVar->Value;
-        delete pVar;
+        if (!pVar->IsPtr)
+            delete pVar;
     }
     else
     {
-        pVar->IsPtr = true;
+        Variable* pNew = pVar;
+        // Make a copy of the variable
+        if (pVar->IsPtr)
+        {
+            pNew = new Variable(true);
+            pNew->Value = pVar->Value;
+        }
+        // Turn literal into variable
+        else
+            pVar->IsPtr = true;
         Variables[Identifier] = pVar;
     }
 }
