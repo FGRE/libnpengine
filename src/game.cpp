@@ -81,7 +81,6 @@ void Game::Run()
             pInterpreter->Start();
     }
 
-    pInterpreter->Start();
     pInterpreter->Stop();
 }
 
