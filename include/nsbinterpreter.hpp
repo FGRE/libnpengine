@@ -33,6 +33,7 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/Keyboard.hpp>
 using std::string;
 
 #define SPECIAL_POS_NUM 7
@@ -85,6 +86,12 @@ struct FuncReturn
     uint32_t SourceLine;
 };
 
+struct Callback
+{
+    sf::Keyboard::Key Key;
+    string Script;
+};
+
 template <class T>
 class _stack : public std::stack<T>
 {
@@ -118,6 +125,7 @@ public:
 
     void CallScript(const string& FileName, const string& Symbol);
     void DumpState();
+    void KeyPressed(sf::Keyboard::Key Key);
     virtual void MouseMoved(sf::Vector2i Pos) {}
     virtual void MouseClicked(sf::Event::MouseButtonEvent Event) {}
 
@@ -279,6 +287,7 @@ protected:
     _stack<Variable*> Stack; // Variable stack (builtin function parameters)
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
     std::list<NsbContext*> Threads;
+    std::vector<Callback> Callbacks;
 
 private:
     void WaitForResume();

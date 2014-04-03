@@ -21,7 +21,6 @@
 #include "nsbinterpreter.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Window/Keyboard.hpp>
 #include <boost/thread/mutex.hpp>
 #include <list>
 #include <queue>
@@ -32,12 +31,6 @@
 class Text;
 class Drawable;
 class Movie;
-
-struct Callback
-{
-    sf::Keyboard::Key Key;
-    std::string Script;
-};
 
 class Game : public sf::RenderWindow
 {
@@ -56,11 +49,9 @@ protected:
     void ClearText();
     void SetText(Text* pText);
     void AddDrawable(Movie* pMovie);
-    void RegisterCallback(sf::Keyboard::Key Key, const std::string& Script);
 
     boost::mutex GLMutex;
     std::queue<std::function<void()>> GLCallbacks; // TODO: Only one is (probably?) actually possible in practice
-    std::vector<Callback> Callbacks;
     std::list<DrawableBase*> Drawables; // Objects drawn to window sorted by Z coordinate
     Movie* pMovie; // Currently drawn movie
     volatile bool IsRunning; // If false, game should exit

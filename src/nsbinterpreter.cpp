@@ -299,6 +299,13 @@ void NsbInterpreter::CallScript(const string& FileName, const string& Symbol)
         pContext->CallSubroutine(pScript, Symbol);
 }
 
+void NsbInterpreter::KeyPressed(sf::Keyboard::Key Key)
+{
+    for (uint32_t i = 0; i < Callbacks.size(); ++i)
+        if (Callbacks[i].Key == Key)
+            CallScript(Callbacks[i].Script, "chapter.main");
+}
+
 void NsbInterpreter::WaitForResume()
 {
     while (!RunInterpreter)
