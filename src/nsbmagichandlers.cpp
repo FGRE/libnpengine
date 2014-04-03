@@ -20,6 +20,7 @@
 #include "drawable.hpp"
 #include "playable.hpp"
 #include "text.hpp"
+#include "nsbcontext.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <boost/format.hpp>
@@ -92,7 +93,7 @@ void NsbInterpreter::SetNextFocus()
 
 void NsbInterpreter::CreateChoice()
 {
-    for (int i = 0; i < pContext->pLine->Params.size() - 1; ++i)
+    for (int i = 0; i < pContext->GetLineArgs().size() - 1; ++i)
         Pop<int32_t>(); // Unused optional params, always 0
     HandleName = Pop<string>();
 }
@@ -335,15 +336,15 @@ void NsbInterpreter::GetMovieTime()
 
 void NsbInterpreter::SetParam()
 {
-    if (pContext->pLine->Params[0] == "STRING")
-        Stack.push(new Variable(pContext->pLine->Params[1]));
-    else if (pContext->pLine->Params[0] == "INT")
-        Stack.push(new Variable(boost::lexical_cast<int32_t>(pContext->pLine->Params[1])));
+    if (pContext->GetLineArgs()[0] == "STRING")
+        Stack.push(new Variable(pContext->GetLineArgs()[1]));
+    else if (pContext->GetLineArgs()[0] == "INT")
+        Stack.push(new Variable(boost::lexical_cast<int32_t>(pContext->GetLineArgs()[1])));
 }
 
 void NsbInterpreter::Get()
 {
-    const string& Identifier = pContext->pLine->Params[0];
+    const string& Identifier = pContext->GetLineArgs()[0];
     auto iter = Variables.find(Identifier);
 
     // HACK: If variable doesn't exist, set it to itself for CreateArray?
@@ -372,7 +373,7 @@ void NsbInterpreter::Zoom()
 
 void NsbInterpreter::GetScriptName()
 {
-    string Name = pContext->pScript->GetName();
+    string Name = pContext->GetScriptName();
     Push(Name.substr(4, Name.size() - 8)); // Remove nss/ and .nsb
 }
 
@@ -467,7 +468,7 @@ void NsbInterpreter::PlaceholderParam()
 
 void NsbInterpreter::Set()
 {
-    if (pContext->pLine->Params.back() == "__array_variable__")
+    if (pContext->GetLineArgs().back() == "__array_variable__")
     {
         Variable* pSecond = Stack.top(); Stack.pop();
         Variable* pFirst = Stack.top(); Stack.pop();
@@ -490,15 +491,15 @@ void NsbInterpreter::Set()
             pNew->Value = pVar->Value;
             pVar = pNew;
         }
-        SetVariable(pContext->pLine->Params[0], pVar);
+        SetVariable(pContext->GetLineArgs()[0], pVar);
         Stack.pop();
     }
 }
 
 void NsbInterpreter::ArrayRead()
 {
-    int32_t Index = GetVariable<int32_t>(pContext->pLine->Params[1]);
-    HandleName = pContext->pLine->Params[0];
+    int32_t Index = GetVariable<int32_t>(pContext->GetLineArgs()[1]);
+    HandleName = pContext->GetLineArgs()[0];
     NSBArrayRead(Index);
 }
 
@@ -531,10 +532,10 @@ void NsbInterpreter::Begin()
 {
     // Turn params into global variables
     // TODO: Should scope be respected instead?
-    for (int i = pContext->pLine->Params.size() - 1; i > 0; --i)
+    for (int i = pContext->GetLineArgs().size() - 1; i > 0; --i)
     {
         Variable* pVar = Stack.top();
-        SetVariable(pContext->pLine->Params[i], pVar);
+        SetVariable(pContext->GetLineArgs()[i], pVar);
         Stack.pop();
     }
 }
@@ -635,7 +636,7 @@ void NsbInterpreter::Delete()
 
 void NsbInterpreter::CallFunction()
 {
-    const char* FuncName = pContext->pLine->Params[0].c_str();
+    const char* FuncName = pContext->GetLineArgs()[0].c_str();
     string FuncNameFull = string("function.") + FuncName;
 
     // Find function override (i.e. a hack)
@@ -660,7 +661,7 @@ void NsbInterpreter::CallFunction()
         Stack.top()->Value = "STBUF1";
 
     // Find function locally
-    if (pContext->CallSubroutine(pContext->pScript, FuncNameFull))
+    if (pContext->CallSubroutine(pContext->GetScript(), FuncNameFull))
         return;
 
     // Find function globally
@@ -683,7 +684,7 @@ void NsbInterpreter::CallChapter()
 
 void NsbInterpreter::Format()
 {
-    size_t Index = Stack.size() - pContext->pLine->Params.size();
+    size_t Index = Stack.size() - pContext->GetLineArgs().size();
     boost::format Fmt(boost::get<string>(Stack[Index]->Value));
     for (size_t i = Index + 1; i < Stack.size(); ++i)
     {
@@ -708,7 +709,7 @@ void NsbInterpreter::ArraySize()
 
 void NsbInterpreter::Jump()
 {
-    pContext->pScript->SetSourceIter(pContext->pScript->GetSymbol(pContext->pLine->Params[0]));
+    pContext->Jump(pContext->GetLineArgs()[0]);
 }
 
 void NsbInterpreter::SetVertex()
@@ -723,7 +724,7 @@ void NsbInterpreter::SetVertex()
 void NsbInterpreter::StringToVariable()
 {
     // Set
-    if (pContext->pLine->Params.size() == 3)
+    if (pContext->GetLineArgs().size() == 3)
     {
         Variable* pVar = Stack.top();
         Variable* pNew = new Variable;
@@ -734,7 +735,7 @@ void NsbInterpreter::StringToVariable()
         SetVariable(Type + Identifier, pNew);
     }
     // Get
-    else if (pContext->pLine->Params.size() == 2)
+    else if (pContext->GetLineArgs().size() == 2)
     {
         string Identifier = Pop<string>();
         string Type = Pop<string>(); // "$" or "#"
@@ -747,9 +748,9 @@ void NsbInterpreter::StringToVariable()
 
 void NsbInterpreter::CreateArray()
 {
-    size_t Index = Stack.size() - pContext->pLine->Params.size();
+    size_t Index = Stack.size() - pContext->GetLineArgs().size();
     ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack[Index]);
-    const string& Identifier = pContext->pLine->Params[0];
+    const string& Identifier = pContext->GetLineArgs()[0];
 
     assert(pArr);
 
@@ -757,7 +758,7 @@ void NsbInterpreter::CreateArray()
     if (Arrays.find(Identifier) == Arrays.end())
         Arrays[Identifier] = pArr;
 
-    for (uint32_t i = 1; i < pContext->pLine->Params.size(); ++i)
+    for (uint32_t i = 1; i < pContext->GetLineArgs().size(); ++i)
     {
         Variable* pVar = Stack.top();
         ArrayVariable* pNew = new ArrayVariable;
@@ -772,12 +773,12 @@ void NsbInterpreter::CreateArray()
 
 void NsbInterpreter::BindIdentifier()
 {
-    size_t Index = Stack.size() - pContext->pLine->Params.size();
+    size_t Index = Stack.size() - pContext->GetLineArgs().size();
     ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack[Index]);
 
     if (!pArr)
     {
-        const string& Identifier = pContext->pLine->Params[0];
+        const string& Identifier = pContext->GetLineArgs()[0];
 
         // Check if tree exists
         auto iter = Arrays.find(Identifier);

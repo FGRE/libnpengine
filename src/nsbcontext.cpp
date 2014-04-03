@@ -16,19 +16,72 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "nsbinterpreter.hpp"
+#include "nsbcontext.hpp"
 
-bool NsbContext::CallSubroutine(ScriptFile* pDestScript, string Symbol)
+NsbContext::NsbContext(const string& Name) :
+Name(Name),
+pScript(nullptr),
+pLine(nullptr),
+SourceIter(0),
+Active(false)
 {
-    if (!pDestScript)
-        return false;
+}
 
+void NsbContext::Run(NsbInterpreter* pInterpreter)
+{
+    if (!Active)
+        return;
+
+    if (SleepClock.getElapsedTime() < SleepTime)
+        return;
+    else
+        SleepTime = sf::Time::Zero;
+
+    do
+    {
+        if (!pScript || !NextLine())
+        {
+            pInterpreter->Threads.remove(this);
+            CacheHolder<NsbContext>::Write(Name, nullptr);
+            delete this;
+            return;
+        }
+
+        if (pInterpreter->DbgStepping)
+        {
+            std::cout << GetScriptName() << ":"
+                       << SourceIter - 1
+                       << " "
+                       << pInterpreter->Disassemble(pLine);
+        }
+
+        if (pLine->Magic < pInterpreter->Builtins.size())
+            if (NsbInterpreter::BuiltinFunc pFunc = pInterpreter->Builtins[pLine->Magic])
+                (pInterpreter->*pFunc)();
+
+        pInterpreter->DebuggerTick();
+        pInterpreter->WaitForResume();
+    } while (!pInterpreter->Stack.empty()); // When stack is empty, it is safe to switch context
+}
+
+void NsbContext::Jump(const string& Symbol)
+{
+    uint32_t CodeLine = pScript->GetSymbol(Symbol);
+    if (CodeLine != NSB_INVALIDE_LINE)
+        SourceIter = CodeLine;
+}
+
+bool NsbContext::CallSubroutine(ScriptFile* pDestScript, const string& Symbol)
+{
+    assert(pDestScript);
     uint32_t CodeLine = pDestScript->GetSymbol(Symbol);
     if (CodeLine != NSB_INVALIDE_LINE)
     {
+        // Save return spot
         if (pScript)
-            Returns.push({pScript, pScript->GetNextLineEntry()});
+            Returns.push({pScript, GetNextLineEntry()});
         pScript = pDestScript;
-        pScript->SetSourceIter(CodeLine);
+        SourceIter = CodeLine;
         return true;
     }
     return false;
@@ -39,7 +92,7 @@ void NsbContext::ReturnSubroutine()
     if (!Returns.empty())
     {
         pScript = Returns.top().pScript;
-        pScript->SetSourceIter(Returns.top().SourceLine);
+        SourceIter = Returns.top().SourceLine;
         Returns.pop();
     }
     else
@@ -54,6 +107,20 @@ void NsbContext::Sleep(int32_t ms)
 
 bool NsbContext::NextLine()
 {
-    pLine = pScript->GetNextLine();
+    pLine = pScript->GetLine(SourceIter++);
     return pLine != nullptr;
+}
+
+void NsbContext::WriteTrace(std::ostream& Stream)
+{
+    if (!pScript)
+        return;
+
+    std::stack<FuncReturn> Stack = Returns;
+    Stack.push({pScript, SourceIter});
+    while (!Stack.empty())
+    {
+        Stream << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
+        Stack.pop();
+    }
 }

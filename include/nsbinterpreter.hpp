@@ -56,6 +56,7 @@ class DrawableBase;
 class ArrayVariable;
 class Text;
 class Playable;
+class NsbContext;
 
 typedef std::list<std::pair<string, ArrayVariable*>> ArrayMembers;
 
@@ -84,24 +85,6 @@ struct FuncReturn
     uint32_t SourceLine;
 };
 
-// Interpreter thread context
-struct NsbContext
-{
-    string Identifier; // Thread name
-    bool Active; // If true, code in this context is exected
-    Line* pLine; // Line of code which is currently being executed
-    ScriptFile* pScript; // Script which is currently being executed (top of call stack)
-    sf::Clock SleepClock; // SleepTime clock
-    sf::Time SleepTime; // How long should interpreter wait before executing next line
-    std::stack<FuncReturn> Returns; // Call stack
-
-    bool NextLine(); // Next instruction
-    void Sleep(int32_t ms);
-
-    bool CallSubroutine(ScriptFile* pDestScript, string Symbol); // Attempts to call specified symbol in specified script
-    void ReturnSubroutine(); // Function return: pop the call stack
-};
-
 template <class T>
 class _stack : public std::stack<T>
 {
@@ -121,6 +104,7 @@ public:
 
 class NsbInterpreter
 {
+    friend class NsbContext;
     typedef void (NsbInterpreter::*BuiltinFunc)();
 public:
     NsbInterpreter();
@@ -278,7 +262,6 @@ protected:
     void SetVariable(const string& Identifier, Variable* pVar); // Sets value of global variable
     void CallScriptSymbol(const string& Prefix);
 
-    void WriteTrace(std::ostream& Stream);
     bool NsbAssert(bool expr, string error);
 
     Game* pGame;
@@ -296,7 +279,10 @@ protected:
     std::list<NsbContext*> Threads;
 
 private:
-    bool DebuggerTick();
+    void WaitForResume();
+
+    // NsbDebugger
+    void DebuggerTick();
     string Disassemble(Line* pLine);
     void DebuggerMain();
     void SetBreakpoint(const string& Script, int32_t LineNumber);

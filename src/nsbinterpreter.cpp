@@ -18,6 +18,7 @@
 #include "game.hpp"
 #include "nsbmagic.hpp"
 #include "text.hpp"
+#include "nsbcontext.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -126,8 +127,8 @@ DbgStepping(false)
     Builtins[MAGIC_UNK106] = &NsbInterpreter::UNK106;
 
     // Main script thread
-    pMainContext = new NsbContext;
-    pMainContext->Active = true;
+    pMainContext = new NsbContext("");
+    pMainContext->Start();
 }
 
 NsbInterpreter::~NsbInterpreter()
@@ -160,7 +161,7 @@ void NsbInterpreter::ExecuteScript(const string& ScriptName)
 {
     if (ScriptFile* pScript = sResourceMgr->GetScriptFile(ScriptName))
     {
-        pMainContext->pScript = pScript;
+        pMainContext->CallSubroutine(pScript, "chapter.main");
         Run();
     }
     else
@@ -170,7 +171,7 @@ void NsbInterpreter::ExecuteScript(const string& ScriptName)
 void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 {
     // This leaks memory but nobody really cares
-    pMainContext->pScript = new ScriptFile(ScriptName);
+    pMainContext->CallSubroutine(new ScriptFile(ScriptName), "chapter.main");
     Run();
 }
 
@@ -184,71 +185,15 @@ void NsbInterpreter::Run()
         auto iter = Threads.begin();
         while (iter != Threads.end())
         {
-            if (!RunInterpreter)
-            {
-                boost::this_thread::sleep_for(boost::chrono::milliseconds(1));
-                continue;
-            }
-
             pContext = *iter++;
-
-            if (!pContext->Active)
-                continue;
-
-            if (pContext->SleepClock.getElapsedTime() < pContext->SleepTime)
-                continue;
-            else
-                pContext->SleepTime = sf::Time::Zero;
-
-            do
+            try
             {
-                if (!pContext->pScript || !pContext->NextLine())
-                {
-                    // Main thread died, terminate all others
-                    if (pContext == pMainContext)
-                    {
-                        auto i = Threads.begin();
-                        ++i; // Dont delete main thread
-                        for (; i != Threads.end(); ++i)
-                        {
-                            CacheHolder<NsbContext>::Write((*i)->Identifier, nullptr);
-                            delete *i;
-                        }
-                        Threads.clear();
-                    }
-                    else
-                    {
-                        Threads.remove(pContext);
-                        CacheHolder<NsbContext>::Write(pContext->Identifier, nullptr);
-                        delete pContext;
-                        pContext = nullptr;
-                    }
-                    iter = Threads.end(); // Hack :) Do not invalidate iterator
-                    break;
-                }
-
-                try
-                {
-                    if (DbgStepping)
-                    {
-                        std::cout << pContext->pScript->GetName() << ":"
-                                   << pContext->pScript->GetNextLineEntry() - 1
-                                   << " "
-                                   << Disassemble(pContext->pLine);
-                    }
-
-                    if (pContext->pLine->Magic < Builtins.size())
-                        if (BuiltinFunc pFunc = Builtins[pContext->pLine->Magic])
-                            (this->*pFunc)();
-
-                    if (DebuggerTick())
-                        break;
-                }
-                catch (...)
-                {
-                    NsbAssert(false, "Exception caught");
-                }
-            } while (pContext && pContext->pLine->Magic != MAGIC_CLEAR_PARAMS);
+                pContext->Run(this);
+            }
+            catch (...)
+            {
+                NsbAssert(false, "Exception caught");
+            }
         }
     } while (!StopInterpreter && !Threads.empty());
 }
@@ -274,7 +219,7 @@ void NsbInterpreter::Start()
 
 void NsbInterpreter::CallScriptSymbol(const string& Prefix)
 {
-    string ScriptName = pContext->pLine->Params[0], Symbol;
+    string ScriptName = pContext->GetLineArgs()[0], Symbol;
     size_t i = ScriptName.find("->");
     if (i != string::npos)
     {
@@ -284,7 +229,7 @@ void NsbInterpreter::CallScriptSymbol(const string& Prefix)
     if (!ScriptName.empty()) // TODO: Where did @ disappear?
         ScriptName.back() = 'b'; // .nss -> .nsb
     else
-        ScriptName = pContext->pScript->GetName();
+        ScriptName = pContext->GetScriptName();
     CallScript(ScriptName, Prefix + Symbol);
 }
 
@@ -342,27 +287,20 @@ void NsbInterpreter::LoadScript(const string& FileName)
 
 void NsbInterpreter::CallScript(const string& FileName, const string& Symbol)
 {
-    pContext->CallSubroutine(sResourceMgr->GetScriptFile(FileName), Symbol.c_str());
+    if (ScriptFile* pScript = sResourceMgr->GetScriptFile(FileName))
+        pContext->CallSubroutine(pScript, Symbol);
 }
 
-void NsbInterpreter::WriteTrace(std::ostream& Stream)
+void NsbInterpreter::WaitForResume()
 {
-    if (!pContext->pScript)
-        return;
-
-    std::stack<FuncReturn> Stack = pContext->Returns;
-    Stack.push({pContext->pScript, pContext->pScript->GetNextLineEntry()});
-    while (!Stack.empty())
-    {
-        Stream << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
-        Stack.pop();
-    }
+    while (!RunInterpreter)
+        Sleep(1);
 }
 
 void NsbInterpreter::DumpState()
 {
     std::ofstream Log("state-log.txt");
-    WriteTrace(Log);
+    pContext->WriteTrace(Log);
 }
 
 bool NsbInterpreter::NsbAssert(bool expr, string error)
@@ -371,6 +309,6 @@ bool NsbInterpreter::NsbAssert(bool expr, string error)
         return false;
 
     std::cout << error << '\n';
-    WriteTrace(std::cout);
+    pContext->WriteTrace(std::cout);
     return true;
 }
