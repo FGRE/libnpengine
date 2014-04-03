@@ -217,7 +217,8 @@ protected:
     void UNK101();
     void UNK103();
     void UNK104();
-    void UNK106();
+    void ClearScore();
+    void ClearBacklog();
 
     // Builtin functions
     void NSBDelete();
