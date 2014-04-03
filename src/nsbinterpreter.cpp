@@ -301,6 +301,13 @@ void NsbInterpreter::CallScript(const string& FileName, const string& Symbol)
 
 void NsbInterpreter::KeyPressed(sf::Keyboard::Key Key)
 {
+    if (Key >= sf::Keyboard::A && Key <= sf::Keyboard::Z)
+    {
+        char c = 'a' + Key - sf::Keyboard::A;
+        string Identifier = "$SYSTEM_keydown_" + string(1, c);
+        SetVariable(Identifier, new Variable("true"));
+    }
+
     for (uint32_t i = 0; i < Callbacks.size(); ++i)
         if (Callbacks[i].Key == Key)
             CallScript(Callbacks[i].Script, "chapter.main");
