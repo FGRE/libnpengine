@@ -17,6 +17,7 @@
  * */
 #include "nsbinterpreter.hpp"
 #include "nsbmagic.hpp"
+#include "nsbcontext.hpp"
 
 #include <iostream>
 #include <thread>
@@ -50,30 +51,24 @@ void NsbInterpreter::SetBreakpoint(const string& Script, int32_t LineNumber)
         std::cout << "Cannot set breakpoint " << Script << ":" << LineNumber << std::endl;
 }
 
-bool NsbInterpreter::DebuggerTick()
+void NsbInterpreter::DebuggerTick()
 {
-    bool DoPause = false;
-
     if (!DbgStepping)
     {
         for (auto iter = Breakpoints.begin(); iter != Breakpoints.end(); ++iter)
         {
-            if (iter->first == pContext->pScript->GetName() &&
-                iter->second == pContext->pScript->GetNextLineEntry())
+            if (iter->first == pContext->GetScriptName() &&
+                iter->second == pContext->GetNextLineEntry())
             {
                 std::cout << "Breakpoint hit!" << std::endl;
                 DbgStepping = true;
-                DoPause = true;
-                break;
+                Pause();
+                return;
             }
         }
     }
     else
-        DoPause = true;
-
-    if (DoPause)
         Pause();
-    return DoPause;
 }
 
 void NsbInterpreter::DebuggerMain()

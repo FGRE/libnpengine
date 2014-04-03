@@ -19,6 +19,7 @@
 #include "game.hpp"
 #include "text.hpp"
 #include "movie.hpp"
+#include "nsbcontext.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
@@ -275,7 +276,7 @@ void NsbInterpreter::NSBRequest(const string& State)
     else if (NsbContext* pThread = CacheHolder<NsbContext>::Read(HandleName))
     {
         if (State == "Start")
-            pThread->Active = true;
+            pThread->Start();
     }
 }
 
@@ -464,11 +465,8 @@ void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, 
         delete pThread;
     }
 
-    NsbContext* pThread = new NsbContext;
-    pThread->Identifier = HandleName;
-    pThread->Active = false;
-    pThread->pScript = nullptr;
-    pThread->CallSubroutine(pContext->pScript, Function.c_str());
+    NsbContext* pThread = new NsbContext(HandleName);
+    pThread->CallSubroutine(pContext->GetScript(), Function);
     CacheHolder<NsbContext>::Write(HandleName, pThread);
     Threads.push_back(pThread);
 }
