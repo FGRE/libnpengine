@@ -89,13 +89,12 @@ void Game::HandleEvent(sf::Event Event)
     switch (Event.type)
     {
         case sf::Event::KeyPressed:
-            for (uint32_t i = 0; i < Callbacks.size(); ++i)
-                if (Callbacks[i].Key == Event.key.code)
-                    pInterpreter->CallScript(Callbacks[i].Script, "chapter.main");
+            // TODO: Move to interpreter
             if (Event.key.code == sf::Keyboard::F8)
                 pInterpreter->DumpState();
             else if (Event.key.code == sf::Keyboard::LControl)
                 IgnoreText = !IgnoreText;
+            pInterpreter->KeyPressed(Event.key.code);
             break;
         case sf::Event::MouseButtonPressed:
             if (pText && Event.mouseButton.button == sf::Mouse::Left)
@@ -153,9 +152,4 @@ void Game::AddDrawable(Movie* pMovie)
 void Game::RemoveDrawable(DrawableBase* pDrawable)
 {
     Drawables.remove(pDrawable);
-}
-
-void Game::RegisterCallback(sf::Keyboard::Key Key, const std::string& Script)
-{
-    Callbacks.push_back({Key, Script});
 }

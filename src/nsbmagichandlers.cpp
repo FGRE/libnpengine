@@ -288,7 +288,7 @@ void NsbInterpreter::RegisterCallback()
     string Script = Pop<string>();
     string Key = Pop<string>();
     Script.back() = 'b';
-    pGame->RegisterCallback(static_cast<sf::Keyboard::Key>(Key[0] - 'A'), Script);
+    Callbacks.push_back({static_cast<sf::Keyboard::Key>(Key[0] - 'A'), Script});
 }
 
 void NsbInterpreter::Request()
