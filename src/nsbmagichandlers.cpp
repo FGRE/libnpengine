@@ -63,7 +63,7 @@ void NsbInterpreter::UNK104()
     int32_t unk = Pop<int32_t>();
 }
 
-void NsbInterpreter::UNK106()
+void NsbInterpreter::ClearScore()
 {
     string unk = Pop<string>();
 }
@@ -114,6 +114,10 @@ void NsbInterpreter::SoundAmplitude()
 void NsbInterpreter::Time()
 {
     Stack.push(new Variable(time(0)));
+}
+
+void NsbInterpreter::ClearBacklog()
+{
 }
 
 void NsbInterpreter::Shake()
