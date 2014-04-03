@@ -155,6 +155,12 @@ void NsbInterpreter::Initialize(Game* pGame)
     LoadScript("nss/function_select.nsb");
     LoadScript("nss/function_stand.nsb");
     LoadScript("nss/sys_title.nsb");
+
+    for (char i = 'a'; i <= 'z'; ++i)
+    {
+        string Identifier = "$SYSTEM_keydown_" + string(1, i);
+        SetVariable(Identifier, new Variable("false"));
+    }
 }
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
