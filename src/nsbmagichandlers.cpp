@@ -156,7 +156,7 @@ void NsbInterpreter::CreateProcess()
     int32_t unk2 = Pop<int32_t>();
     int32_t unk1 = Pop<int32_t>();
     HandleName = Pop<string>();
-    NSBCreateProcess(unk1, unk2, unk3, Function);
+    NSBCreateProcess(unk1, unk2, unk3, "function." + Function);
 }
 
 void NsbInterpreter::WriteFile()

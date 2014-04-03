@@ -465,7 +465,7 @@ void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, 
     }
 
     NsbContext* pThread = new NsbContext;
-    pContext->Identifier = HandleName;
+    pThread->Identifier = HandleName;
     pThread->Active = false;
     pThread->pScript = nullptr;
     pThread->CallSubroutine(pContext->pScript, Function.c_str());
