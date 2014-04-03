@@ -111,6 +111,7 @@ DbgStepping(false)
     Builtins[MAGIC_SET_NEXT_FOCUS] = &NsbInterpreter::SetNextFocus;
     Builtins[MAGIC_SET_FREQUENCY] = &NsbInterpreter::SetFrequency;
     Builtins[MAGIC_SET_PAN] = &NsbInterpreter::SetPan;
+    Builtins[MAGIC_SOUND_AMPLITUDE] = &NsbInterpreter::SoundAmplitude;
     Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
     //Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
     //Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;

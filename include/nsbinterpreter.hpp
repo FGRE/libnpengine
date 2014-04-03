@@ -207,6 +207,7 @@ protected:
     void SetNextFocus();
     void SetFrequency();
     void SetPan();
+    void SoundAmplitude();
 
     // Stubs
     void UNK20();

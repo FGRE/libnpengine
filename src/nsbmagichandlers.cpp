@@ -104,6 +104,13 @@ void NsbInterpreter::SetAlias()
     string unk1 = Pop<string>();
 }
 
+void NsbInterpreter::SoundAmplitude()
+{
+    string unk0 = Pop<string>();
+    string unk1 = Pop<string>();
+    Push(0);
+}
+
 void NsbInterpreter::Time()
 {
     Stack.push(new Variable(time(0)));
