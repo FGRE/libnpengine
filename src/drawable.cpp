@@ -87,7 +87,8 @@ void DrawableBase::Draw(sf::RenderWindow* pWindow)
 Drawable::Drawable(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 DrawableBase(pDrawable, Priority, Type),
 pMask(nullptr),
-pBlur(nullptr)
+pBlur(nullptr),
+Position(0, 0)
 {
     for (uint8_t i = 0; i < FADE_MAX; ++i)
         Fades[i] = nullptr;
@@ -258,6 +259,9 @@ void Drawable::AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Tim
         case LERP_ANIM:
             if (Type == DRAWABLE_TEXTURE)
                 pEffect->Old = Position;
+                // Position is relative to old one
+                x += Position.x;
+                y += Position.y;
             break;
         case LERP_ZOOM:
             pEffect->Old = ToSprite()->getScale();
