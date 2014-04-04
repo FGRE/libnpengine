@@ -312,6 +312,14 @@ void NsbInterpreter::KeyPressed(sf::Keyboard::Key Key)
             CallScript(Callbacks[i].Script, "chapter.main");
 }
 
+void NsbInterpreter::Pop()
+{
+    Variable* pVar = Stack.top();
+    if (!pVar->IsPtr)
+        delete pVar;
+    Stack.pop();
+}
+
 void NsbInterpreter::WaitForResume()
 {
     while (!RunInterpreter)
