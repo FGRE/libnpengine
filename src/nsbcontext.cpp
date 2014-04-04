@@ -17,6 +17,7 @@
  * */
 #include "nsbinterpreter.hpp"
 #include "nsbcontext.hpp"
+#include "nsbmagic.hpp"
 
 NsbContext::NsbContext(const string& Name) :
 Name(Name),
@@ -69,6 +70,14 @@ void NsbContext::Jump(const string& Symbol)
     uint32_t CodeLine = pScript->GetSymbol(Symbol);
     if (CodeLine != NSB_INVALIDE_LINE)
         SourceIter = CodeLine;
+}
+
+void NsbContext::Break()
+{
+    while (NextLine())
+        if (pLine->Magic == MAGIC_WHILE_END)
+            break;
+    NextLine();
 }
 
 bool NsbContext::CallSubroutine(ScriptFile* pDestScript, const string& Symbol)

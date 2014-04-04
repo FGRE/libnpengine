@@ -23,6 +23,7 @@ class NsbContext
 public:
     NsbContext(const string& Name);
 
+    void Break();
     void Jump(const string& Symbol);
     bool CallSubroutine(ScriptFile* pDestScript, const string& Symbol); // Attempts to call specified symbol in specified script
     void ReturnSubroutine(); // Function return: pop the call stack

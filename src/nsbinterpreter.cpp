@@ -33,6 +33,7 @@ pDebuggerThread(nullptr),
 DbgStepping(false)
 {
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
+    Builtins[MAGIC_BREAK] = &NsbInterpreter::Break;
     Builtins[MAGIC_JUMP] = &NsbInterpreter::Jump;
     Builtins[MAGIC_LOGICAL_AND] = &NsbInterpreter::LogicalAnd;
     Builtins[MAGIC_LOGICAL_OR] = &NsbInterpreter::LogicalOr;
