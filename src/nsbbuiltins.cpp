@@ -25,17 +25,6 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <fstream>
 
-const std::function<int32_t(int32_t)> SpecialPosTable[SPECIAL_POS_NUM] =
-{
-  [] (int32_t x) { return WINDOW_WIDTH / 2 - x / 2; },
-  [] (int32_t y) { return WINDOW_HEIGHT - y; },
-  [] (int32_t y) { return WINDOW_HEIGHT / 2 - y / 2; },
-  [] (int32_t x) { return 0; },
-  [] (int32_t y) { return 0; },
-  [] (int32_t y) { return 0; },
-  [] (int32_t x) { return 0; }
-};
-
 sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area = sf::IntRect())
 {
     uint32_t Size;
@@ -199,12 +188,12 @@ void NsbInterpreter::GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool 
     pGame->AddDrawable(pMovie);
 }
 
-void NsbInterpreter::GLCreateTexture(int32_t Priority, int32_t x, int32_t y, const string& File)
+void NsbInterpreter::GLCreateTexture(int32_t Priority, PosFunc XFunc, PosFunc YFunc, const string& File)
 {
-    GLLoadTextureClip(Priority, x, y, 0, 0, 0, 0, File);
+    GLLoadTextureClip(Priority, XFunc, YFunc, 0, 0, 0, 0, File);
 }
 
-void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File)
+void NsbInterpreter::GLLoadTextureClip(int32_t Priority, PosFunc XFunc, PosFunc YFunc, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File)
 {
     if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
     {
@@ -227,12 +216,7 @@ void NsbInterpreter::GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, i
     }
 
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
-    // TODO: Positions are x/y specific!
-    if (x < 0 && x >= -SPECIAL_POS_NUM)
-        x = SpecialPosTable[-(x + 1)](pTexture->getSize().x);
-    if (y < 0 && y >= -SPECIAL_POS_NUM)
-        y = SpecialPosTable[-(y + 1)](pTexture->getSize().y);
-    pSprite->setPosition(x, y);
+    pSprite->setPosition(XFunc(pTexture->getSize().x), YFunc(pTexture->getSize().y));
     Drawable* pDrawable = new Drawable(pSprite, Priority, DRAWABLE_TEXTURE);
     CacheHolder<DrawableBase>::Write(HandleName, pDrawable);
     pGame->AddDrawable(pDrawable);

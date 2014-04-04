@@ -26,13 +26,6 @@
 #include <boost/format.hpp>
 #include <fstream>
 
-static const std::string SpecialPos[SPECIAL_POS_NUM] =
-{
-    "Center", "InBottom", "Middle",
-    "OnLeft", "OutTop", "InTop",
-    "OutRight"
-};
-
 void NsbInterpreter::UNK20()
 {
     int32_t unk = Pop<int32_t>();
@@ -154,11 +147,13 @@ void NsbInterpreter::LoadTextureClip()
     int32_t Width = Pop<int32_t>();
     int32_t Ty = Pop<int32_t>();
     int32_t Tx = Pop<int32_t>();
-    int32_t X = Pop<int32_t>();
-    int32_t Y = Pop<int32_t>();
+    PosFunc YFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
+    Pop();
+    PosFunc XFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
+    Pop();
     int32_t Priority = Pop<int32_t>();
     HandleName = Pop<string>();
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTextureClip, this, Priority, X, Y, Tx, Ty, Width, Height, File));
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTextureClip, this, Priority, XFunc, YFunc, Tx, Ty, Width, Height, File));
 }
 
 void NsbInterpreter::CreateProcess()
@@ -617,27 +612,13 @@ void NsbInterpreter::End()
 void NsbInterpreter::CreateTexture()
 {
     string File = Pop<string>();
-    int32_t Y = Pop<int32_t>();
-    int32_t X = Pop<int32_t>();
+    PosFunc YFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
+    Pop();
+    PosFunc XFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
+    Pop();
     int32_t Priority = Pop<int32_t>();
-
-    // Represent special position as negative index to function
-    // in SpecialPosTable. See: NsbInterpreter::GLLoadTexture
-    /*int32_t Pos[2];
-    for (int32_t i = 2; i <= 3; ++i)
-    {
-        if (Params[i].Type == "STRING")
-        {
-            for (int32_t j = 0; j < SPECIAL_POS_NUM; ++j)
-                if (Params[i].Value == SpecialPos[j])
-                    Pos[i - 2] = -(j + 1);
-        }
-        else
-            Pos[i - 2] = GetParam<int32_t>(i);
-    }*/
-
     HandleName = Pop<string>();
-    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this, Priority, X, Y, File));
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this, Priority, XFunc, YFunc, File));
 }
 
 void NsbInterpreter::Delete()
@@ -709,7 +690,7 @@ void NsbInterpreter::Format()
 
     // Cleanup
     for (size_t i = Index; i < Stack.size(); ++i)
-        Pop<string>();
+        Pop();
 }
 
 void NsbInterpreter::ArraySize()
@@ -743,7 +724,7 @@ void NsbInterpreter::StringToVariable()
         Variable* pVar = Stack.top();
         Variable* pNew = new Variable;
         pNew->Value = pVar->Value;
-        Pop<string>(); // Type doesn't matter, just cleanup propertly
+        Pop();
         string Identifier = Pop<string>();
         string Type = Pop<string>();
         SetVariable(Type + Identifier, pNew);
@@ -779,7 +760,7 @@ void NsbInterpreter::CreateArray()
         ArrayVariable* pNew = new ArrayVariable;
         pNew->Value = pVar->Value;
         pNew->IsPtr = true;
-        Pop<string>(); // Cleanup
+        Pop();
         pArr->Members.push_front(std::make_pair(string(), pNew)); // Params are in reverse order, so push_front
     }
 

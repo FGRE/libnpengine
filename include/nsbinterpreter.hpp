@@ -36,7 +36,8 @@
 #include <SFML/Window/Keyboard.hpp>
 using std::string;
 
-#define SPECIAL_POS_NUM 7
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 576
 
 namespace sf
 {
@@ -60,6 +61,44 @@ class Playable;
 class NsbContext;
 
 typedef std::list<std::pair<string, ArrayVariable*>> ArrayMembers;
+typedef std::function<int32_t(int32_t)> PosFunc;
+
+class SpecialPosVisitor : public boost::static_visitor<PosFunc>
+{
+    static const size_t SPECIAL_POS_NUM = 7;
+public:
+    PosFunc operator()(int32_t Int) const
+    {
+        return [Int] (int32_t) { return Int; };
+    }
+
+    PosFunc operator()(std::string Str) const
+    {
+        std::transform(Str.begin(), Str.end(), Str.begin(), ::tolower);
+        size_t i = 0;
+        while(i++ < SPECIAL_POS_NUM - 1)
+            if (Str == SpecialPos[i])
+                return SpecialPosTable[i];
+        assert(false);
+    }
+private:
+    const PosFunc SpecialPosTable[SPECIAL_POS_NUM] =
+    {
+      [] (int32_t x) { return WINDOW_WIDTH / 2 - x / 2; },
+      [] (int32_t y) { return WINDOW_HEIGHT - y; },
+      [] (int32_t y) { return WINDOW_HEIGHT / 2 - y / 2; },
+      [] (int32_t x) { return 0; },
+      [] (int32_t y) { return 0; },
+      [] (int32_t y) { return 0; },
+      [] (int32_t x) { return 0; }
+    };
+    const string SpecialPos[SPECIAL_POS_NUM] =
+    {
+        "center", "inbottom", "middle",
+        "onleft", "outtop", "intop",
+        "outright"
+    };
+};
 
 // Represents Nitroscript variable
 struct Variable
@@ -252,7 +291,7 @@ protected:
     void GLZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
     void GLMove(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void GLDelete(DrawableBase* pDrawable);
-    void GLCreateTexture(int32_t Priority, int32_t x, int32_t y, const string& File);
+    void GLCreateTexture(int32_t Priority, PosFunc XFunc, PosFunc YFunc, const string& File);
     void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, const string& Color);
     // NOTE: Chaos;Head doesn't have last parameter (音声同期)
     void GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio);
@@ -261,10 +300,11 @@ protected:
     void GLDrawToTexture(sf::RenderTexture* pTexture, int32_t x, int32_t y, const string& File);
     void GLApplyBlur(Drawable* pDrawable, const string& Heaviness);
     void GLParseText(const string& Box, const string& XML);
-    void GLLoadTextureClip(int32_t Priority, int32_t x, int32_t y, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
+    void GLLoadTextureClip(int32_t Priority, PosFunc XFunc, PosFunc YFunc, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
     void GLLoadImage(const string& File);
 
     template <class T> void Push(T Val);
+    void Pop();
     template <class T> T Pop();
     template <class T, class U> void BinaryOperator(std::function<U(T, T)> Func);
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value

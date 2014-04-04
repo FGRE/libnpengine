@@ -25,9 +25,6 @@
 #include <list>
 #include <queue>
 
-#define WINDOW_WIDTH 1024
-#define WINDOW_HEIGHT 576
-
 class Text;
 class Drawable;
 class Movie;
