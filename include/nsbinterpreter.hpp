@@ -264,6 +264,7 @@ protected:
     void UNK101();
     void UNK103();
     void UNK104();
+    void UNK115();
     void UNK161();
     void ClearScore();
     void ClearBacklog();
