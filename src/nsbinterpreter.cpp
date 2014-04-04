@@ -125,6 +125,7 @@ DbgStepping(false)
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
     Builtins[MAGIC_UNK103] = &NsbInterpreter::UNK103;
     Builtins[MAGIC_UNK104] = &NsbInterpreter::UNK104;
+    Builtins[MAGIC_UNK161] = &NsbInterpreter::UNK161;
     Builtins[MAGIC_CLEAR_SCORE] = &NsbInterpreter::ClearScore;
     Builtins[MAGIC_CLEAR_BACKLOG] = &NsbInterpreter::ClearBacklog;
 
@@ -226,17 +227,17 @@ void NsbInterpreter::Start()
 
 void NsbInterpreter::CallScriptSymbol(const string& Prefix)
 {
-    string ScriptName = pContext->GetLineArgs()[0], Symbol;
+    string ScriptName = GetVariable<string>(pContext->GetLineArgs()[0]), Symbol;
     size_t i = ScriptName.find("->");
     if (i != string::npos)
     {
         Symbol = ScriptName.substr(i + 2);
         ScriptName.erase(i);
     }
-    if (!ScriptName.empty()) // TODO: Where did @ disappear?
-        ScriptName.back() = 'b'; // .nss -> .nsb
-    else
+    if (ScriptName == "@") // @-> = this->
         ScriptName = pContext->GetScriptName();
+    if (!ScriptName.empty())
+        ScriptName.back() = 'b'; // .nss -> .nsb
     CallScript(ScriptName, Prefix + Symbol);
 }
 
