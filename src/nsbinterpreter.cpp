@@ -183,7 +183,6 @@ void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
     Run();
 }
 
-// TODO: What the fuck is going on here?
 void NsbInterpreter::Run()
 {
     StartDebugger();
