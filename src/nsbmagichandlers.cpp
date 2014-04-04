@@ -292,6 +292,11 @@ void NsbInterpreter::If()
         Jump();
 }
 
+void NsbInterpreter::Break()
+{
+    pContext->Break();
+}
+
 void NsbInterpreter::RegisterCallback()
 {
     string Script = Pop<string>();

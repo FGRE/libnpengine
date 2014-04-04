@@ -177,6 +177,7 @@ protected:
     void ExecuteScript(const string& InitScript);
 
     // Magic handlers
+    void Break();
     void LoadImage();
     void Jump();
     void CreateProcess();

@@ -276,10 +276,12 @@ void NsbInterpreter::NSBCreateWindow(int32_t unk0, int32_t x, int32_t y, int32_t
 // TODO: Rename; works for any playable
 void NsbInterpreter::NSBGetMovieTime()
 {
+    int32_t Duration = 0;
     if (Playable* pPlayable = CacheHolder<Playable>::Read(HandleName))
-        Push(pPlayable->GetDuration());
+        Duration = pPlayable->GetDuration();
     else
         std::cout << "Failed to get movie time because there is no Playable " << HandleName << std::endl;
+    Push(Duration);
 }
 
 void NsbInterpreter::NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait)
@@ -412,12 +414,17 @@ void NsbInterpreter::NSBSystem(string Command, string Parameters, string Directo
 // Reads data from tree at specified depth
 void NsbInterpreter::NSBArrayRead(int32_t Depth)
 {
-    auto iter = Arrays.find(HandleName);
-    assert(iter != Arrays.end()); // Non-existing arrays are bad
-    ArrayVariable* pVariable = iter->second;
     size_t StackIndex = Stack.size() - Depth;
     int32_t _Depth = Depth;
+    ArrayVariable* pVariable;
+    auto iter = Arrays.find(HandleName);
+    if (NsbAssert(iter != Arrays.end(), "Reading from non-existing array"))
+    {
+        pVariable = new ArrayVariable;
+        goto cleanup;
+    }
 
+    pVariable = iter->second;
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
         ArrayMembers& Members = pVariable->Members;
@@ -437,6 +444,7 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
         }
     }
 
+cleanup:
     // Cleanup
     for (size_t i = 0; i < _Depth; ++i)
         Pop<string>();
