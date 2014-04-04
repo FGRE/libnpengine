@@ -125,6 +125,7 @@ DbgStepping(false)
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
     Builtins[MAGIC_UNK103] = &NsbInterpreter::UNK103;
     Builtins[MAGIC_UNK104] = &NsbInterpreter::UNK104;
+    Builtins[MAGIC_UNK115] = &NsbInterpreter::UNK115;
     Builtins[MAGIC_UNK161] = &NsbInterpreter::UNK161;
     Builtins[MAGIC_CLEAR_SCORE] = &NsbInterpreter::ClearScore;
     Builtins[MAGIC_CLEAR_BACKLOG] = &NsbInterpreter::ClearBacklog;
