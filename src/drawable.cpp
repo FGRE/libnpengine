@@ -90,11 +90,7 @@ pMask(nullptr),
 pBlur(nullptr)
 {
     for (uint8_t i = 0; i < FADE_MAX; ++i)
-        if (Type == DRAWABLE_TEXTURE)
-            Fades[i] = new FadeEffect; // TODO: allocate on demand
-        else
-            Fades[i] = nullptr;
-
+        Fades[i] = nullptr;
     for (uint8_t i = 0; i < LERP_MAX; ++i)
         Lerps[i] = nullptr;
 }
@@ -105,6 +101,11 @@ Drawable::~Drawable()
         delete ToSprite()->getTexture();
     delete pDrawable;
     delete pMask;
+
+    for (uint8_t i = 0; i < FADE_MAX; ++i)
+        delete Fades[i];
+    for (uint8_t i = 0; i < LERP_MAX; ++i)
+        delete Lerps[i];
 }
 
 void Drawable::Update()
@@ -178,7 +179,7 @@ void Drawable::Draw(sf::RenderWindow* pWindow)
 void Drawable::UpdateFade(uint8_t Index)
 {
     FadeEffect* pEffect = Fades[Index];
-    if (!pEffect || pEffect->FadeTime == 0)
+    if (!pEffect || pEffect->FadeTime == -1)
         return;
 
     float Alpha;
@@ -186,7 +187,7 @@ void Drawable::UpdateFade(uint8_t Index)
 
     if (Elapsed >= pEffect->FadeTime)
     {
-        pEffect->FadeTime = 0;
+        pEffect->FadeTime = -1;
         Alpha = pEffect->TargetOpacity;
         pEffect->Opacity = pEffect->TargetOpacity;
     }
@@ -208,6 +209,8 @@ void Drawable::UpdateFade(uint8_t Index)
 
 void Drawable::SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index)
 {
+    if (!Fades[Index])
+        Fades[Index] = new FadeEffect;
     FadeEffect* pEffect = Fades[Index];
     pEffect->Opacity = pEffect->TargetOpacity;
     pEffect->TargetOpacity = NewOpacity;

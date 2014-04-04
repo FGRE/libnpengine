@@ -55,7 +55,9 @@ namespace sf
 
 struct FadeEffect // TODO: Also LerpEffect
 {
-    FadeEffect() : TargetOpacity(0), Opacity(0), FadeTime(0) { }
+    // Objects are visible (1000) by default
+    // Drawable::SetOpacity sets Opacity = TargetOpacity
+    FadeEffect() : TargetOpacity(1000), Opacity(0), FadeTime(0) { }
     int32_t TargetOpacity;
     int32_t Opacity;
     int32_t FadeTime;
