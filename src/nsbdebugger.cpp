@@ -91,6 +91,9 @@ void NsbInterpreter::DebuggerMain()
         // Quit
         else if (Command == "q")
             Stop();
+        // Wait (Activate debugger)
+        else if (Command == "w")
+            DbgStepping = true;
         else
         {
             std::vector<string> Tokens;
