@@ -56,6 +56,14 @@ void NsbInterpreter::UNK104()
     int32_t unk = Pop<int32_t>();
 }
 
+void NsbInterpreter::UNK161()
+{
+    string unk0 = Pop<string>();
+    string unk1 = Pop<string>();
+    string unk2 = Pop<string>();
+    Push<string>("false");
+}
+
 void NsbInterpreter::ClearScore()
 {
     string unk = Pop<string>();
