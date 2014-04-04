@@ -165,6 +165,9 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
     }
 
     sf::Texture* pTexture = LoadTextureFromColor(Color, Width, Height);
+    if (!pTexture)
+        return;
+
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
     pSprite->setPosition(x, y);
     CacheHolder<DrawableBase>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
