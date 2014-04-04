@@ -213,7 +213,7 @@ void NsbInterpreter::Divide()
 
 void NsbInterpreter::Multiply()
 {
-    BinaryOperator<int32_t, int32_t>([](int32_t a, int32_t b) -> int32_t { return a + b; });
+    BinaryOperator<int32_t, int32_t>([](int32_t a, int32_t b) -> int32_t { return a * b; });
 }
 
 void NsbInterpreter::LogicalAnd()
