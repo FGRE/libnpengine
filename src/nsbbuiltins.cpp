@@ -116,7 +116,10 @@ void NsbInterpreter::GLLoadImage(const string& File)
 
     sf::Texture* pTempTexture = LoadTextureFromFile(File);
     if (!pTempTexture)
+    {
+        CacheHolder<sf::RenderTexture>::Write(HandleName, nullptr);
         return;
+    }
 
     sf::Sprite TempSprite(*pTempTexture);
     TempSprite.setPosition(0, 0);
