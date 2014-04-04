@@ -648,18 +648,18 @@ void NsbInterpreter::Delete()
 
 void NsbInterpreter::CallFunction()
 {
-    const char* FuncName = pContext->GetLineArgs()[0].c_str();
+    string FuncName = pContext->GetLineArgs()[0];
     string FuncNameFull = string("function.") + FuncName;
 
     // Find function override (i.e. a hack)
-    if (std::strcmp(FuncName, "DeleteAllSt") == 0)
+    if (FuncName == "DeleteAllSt")
     {
         ClearParams();
         HandleName = "StNameSTBUF1/STBUF100";
         NSBDelete();
         return;
     }
-    else if (std::strcmp(FuncName, "St") == 0 || std::strcmp(FuncName, "PosSt") == 0)
+    else if (FuncName == "St" || FuncName == "PosSt")
         Stack.top()->Value = "STBUF1";
 
     // Find function locally
