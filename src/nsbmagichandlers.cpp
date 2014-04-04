@@ -300,9 +300,9 @@ void NsbInterpreter::Request()
 
 void NsbInterpreter::ParseText()
 {
-    string XML = Pop<string>();
-    string Box = Pop<string>();
-    HandleName = Pop<string>();
+    string XML = pContext->GetLineArgs()[2];
+    string Box = pContext->GetLineArgs()[1];
+    HandleName = pContext->GetLineArgs()[0];
     pGame->GLCallback(std::bind(&NsbInterpreter::GLParseText, this, Box, XML));
 }
 
@@ -715,8 +715,10 @@ void NsbInterpreter::Format()
 void NsbInterpreter::ArraySize()
 {
     auto iter = Arrays.find(Pop<string>());
-    NsbAssert(iter != Arrays.end(), "Trying to get size of non-existing array");
-    Push(iter->second->Members.size());
+    if (NsbAssert(iter != Arrays.end(), "Trying to get size of non-existing array"))
+        Push(0); // TODO: HACK!
+    else
+        Push(iter->second->Members.size());
 }
 
 void NsbInterpreter::Jump()
@@ -751,8 +753,9 @@ void NsbInterpreter::StringToVariable()
     {
         string Identifier = Pop<string>();
         string Type = Pop<string>(); // "$" or "#"
-        // TODO: Check if exists
-        Stack.push(Variables[Type + Identifier]);
+        if (Variables.find(Type + Identifier) != Variables.end())
+            Stack.push(Variables[Type + Identifier]);
+        else Stack.push(new Variable); // TODO: Hack!
     }
     else
         assert(false && "This will trigger when we get new season of Haruhi");
