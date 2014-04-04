@@ -113,12 +113,13 @@ void Playable::InitAudio()
     gst_bin_add(GST_BIN(Pipeline), AudioBin);
 }
 
-int32_t Playable::GetDuration()
+int32_t Playable::GetTimeLeft()
 {
-    gint64 Length;
+    gint64 Length, Position;
     gst_element_get_state(Pipeline, NULL, NULL, GST_CLOCK_TIME_NONE);
     gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length);
-    return Length / 1000000;
+    gst_element_query_position(Pipeline, GST_FORMAT_TIME, &Position);
+    return (Length - Position) / 1000000;
 }
 
 void Playable::SetLoop(bool Loop)

@@ -278,7 +278,7 @@ void NsbInterpreter::NSBGetMovieTime()
 {
     int32_t Duration = 0;
     if (Playable* pPlayable = CacheHolder<Playable>::Read(HandleName))
-        Duration = pPlayable->GetDuration();
+        Duration = pPlayable->GetTimeLeft();
     else
         std::cout << "Failed to get movie time because there is no Playable " << HandleName << std::endl;
     Push(Duration);
