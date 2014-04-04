@@ -43,7 +43,7 @@ public:
     void SetLoop(bool Loop);
     void Stop();
     void Play();
-    int32_t GetDuration();
+    int32_t GetTimeLeft();
 
     AppSrc* Appsrc;
 protected:
