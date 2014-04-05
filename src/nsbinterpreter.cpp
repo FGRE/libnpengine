@@ -264,9 +264,19 @@ void NsbInterpreter::Sleep(int32_t ms)
 
 void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar)
 {
-    auto iter = Variables.find(Identifier);
+    SetVariable(Identifier, pVar, Variables);
+}
+
+void NsbInterpreter::SetLocalVariable(const string& Identifier, Variable* pVar)
+{
+    SetVariable(Identifier, pVar, LocalVariables);
+}
+
+void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar, std::map<string, Variable*>& Container)
+{
+    auto iter = Container.find(Identifier);
     // Variable exists, copy the value
-    if (iter != Variables.end())
+    if (iter != Container.end())
     {
         iter->second->Value = pVar->Value;
         if (!pVar->IsPtr)
@@ -284,7 +294,7 @@ void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar)
         // Turn literal into variable
         else
             pVar->IsPtr = true;
-        Variables[Identifier] = pVar;
+        Container[Identifier] = pVar;
     }
 }
 
