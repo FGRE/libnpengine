@@ -51,6 +51,15 @@ void NsbInterpreter::SetBreakpoint(const string& Script, int32_t LineNumber)
         std::cout << "Cannot set breakpoint " << Script << ":" << LineNumber << std::endl;
 }
 
+void NsbInterpreter::PrintVariable(Variable* pVar)
+{
+    if (string* pString = boost::get<string>(&pVar->Value))
+        std::cout << *pString << std::endl;
+    else if (int32_t* pInt = boost::get<int32_t>(&pVar->Value))
+        std::cout << *pInt << std::endl;
+    else assert(false);
+}
+
 void NsbInterpreter::DebuggerTick()
 {
     if (!DbgStepping)
@@ -94,6 +103,15 @@ void NsbInterpreter::DebuggerMain()
         // Wait (Activate debugger)
         else if (Command == "w")
             DbgStepping = true;
+        // Dump (Param stack)
+        else if (Command == "d")
+        {
+            for (size_t i = 0; i < Stack.size(); ++i)
+            {
+                std::cout << "Stack[" << i << "] = ";
+                PrintVariable(Stack[i]);
+            }
+        }
         else
         {
             std::vector<string> Tokens;
@@ -107,17 +125,19 @@ void NsbInterpreter::DebuggerMain()
                     SetBreakpoint(Tokens[1], boost::lexical_cast<int32_t>(Tokens[2]));
                 } catch (...) { std::cout << "Bad command!" << std::endl; }
             }
+            // Breakpoint Clear
+            else if (Tokens.size() == 2 && Tokens[0] == "b" && Tokens[1] == "c")
+            {
+                Breakpoints.clear();
+            }
             // Print
             else if (Tokens.size() == 2 && Tokens[0] == "p")
             {
                 auto iter = Variables.find(Tokens[1]);
                 if (iter != Variables.end())
                 {
-                    if (string* pString = boost::get<string>(&iter->second->Value))
-                        std::cout << Tokens[1] << " = " << *pString << std::endl;
-                    else if (int32_t* pInt = boost::get<int32_t>(&iter->second->Value))
-                        std::cout << Tokens[1] << " = " << *pInt << std::endl;
-                    else assert(false);
+                    std::cout << Tokens[1] << " = ";
+                    PrintVariable(iter->second);
                 }
                 else std::cout << "Variable " << Tokens[1] << " not found!" << std::endl;
             }

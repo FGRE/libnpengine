@@ -336,6 +336,7 @@ private:
     void WaitForResume();
 
     // NsbDebugger
+    void PrintVariable(Variable* pVar);
     void DebuggerTick();
     string Disassemble(Line* pLine);
     void DebuggerMain();
@@ -400,7 +401,7 @@ template <class T> T NsbInterpreter::Pop()
     if (NsbAssert(!Stack.empty(), "Poping from empty stack"))
         return T(); // TODO: HACK!
     Variable* pVar = Stack.top();
-    T Ret;
+    T Ret = T(); // TODO: HACK!
     if (T* pT = boost::get<T>(&pVar->Value))
         Ret = *pT;
     if (!pVar->IsPtr)
