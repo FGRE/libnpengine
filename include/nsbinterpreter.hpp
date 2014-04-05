@@ -75,8 +75,8 @@ public:
     PosFunc operator()(string Str) const
     {
         std::transform(Str.begin(), Str.end(), Str.begin(), ::tolower);
-        size_t i = 0;
-        while (i++ < SPECIAL_POS_NUM - 1)
+        size_t i = -1;
+        while (++i < SPECIAL_POS_NUM)
             if (Str == SpecialPos[i])
                 return SpecialPosTable[i];
         assert(false);
