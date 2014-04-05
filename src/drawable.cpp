@@ -227,6 +227,9 @@ void Drawable::SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_
         return;
     }
 
+    if (!Fades[FADE_MASK])
+        Fades[FADE_MASK] = new FadeEffect;
+
     if (pMask)
         delete pMask;
 
