@@ -719,8 +719,10 @@ void NsbInterpreter::Format()
     }
 
     // Cleanup
-    for (size_t i = Index; i < Stack.size(); ++i)
+    for (size_t i = Index - 1; i < Stack.size(); ++i)
         Pop();
+
+    Push(Fmt.str());
 }
 
 void NsbInterpreter::ArraySize()
