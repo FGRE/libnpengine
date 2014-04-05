@@ -674,15 +674,6 @@ void NsbInterpreter::CallFunction()
     string FuncName = pContext->GetLineArgs()[0];
     string FuncNameFull = string("function.") + FuncName;
 
-    // Find function override (i.e. a hack)
-    if (FuncName == "DeleteAllSt")
-    {
-        ClearParams();
-        HandleName = "StNameSTBUF1/STBUF100";
-        NSBDelete();
-        return;
-    }
-
     // Find function locally
     if (pContext->CallSubroutine(pContext->GetScript(), FuncNameFull))
         return;
