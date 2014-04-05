@@ -365,21 +365,23 @@ void NsbInterpreter::SetParam()
     if (pContext->GetLineArgs()[0] == "STRING")
     {
         string Value = pContext->GetLineArgs()[1];
-        bool IsLocalVar = false;
         for (auto iter = LocalVariables.begin(); iter != LocalVariables.end(); ++iter)
         {
             if (iter->first == Value)
             {
-                IsLocalVar = true;
                 Stack.push(iter->second);
-                break;
+                return;
             }
         }
-        if (!IsLocalVar)
-            Stack.push(new Variable(Value));
+        // TODO: Not sure about this...
+        // Maybe local variables do not exist at all?
+        if (Value[0] == '$')
+            Push(GetVariable<string>(Value));
+        else
+            Push(Value);
     }
     else if (pContext->GetLineArgs()[0] == "INT")
-        Stack.push(new Variable(boost::lexical_cast<int32_t>(pContext->GetLineArgs()[1])));
+        Push(boost::lexical_cast<int32_t>(pContext->GetLineArgs()[1]));
 }
 
 void NsbInterpreter::Get()
