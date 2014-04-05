@@ -363,7 +363,21 @@ void NsbInterpreter::GetMovieTime()
 void NsbInterpreter::SetParam()
 {
     if (pContext->GetLineArgs()[0] == "STRING")
-        Stack.push(new Variable(pContext->GetLineArgs()[1]));
+    {
+        string Value = pContext->GetLineArgs()[1];
+        bool IsLocalVar = false;
+        for (auto iter = LocalVariables.begin(); iter != LocalVariables.end(); ++iter)
+        {
+            if (iter->first == Value)
+            {
+                IsLocalVar = true;
+                Stack.push(iter->second);
+                break;
+            }
+        }
+        if (!IsLocalVar)
+            Stack.push(new Variable(Value));
+    }
     else if (pContext->GetLineArgs()[0] == "INT")
         Stack.push(new Variable(boost::lexical_cast<int32_t>(pContext->GetLineArgs()[1])));
 }
@@ -556,12 +570,16 @@ void NsbInterpreter::ClearParams()
 
 void NsbInterpreter::Begin()
 {
-    // Turn params into global variables
-    // TODO: Should scope be respected instead?
+    // Turn params into variables
     for (int i = pContext->GetLineArgs().size() - 1; i > 0; --i)
     {
+        string Identifier = pContext->GetLineArgs()[i];
         Variable* pVar = Stack.top();
-        SetVariable(pContext->GetLineArgs()[i], pVar);
+        // Turn into a global variable
+        if (Identifier[0] == '$')
+            SetVariable(Identifier, pVar);
+        else
+            SetLocalVariable(Identifier, pVar);
         Stack.pop();
     }
 }
@@ -626,6 +644,9 @@ void NsbInterpreter::Fade()
 void NsbInterpreter::End()
 {
     pContext->ReturnSubroutine();
+    for (auto iter = LocalVariables.begin(); iter != LocalVariables.end(); ++iter)
+        delete iter->second;
+    LocalVariables.clear();
 }
 
 void NsbInterpreter::CreateTexture()

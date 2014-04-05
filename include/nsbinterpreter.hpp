@@ -313,6 +313,8 @@ protected:
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
     void SetVariable(const string& Identifier, Variable* pVar); // Sets value of global variable
+    void SetLocalVariable(const string& Identifier, Variable* pVar);
+    void SetVariable(const string& Identifier, Variable* pVar, std::map<string, Variable*>& Container);
     void CallScriptSymbol(const string& Prefix);
 
     bool NsbAssert(bool expr, string error);
@@ -325,7 +327,8 @@ protected:
 
     string HandleName; // Identifier of current Drawable/Playable used by NSB and GL functions
     std::vector<ScriptFile*> LoadedScripts; // Scripts considered in symbol lookup
-    std::map<string, Variable*> Variables; // All local and global variables (TODO: respect scope?)
+    std::map<string, Variable*> Variables; // Global variables
+    std::map<string, Variable*> LocalVariables;
     std::map<string, ArrayVariable*> Arrays; // Same as above, except these are trees (TODO: merge?)
     _stack<Variable*> Stack; // Variable stack (builtin function parameters)
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
