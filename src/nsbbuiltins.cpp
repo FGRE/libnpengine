@@ -431,20 +431,32 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
     while (Depth --> 0) // Depth goes to zero; 'cause recursion is too mainstream
     {
         ArrayMembers& Members = pVariable->Members;
-        string Index = boost::get<string>(Stack[StackIndex++]->Value);
-
-        // Parameters contain identifiers of child nodes
-        // for each level specifying which path to take
-        for (auto i = Members.begin(); i != Members.end(); ++i)
+        // Lookup by identifier
+        if (string* Index = boost::get<string>(&Stack[StackIndex]->Value))
         {
-            // Node is found
-            if (i->first == Index)
+            // Parameters contain identifiers of child nodes
+            // for each level specifying which path to take
+            for (auto i = Members.begin(); i != Members.end(); ++i)
             {
-                pVariable = i->second;
-                break; // Go to next level (if needed)
+                // Node is found
+                if (i->first == *Index)
+                {
+                    pVariable = i->second;
+                    break; // Go to next level (if needed)
+                }
+                // TODO: Handle case when Identifier is not found
             }
-            // TODO: Handle case when Identifier is not found
         }
+        // Lookup by index
+        else if (int32_t* Index = boost::get<int32_t>(&Stack[StackIndex]->Value))
+        {
+            auto i = Members.begin();
+            for (int j = 0; j < *Index; ++j)
+                ++i;
+            if (i != Members.end())
+                pVariable = i->second;
+        }
+        ++StackIndex;
     }
 
 cleanup:
