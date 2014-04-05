@@ -659,8 +659,6 @@ void NsbInterpreter::CallFunction()
         NSBDelete();
         return;
     }
-    else if (FuncName == "St" || FuncName == "PosSt")
-        Stack.top()->Value = "STBUF1";
 
     // Find function locally
     if (pContext->CallSubroutine(pContext->GetScript(), FuncNameFull))
