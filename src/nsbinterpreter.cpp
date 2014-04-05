@@ -166,6 +166,8 @@ void NsbInterpreter::Initialize(Game* pGame)
         string Identifier = "$SYSTEM_keydown_" + string(1, i);
         SetVariable(Identifier, new Variable("false"));
     }
+
+    SetVariable("$BOX_Init", new Variable("false"));
 }
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
@@ -240,6 +242,8 @@ void NsbInterpreter::CallScriptSymbol(const string& Prefix)
         ScriptName = pContext->GetScriptName();
     if (!ScriptName.empty())
         ScriptName.back() = 'b'; // .nss -> .nsb
+    if (Symbol.empty()) // CallChapter requires this
+        Symbol = "main";
     CallScript(ScriptName, Prefix + Symbol);
 }
 
