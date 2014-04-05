@@ -148,11 +148,13 @@ sf::Vector2f Drawable::UpdateLerp(uint8_t i)
     RetVal = sf::Vector2f(Lerp(pLerp->Old.x, pLerp->NewX, Progress),
                           Lerp(pLerp->Old.y, pLerp->NewY, Progress));
 
+    // TODO: This breaks zoom
+    /*
     if (pLerp->Clock.getElapsedTime().asMilliseconds() >= pLerp->Time)
     {
         delete pLerp;
         Lerps[i] = nullptr;
-    }
+    }*/
 
     return RetVal;
 }
