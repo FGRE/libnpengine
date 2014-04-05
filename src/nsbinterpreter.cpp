@@ -168,6 +168,7 @@ void NsbInterpreter::Initialize(Game* pGame)
     }
 
     SetVariable("$BOX_Init", new Variable("false"));
+    SetVariable("$BGM_Init", new Variable("false"));
 }
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
