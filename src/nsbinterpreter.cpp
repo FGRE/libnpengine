@@ -169,6 +169,7 @@ void NsbInterpreter::Initialize(Game* pGame)
 
     SetVariable("$BOX_Init", new Variable("false"));
     SetVariable("$BGM_Init", new Variable("false"));
+    SetVariable("#N2systemVERSION_old", new Variable("false"));
 }
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
@@ -335,6 +336,13 @@ void NsbInterpreter::Pop()
     if (!pVar->IsPtr)
         delete pVar;
     Stack.pop();
+}
+
+DrawableBase* NsbInterpreter::GetDrawable()
+{
+    DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName);
+    NsbAssert(pDrawable, "Failed to find drawable");
+    return pDrawable;
 }
 
 void NsbInterpreter::WaitForResume()

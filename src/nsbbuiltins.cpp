@@ -150,7 +150,7 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
     if (HandleName == "クリア黒")
         return;
 
-    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
+    if (DrawableBase* pDrawable = GetDrawable())
     {
         pGame->RemoveDrawable(pDrawable);
         delete pDrawable;
@@ -198,7 +198,7 @@ void NsbInterpreter::GLCreateTexture(int32_t Priority, PosFunc XFunc, PosFunc YF
 
 void NsbInterpreter::GLLoadTextureClip(int32_t Priority, PosFunc XFunc, PosFunc YFunc, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File)
 {
-    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
+    if (DrawableBase* pDrawable = GetDrawable())
     {
         pGame->RemoveDrawable(pDrawable);
         delete pDrawable;
@@ -244,7 +244,7 @@ void NsbInterpreter::GLDelete(DrawableBase* pDrawable)
 
 void NsbInterpreter::NSBRequest(const string& State)
 {
-    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
+    if (Drawable* pDrawable = (Drawable*)GetDrawable())
     {
         if (State == "Smoothing")
         {
@@ -388,7 +388,7 @@ void NsbInterpreter::NSBDelete()
             CacheHolder<Playable>::Write(HandleName, nullptr);
         });
     }
-    else if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
+    else if (DrawableBase* pDrawable = GetDrawable())
     {
         pGame->GLCallback(std::bind(&NsbInterpreter::GLDelete, this, pDrawable));
         CacheHolder<DrawableBase>::Write(HandleName, nullptr);
