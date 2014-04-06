@@ -345,6 +345,13 @@ DrawableBase* NsbInterpreter::GetDrawable()
     return pDrawable;
 }
 
+Playable* NsbInterpreter::GetPlayable()
+{
+    Playable* pPlayable = CacheHolder<Playable>::Read(HandleName);
+    NsbAssert(pPlayable, "Failed to find playable");
+    return pPlayable;
+}
+
 void NsbInterpreter::WaitForResume()
 {
     while (!RunInterpreter)
