@@ -18,6 +18,14 @@
 #ifndef NSB_CONTEXT_HPP
 #define NSB_CONTEXT_HPP
 
+// Element of call stack
+// Contains script and line to which function will return upon ending
+struct FuncReturn
+{
+    ScriptFile* pScript;
+    uint32_t SourceLine;
+};
+
 class NsbContext
 {
 public:
@@ -28,6 +36,7 @@ public:
     bool CallSubroutine(ScriptFile* pDestScript, const string& Symbol); // Attempts to call specified symbol in specified script
     void ReturnSubroutine(); // Function return: pop the call stack
     const std::vector<string>& GetLineArgs() { return pLine->Params; }
+    const string& GetName() { return Name; }
     const string& GetScriptName() { return pScript->GetName(); }
     uint32_t GetNextLineEntry() { return SourceIter; }
     ScriptFile* GetScript() { return pScript; }
