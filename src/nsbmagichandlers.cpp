@@ -342,7 +342,7 @@ void NsbInterpreter::Move()
     int32_t X = Pop<int32_t>();
     int32_t Time = Pop<int32_t>();
     HandleName = Pop<string>();
-    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
+    if (DrawableBase* pDrawable = GetDrawable())
         pGame->GLCallback(std::bind(&NsbInterpreter::GLMove, this, pDrawable, Time, X, Y, Tempo, Wait));
 }
 
@@ -350,7 +350,7 @@ void NsbInterpreter::WaitText()
 {
     string unk = Pop<string>();
     HandleName = Pop<string>();
-    if (Text* pText = (Text*)CacheHolder<DrawableBase>::Read(HandleName))
+    if (Text* pText = (Text*)GetDrawable())
         NSBWaitText(pText, unk);
 }
 
@@ -409,7 +409,7 @@ void NsbInterpreter::Zoom()
     int32_t X = Pop<int32_t>();
     int32_t Time = Pop<int32_t>();
     string HandleName = Pop<string>();
-    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
+    if (Drawable* pDrawable = (Drawable*)GetDrawable())
         pGame->GLCallback(std::bind(&NsbInterpreter::GLZoom, this, pDrawable, Time, X, Y, Tempo, Wait));
 }
 
@@ -482,7 +482,7 @@ void NsbInterpreter::ApplyBlur()
 {
     string Heaviness = Pop<string>();
     string HandleName = Pop<string>();
-    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
+    if (Drawable* pDrawable = (Drawable*)GetDrawable())
         pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyBlur, this, pDrawable, Heaviness));
 }
 
@@ -596,7 +596,7 @@ void NsbInterpreter::DrawTransition()
     int32_t Start = Pop<int32_t>();
     int32_t Time = Pop<int32_t>();
     string HandleName = Pop<string>();
-    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
+    if (Drawable* pDrawable = (Drawable*)GetDrawable())
         pGame->GLCallback(std::bind(&NsbInterpreter::GLDrawTransition, this, pDrawable, Time, Start, End, Range, Tempo, File, Wait));
 }
 
@@ -639,7 +639,7 @@ void NsbInterpreter::Fade()
             NSBFade(pDrawable, Time, Opacity, Tempo, Wait);
         });
     }
-    else if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName))
+    else if (DrawableBase* pDrawable = GetDrawable())
         NSBFade(pDrawable, Time, Opacity, Tempo, Wait);
 }
 
@@ -735,7 +735,7 @@ void NsbInterpreter::SetVertex()
     int32_t Y = Pop<int32_t>();
     int32_t X = Pop<int32_t>();
     HandleName = Pop<string>();
-    if (Drawable* pDrawable = (Drawable*)CacheHolder<DrawableBase>::Read(HandleName))
+    if (Drawable* pDrawable = (Drawable*)GetDrawable())
         pDrawable->SetCenter(X, Y);
 }
 

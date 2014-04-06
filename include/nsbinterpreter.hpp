@@ -308,6 +308,7 @@ protected:
     void SetLocalVariable(const string& Identifier, Variable* pVar);
     void SetVariable(const string& Identifier, Variable* pVar, std::map<string, Variable*>& Container);
     void CallScriptSymbol(const string& Prefix);
+    DrawableBase* GetDrawable(); // Return current drawable as specified by HandleName
 
     bool NsbAssert(bool expr, string error);
 
