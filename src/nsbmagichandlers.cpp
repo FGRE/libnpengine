@@ -324,7 +324,7 @@ void NsbInterpreter::SetLoop()
 {
     bool Loop = Pop<bool>();
     HandleName = Pop<string>();
-    if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
+    if (Playable* pMusic = GetPlayable())
         NSBSetLoop(pMusic, Loop);
 }
 
@@ -445,7 +445,7 @@ void NsbInterpreter::SetVolume()
             NSBSetVolume(pMusic, NumSeconds, Volume, Tempo);
         });
     }
-    else if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
+    else if (Playable* pMusic = GetPlayable())
         NSBSetVolume(pMusic, NumSeconds, Volume, Tempo);
 }
 
@@ -454,7 +454,7 @@ void NsbInterpreter::SetLoopPoint()
     int32_t End = Pop<int32_t>();
     int32_t Begin = Pop<int32_t>();
     HandleName = Pop<string>();
-    if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
+    if (Playable* pMusic = GetPlayable())
         NSBSetLoopPoint(pMusic, Begin, End);
 }
 

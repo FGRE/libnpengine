@@ -309,6 +309,7 @@ protected:
     void SetVariable(const string& Identifier, Variable* pVar, std::map<string, Variable*>& Container);
     void CallScriptSymbol(const string& Prefix);
     DrawableBase* GetDrawable(); // Return current drawable as specified by HandleName
+    Playable* GetPlayable();
 
     bool NsbAssert(bool expr, string error);
 
@@ -364,6 +365,7 @@ template <class T> void NsbInterpreter::WildcardCall(std::string Handle, std::fu
 
 template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 {
+    // TODO: remove this
     if (Identifier[0] == '@')
         return boost::lexical_cast<T>(string(Identifier.c_str() + 1));
 

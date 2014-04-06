@@ -170,7 +170,7 @@ void NsbInterpreter::GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool 
     if (std::ifstream("NOMOVIE"))
         return;
 
-    if (Playable* pMovie = CacheHolder<Playable>::Read(HandleName))
+    if (Playable* pMovie = GetPlayable())
     {
         pGame->AddDrawable((Movie*)nullptr);
         delete pMovie;
@@ -258,7 +258,7 @@ void NsbInterpreter::NSBRequest(const string& State)
             });
         }
     }
-    else if (Playable* pPlayable = CacheHolder<Playable>::Read(HandleName))
+    else if (Playable* pPlayable = GetPlayable())
     {
         if (State == "Play")
             pPlayable->Play();
@@ -280,7 +280,7 @@ void NsbInterpreter::NSBCreateWindow(int32_t unk0, int32_t x, int32_t y, int32_t
 void NsbInterpreter::NSBGetMovieTime()
 {
     int32_t Duration = 0;
-    if (Playable* pPlayable = CacheHolder<Playable>::Read(HandleName))
+    if (Playable* pPlayable = GetPlayable())
         Duration = pPlayable->GetTimeLeft();
     else
         std::cout << "Failed to get movie time because there is no Playable " << HandleName << std::endl;
@@ -306,7 +306,7 @@ void NsbInterpreter::NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opac
 
 void NsbInterpreter::NSBCreateSound(const string& Type, const string& File)
 {
-    if (Playable* pMusic = CacheHolder<Playable>::Read(HandleName))
+    if (Playable* pMusic = GetPlayable())
         delete pMusic;
 
     NpaIterator AudioFile = sResourceMgr->GetFile(File);
@@ -393,7 +393,7 @@ void NsbInterpreter::NSBDelete()
         pGame->GLCallback(std::bind(&NsbInterpreter::GLDelete, this, pDrawable));
         CacheHolder<DrawableBase>::Write(HandleName, nullptr);
     }
-    else if (Playable* pMovie = CacheHolder<Playable>::Read(HandleName))
+    else if (Playable* pMovie = GetPlayable())
     {
         delete pMovie;
         pGame->AddDrawable((Movie*)nullptr);
