@@ -117,14 +117,6 @@ struct ArrayVariable : Variable
     ArrayMembers Members;
 };
 
-// Element of call stack
-// Contains script and line to which function will return upon ending
-struct FuncReturn
-{
-    ScriptFile* pScript;
-    uint32_t SourceLine;
-};
-
 struct Callback
 {
     sf::Keyboard::Key Key;

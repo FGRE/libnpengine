@@ -112,6 +112,15 @@ void NsbInterpreter::DebuggerMain()
                 PrintVariable(Stack[i]);
             }
         }
+        // Thread Trace
+        else if (Command == "t")
+        {
+            for (auto iter = Threads.begin(); iter != Threads.end(); ++iter)
+            {
+                std::cout << "\nThread " << (*iter)->GetName() << ":\n";
+                (*iter)->WriteTrace(std::cout);
+            }
+        }
         else
         {
             std::vector<string> Tokens;

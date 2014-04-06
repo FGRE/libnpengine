@@ -132,7 +132,7 @@ DbgStepping(false)
     Builtins[MAGIC_CLEAR_BACKLOG] = &NsbInterpreter::ClearBacklog;
 
     // Main script thread
-    pMainContext = new NsbContext("");
+    pMainContext = new NsbContext("__nitroscript_main__");
     pMainContext->Start();
 }
 
