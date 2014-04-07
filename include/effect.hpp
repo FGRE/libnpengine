@@ -81,12 +81,12 @@ public:
 
     void Reset(sf::Vector2f EndPos, int32_t Time)
     {
-        LerpEffect::Reset(this->End, EndPos, Time);
+        LerpEffect::Reset(this->End, this->End + EndPos, Time);
     }
 
     bool OnDraw(sf::RenderWindow* pWindow, sf::Sprite* pSprite, int32_t diff)
     {
-        pSprite->setPosition(pSprite->getPosition() + Start + Update(diff));
+        pSprite->setPosition(pSprite->getPosition() + Update(diff));
         return false;
     }
 };
