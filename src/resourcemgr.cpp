@@ -89,7 +89,7 @@ ScriptFile* ResourceMgr::GetScriptFile(const std::string& Path)
         CacheHolder<ScriptFile>::Write(Path, pScript);
     }
 
-    delete NsbData;
-    delete MapData;
+    delete[] NsbData;
+    delete[] MapData;
     return pScript;
 }
