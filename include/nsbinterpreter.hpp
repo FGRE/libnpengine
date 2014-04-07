@@ -400,9 +400,14 @@ template <class T> T NsbInterpreter::Pop()
     if (NsbAssert(!Stack.empty(), "Poping from empty stack"))
         return T(); // TODO: HACK!
     Variable* pVar = Stack.top();
-    T Ret = T(); // TODO: HACK!
+    T Ret;
     if (T* pT = boost::get<T>(&pVar->Value))
         Ret = *pT;
+    else
+    {
+        NsbAssert(false, "Pop<>(): Unexpected variable type");
+        Ret = T();
+    }
     if (!pVar->IsPtr)
         delete pVar;
     Stack.pop();
