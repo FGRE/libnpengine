@@ -345,7 +345,6 @@ DrawableBase* NsbInterpreter::GetDrawable(bool Expect)
 {
     DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName);
     if (Expect) NsbAssert(pDrawable, "Failed to find drawable");
-    else NsbAssert(!pDrawable, "Drawable already exists");
     return pDrawable;
 }
 
@@ -353,7 +352,6 @@ Playable* NsbInterpreter::GetPlayable(bool Expect)
 {
     Playable* pPlayable = CacheHolder<Playable>::Read(HandleName);
     if (Expect) NsbAssert(pPlayable, "Failed to find playable");
-    else NsbAssert(!pPlayable, "Playable already exists");
     return pPlayable;
 }
 

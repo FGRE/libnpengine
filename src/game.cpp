@@ -54,7 +54,6 @@ void Game::Run()
         auto d = Drawables.begin();
         while (d != Drawables.end())
         {
-            (*d)->Update();
             (*d)->Draw(this);
             ++d;
         }

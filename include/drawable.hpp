@@ -30,17 +30,12 @@ enum
 
 enum
 {
-    FADE_TEX    = 0,
-    FADE_MASK   = 1,
-    FADE_MAX    = 2
-};
-
-enum
-{
-    LERP_ZOOM       = 0,
-    LERP_ANIM       = 1,
-    LERP_ZOOM_ANIM  = 2,
-    LERP_MAX        = 3
+    EFFECT_MOVE,
+    EFFECT_ZOOM,
+    EFFECT_FADE,
+    EFFECT_MASK,
+    EFFECT_BLUR,
+    EFFECT_MAX
 };
 
 namespace sf
@@ -53,26 +48,7 @@ namespace sf
     class RenderTexture;
 };
 
-struct FadeEffect // TODO: Also LerpEffect
-{
-    // Objects are visible (1000) by default
-    // Drawable::SetOpacity sets Opacity = TargetOpacity
-    FadeEffect() : TargetOpacity(1000), Opacity(0), FadeTime(0) { }
-    int32_t TargetOpacity;
-    int32_t Opacity;
-    int32_t FadeTime;
-    sf::Clock FadeClock;
-};
-
-// Any effect which can be represented as smooth transition
-struct LerpEffect
-{
-    sf::Vector2f Old;
-    float NewX;
-    float NewY;
-    int32_t Time;
-    sf::Clock Clock;
-};
+class Effect;
 
 class DrawableBase
 {
@@ -100,23 +76,18 @@ public:
     virtual ~Drawable();
 
     virtual void Draw(sf::RenderWindow* pWindow);
-    virtual void Update();
+
     void SetBlur(const std::string& Heaviness);
-    void SetOpacity(int32_t NewOpacity, int32_t Time, uint8_t Index);
+    void Fade(int32_t NewOpacity, int32_t Time);
     void SetMask(sf::Texture* pTexture, int32_t Start, int32_t End, int32_t Time);
-    void AddLerpEffect(uint8_t EffIndex, int32_t x, int32_t y, int32_t Time);
+    void Move(int32_t x, int32_t y, int32_t Time);
+    void Zoom(int32_t x, int32_t y, int32_t Time);
     void SetCenter(int32_t x, int32_t y);
 
-protected:
-    sf::Vector2f UpdateLerp(uint8_t i);
-    LerpEffect* Lerps[LERP_MAX];
-    FadeEffect* Fades[FADE_MAX];
 private:
-    void UpdateFade(uint8_t Index);
-    sf::Shader Shader;
-    sf::Texture* pMask;
-    sf::RenderTexture* pBlur;
-    sf::Vector2f Position;
+    sf::Vector2f Center;
+    Effect* Effects[EFFECT_MAX];
+    sf::Clock Clock;
 };
 
 #endif
