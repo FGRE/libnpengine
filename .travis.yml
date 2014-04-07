@@ -10,11 +10,18 @@ before_install:
   - sudo apt-get update -qq
 
 install:
+  - sudo apt-get install libpthread-stubs0-dev libgl1-mesa-dev libx11-dev
+  - sudo apt-get install libxrandr-dev libfreetype6-dev libglew1.5-dev
+  - sudo apt-get install libjpeg8-dev libgpgme11-dev libsndfile1-dev libopenal-dev
   - sudo apt-get install -qq libboost-thread1.54-dev libboost-locale1.54-dev
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
 
 before_script:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - cd ..
+  - git clone --depth 1 https://github.com/LaurentGomila/SFML.git
+  - cd SFML
+  - cmake .-DSFML_BUILD_EXAMPLES=FALSE -DSFML_BUILD_DOC=FALSE && make -j2 && make install
   - cd ..
   - git clone --depth 1 https://github.com/FGRE/libnpa.git
   - cd libnpa
