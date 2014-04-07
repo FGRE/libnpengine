@@ -11,12 +11,13 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  # sfml
-  - sudo apt-get install -qq libpthread-stubs0-dev libgl1-mesa-dev libx11-dev libxrandr-dev libfreetype6-dev libglew1.5-dev libjpeg8-dev libgpgme11-dev libsndfile1-dev libopenal-dev libudev-dev
-  # gstreamer
-  - sudo apt-get install -qq libgstreamer1.0-dev
-  # boost
-  - sudo apt-get install -qq libboost-thread1.54-dev libboost-locale1.54-dev
+  - >
+    sudo apt-get install -qq libpthread-stubs0-dev libgl1-mesa-dev libx11-dev
+    libxrandr-dev libfreetype6-dev libglew1.5-dev libjpeg8-dev libgpgme11-dev
+    libsndfile1-dev libopenal-dev libudev-dev
+    libgstreamer1.0-dev
+    libglib2.0-dev
+    libboost-thread1.54-dev libboost-locale1.54-dev
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
 
 before_script:
@@ -24,7 +25,7 @@ before_script:
   - cd ..
   - git clone --depth 1 https://github.com/LaurentGomila/SFML.git
   - cd SFML
-  - cmake . -DSFML_BUILD_EXAMPLES=FALSE -DSFML_BUILD_DOC=FALSE && make -j2 && make install
+  - cmake . -DSFML_BUILD_EXAMPLES=FALSE -DSFML_BUILD_DOC=FALSE && make -j2 && sudo make install
   - cd ..
   - git clone --depth 1 https://github.com/FGRE/libnpa.git
   - cd libnpa
