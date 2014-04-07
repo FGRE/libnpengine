@@ -72,6 +72,7 @@ ScriptFile* ResourceMgr::GetScriptFile(const std::string& Path)
     if (ScriptFile* pCache = CacheHolder<ScriptFile>::Read(Path))
         return pCache;
 
+    ScriptFile* pScript = nullptr;
     std::string MapPath(Path, 0, Path.size() - 3);
     MapPath += "map";
 
@@ -84,13 +85,11 @@ ScriptFile* ResourceMgr::GetScriptFile(const std::string& Path)
     // Both files found
     if (NsbData && MapData)
     {
-        ScriptFile* pScript = new ScriptFile(Path, NsbData, NsbSize, MapData, MapSize);
+        pScript = new ScriptFile(Path, NsbData, NsbSize, MapData, MapSize);
         CacheHolder<ScriptFile>::Write(Path, pScript);
-        return pScript;
     }
 
-    // Either file not found
     delete NsbData;
     delete MapData;
-    return nullptr;
+    return pScript;
 }
