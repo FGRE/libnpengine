@@ -138,6 +138,12 @@ void NsbInterpreter::DebuggerMain()
             else if (Tokens.size() == 2 && Tokens[0] == "b" && Tokens[1] == "c")
             {
                 Breakpoints.clear();
+                BreakOnAssert = false;
+            }
+            // Breakpoint on Assertion failure
+            else if (Tokens.size() == 2 && Tokens[0] == "b" && Tokens[1] == "a")
+            {
+                BreakOnAssert = true;
             }
             // Print
             else if (Tokens.size() == 2 && Tokens[0] == "p")

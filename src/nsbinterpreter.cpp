@@ -30,7 +30,8 @@ NsbInterpreter::NsbInterpreter() :
 StopInterpreter(false),
 pGame(nullptr),
 pDebuggerThread(nullptr),
-DbgStepping(false)
+DbgStepping(false),
+BreakOnAssert(false)
 {
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
     Builtins[MAGIC_BREAK] = &NsbInterpreter::Break;
@@ -375,5 +376,6 @@ bool NsbInterpreter::NsbAssert(bool expr, string error)
 
     std::cout << error << '\n';
     pContext->WriteTrace(std::cout);
+    if (BreakOnAssert) DbgStepping = true;
     return true;
 }

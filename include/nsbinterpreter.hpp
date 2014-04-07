@@ -341,6 +341,7 @@ private:
     std::list<std::pair<string, int32_t> > Breakpoints;
     std::thread* pDebuggerThread;
     volatile bool DbgStepping;
+    volatile bool BreakOnAssert;
 };
 
 template <> bool NsbInterpreter::Pop();
