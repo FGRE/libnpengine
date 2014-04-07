@@ -244,7 +244,7 @@ void NsbInterpreter::GLDelete(DrawableBase* pDrawable)
 
 void NsbInterpreter::NSBRequest(const string& State)
 {
-    if (Drawable* pDrawable = (Drawable*)GetDrawable())
+    if (Drawable* pDrawable = (Drawable*)GetDrawable(false))
     {
         if (State == "Smoothing")
         {
@@ -258,7 +258,7 @@ void NsbInterpreter::NSBRequest(const string& State)
             });
         }
     }
-    else if (Playable* pPlayable = GetPlayable())
+    else if (Playable* pPlayable = GetPlayable(false))
     {
         if (State == "Play")
             pPlayable->Play();
@@ -298,7 +298,7 @@ void NsbInterpreter::NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opac
         CacheHolder<DrawableBase>::Write(HandleName, nullptr); // hack: see Game::ClearText
     }
     else
-        ((Drawable*)pDrawable)->SetOpacity(Opacity, Time, FADE_TEX);
+        ((Drawable*)pDrawable)->Fade(Opacity, Time);
 
     if (Wait)
         pContext->Sleep(Time);
@@ -343,7 +343,7 @@ void NsbInterpreter::GLMove(DrawableBase* pDrawable, int32_t Time, int32_t x, in
             pDrawable->ToText()->setPosition(x, y);
     }
     else
-        ((Drawable*)pDrawable)->AddLerpEffect(LERP_ANIM, x, y, Time);
+        ((Drawable*)pDrawable)->Move(x, y, Time);
 
     if (Wait)
         pContext->Sleep(Time);
@@ -361,12 +361,12 @@ void NsbInterpreter::NSBSetVolume(Playable* pMusic, int32_t NumSeconds, int32_t 
     pMusic->SetVolume(Volume / 1000.0d);
 }
 
-void NsbInterpreter::GLZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait)
+void NsbInterpreter::GLZoom(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait)
 {
     if (NsbAssert(x != 0 && y != 0, "Script attempted to Zoom with x or y scale value 0"))
         return;
 
-    pDrawable->AddLerpEffect(LERP_ZOOM, x / 1000.0f, y / 1000.0f, Time);
+    pDrawable->Zoom(x, y, Time);
     if (Wait)
         pContext->Sleep(Time);
 }
