@@ -282,7 +282,7 @@ protected:
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
     // See: Game::GLCallback
-    void GLZoom(Drawable* pDrawable, int32_t Time, float x, float y, const string& Tempo, bool Wait);
+    void GLZoom(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void GLMove(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void GLDelete(DrawableBase* pDrawable);
     void GLCreateTexture(int32_t Priority, PosFunc XFunc, PosFunc YFunc, const string& File);
