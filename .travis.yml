@@ -12,7 +12,7 @@ before_install:
 
 install:
   # sfml
-  - sudo apt-get install -qq libpthread-stubs0-dev libgl1-mesa-dev libx11-dev libxrandr-dev libfreetype6-dev libglew1.5-dev libjpeg8-dev libgpgme11-dev libsndfile1-dev libopenal-dev
+  - sudo apt-get install -qq libpthread-stubs0-dev libgl1-mesa-dev libx11-dev libxrandr-dev libfreetype6-dev libglew1.5-dev libjpeg8-dev libgpgme11-dev libsndfile1-dev libopenal-dev libudev-dev
   # gstreamer
   - sudo apt-get install -qq libgstreamer1.0-dev
   # boost
