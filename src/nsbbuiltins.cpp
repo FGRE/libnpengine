@@ -42,7 +42,7 @@ sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area = s
         delete pTexture;
         pTexture = nullptr;
     }
-    delete pPixels;
+    delete[] pPixels;
     return pTexture;
 }
 
