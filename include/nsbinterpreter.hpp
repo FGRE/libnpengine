@@ -155,7 +155,6 @@ public:
     void StartDebugger();
 
     void CallScript(const string& FileName, const string& Symbol);
-    void DumpState();
     void KeyPressed(sf::Keyboard::Key Key);
     virtual void MouseMoved(sf::Vector2i Pos) {}
     virtual void MouseClicked(sf::Event::MouseButtonEvent Event) {}

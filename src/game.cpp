@@ -90,9 +90,7 @@ void Game::HandleEvent(sf::Event Event)
     {
         case sf::Event::KeyPressed:
             // TODO: Move to interpreter
-            if (Event.key.code == sf::Keyboard::F8)
-                pInterpreter->DumpState();
-            else if (Event.key.code == sf::Keyboard::LControl)
+            if (Event.key.code == sf::Keyboard::LControl)
                 IgnoreText = !IgnoreText;
             pInterpreter->KeyPressed(Event.key.code);
             break;

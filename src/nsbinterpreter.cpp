@@ -363,12 +363,6 @@ void NsbInterpreter::WaitForResume()
         Sleep(1);
 }
 
-void NsbInterpreter::DumpState()
-{
-    std::ofstream Log("state-log.txt");
-    pContext->WriteTrace(Log);
-}
-
 bool NsbInterpreter::NsbAssert(bool expr, string error)
 {
     if (expr)
