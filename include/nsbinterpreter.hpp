@@ -333,6 +333,7 @@ private:
     void WaitForResume();
 
     // NsbDebugger
+    void Inspect(int32_t n);
     void PrintVariable(Variable* pVar);
     void DebuggerTick();
     string Disassemble(Line* pLine);
