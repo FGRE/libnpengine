@@ -21,7 +21,12 @@ install:
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
 
 before_script:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
+  - |
+    if [ "$CXX" = "clang++" ]; then
+      wget http://clang.llvm.org/libstdc++4.6-clang11.patch
+      sudo patch /usr/include/c++/4.6/type_traits < libstdc++4.6-clang11.patch
+    fi
   - cd ..
   - git clone --depth 1 https://github.com/LaurentGomila/SFML.git
   - cd SFML
