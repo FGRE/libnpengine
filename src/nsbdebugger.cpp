@@ -80,6 +80,18 @@ void NsbInterpreter::DebuggerTick()
         Pause();
 }
 
+void NsbInterpreter::Inspect(int32_t n)
+{
+    ScriptFile* pScript = pContext->GetScript();
+    uint32_t SourceIter = pContext->GetNextLineEntry();
+    for (uint32_t i = SourceIter - n; i < SourceIter + n; ++i)
+    {
+        if (i == SourceIter) std::cout << " > ";
+        else std::cout << "   ";
+        std::cout << Disassemble(pScript->GetLine(i));
+    }
+}
+
 void NsbInterpreter::DebuggerMain()
 {
     string OldCommand;
@@ -155,6 +167,14 @@ void NsbInterpreter::DebuggerMain()
                     PrintVariable(iter->second);
                 }
                 else std::cout << "Variable " << Tokens[1] << " not found!" << std::endl;
+            }
+            // Inspect surrounding code
+            else if (Tokens.size() == 2 && Tokens[0] == "i")
+            {
+                try
+                {
+                    Inspect(boost::lexical_cast<int32_t>(Tokens[1]));
+                } catch (...) { std::cout << "Bad command!" << std::endl; }
             }
         }
     }
