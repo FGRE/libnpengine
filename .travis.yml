@@ -15,7 +15,7 @@ install:
     sudo apt-get install -qq libpthread-stubs0-dev libgl1-mesa-dev libx11-dev
     libxrandr-dev libfreetype6-dev libglew1.5-dev libjpeg8-dev libgpgme11-dev
     libsndfile1-dev libopenal-dev libudev-dev
-    libgstreamer1.0-dev
+    libgstreamer-plugins-base1.0-dev
     libglib2.0-dev
     libboost-thread1.54-dev libboost-locale1.54-dev
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
