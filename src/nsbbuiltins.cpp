@@ -150,7 +150,7 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
     if (HandleName == "クリア黒")
         return;
 
-    if (DrawableBase* pDrawable = GetDrawable())
+    if (DrawableBase* pDrawable = GetDrawable(false))
     {
         pGame->RemoveDrawable(pDrawable);
         delete pDrawable;
@@ -170,7 +170,7 @@ void NsbInterpreter::GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool 
     if (std::ifstream("NOMOVIE"))
         return;
 
-    if (Playable* pMovie = GetPlayable())
+    if (Playable* pMovie = GetPlayable(false))
     {
         pGame->AddDrawable((Movie*)nullptr);
         delete pMovie;
@@ -198,7 +198,7 @@ void NsbInterpreter::GLCreateTexture(int32_t Priority, PosFunc XFunc, PosFunc YF
 
 void NsbInterpreter::GLLoadTextureClip(int32_t Priority, PosFunc XFunc, PosFunc YFunc, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File)
 {
-    if (DrawableBase* pDrawable = GetDrawable())
+    if (DrawableBase* pDrawable = GetDrawable(false))
     {
         pGame->RemoveDrawable(pDrawable);
         delete pDrawable;
@@ -306,7 +306,7 @@ void NsbInterpreter::NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opac
 
 void NsbInterpreter::NSBCreateSound(const string& Type, const string& File)
 {
-    if (Playable* pMusic = GetPlayable())
+    if (Playable* pMusic = GetPlayable(false))
         delete pMusic;
 
     NpaIterator AudioFile = sResourceMgr->GetFile(File);

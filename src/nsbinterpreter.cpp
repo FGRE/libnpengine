@@ -170,6 +170,8 @@ void NsbInterpreter::Initialize(Game* pGame)
     SetVariable("$BOX_Init", new Variable("false"));
     SetVariable("$BGM_Init", new Variable("false"));
     SetVariable("#N2systemVERSION_old", new Variable("false"));
+    SetVariable("$format", new Variable("false"));
+    SetVariable("$DebugMode", new Variable("false"));
 }
 
 void NsbInterpreter::ExecuteScript(const string& ScriptName)
@@ -338,17 +340,19 @@ void NsbInterpreter::Pop()
     Stack.pop();
 }
 
-DrawableBase* NsbInterpreter::GetDrawable()
+DrawableBase* NsbInterpreter::GetDrawable(bool Expect)
 {
     DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName);
-    NsbAssert(pDrawable, "Failed to find drawable");
+    if (Expect) NsbAssert(pDrawable, "Failed to find drawable");
+    else NsbAssert(!pDrawable, "Drawable already exists");
     return pDrawable;
 }
 
-Playable* NsbInterpreter::GetPlayable()
+Playable* NsbInterpreter::GetPlayable(bool Expect)
 {
     Playable* pPlayable = CacheHolder<Playable>::Read(HandleName);
-    NsbAssert(pPlayable, "Failed to find playable");
+    if (Expect) NsbAssert(pPlayable, "Failed to find playable");
+    else NsbAssert(!pPlayable, "Playable already exists");
     return pPlayable;
 }
 
