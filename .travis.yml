@@ -33,7 +33,7 @@ before_script:
   - cd libnpa
   - cmake .
   - make
-  - cd ../libnpengine
+  - cd ../../$TRAVIS_REPO_SLUG
 
 script:
   - cmake .
