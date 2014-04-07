@@ -22,7 +22,7 @@ before_script:
   - cd ..
   - git clone --depth 1 https://github.com/LaurentGomila/SFML.git
   - cd SFML
-  - cmake .-DSFML_BUILD_EXAMPLES=FALSE -DSFML_BUILD_DOC=FALSE && make -j2 && make install
+  - cmake . -DSFML_BUILD_EXAMPLES=FALSE -DSFML_BUILD_DOC=FALSE && make -j2 && make install
   - cd ..
   - git clone --depth 1 https://github.com/FGRE/libnpa.git
   - cd libnpa
