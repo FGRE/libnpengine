@@ -97,6 +97,7 @@ public:
     ZoomEffect(sf::Vector2f EndScale, int32_t Time)
     {
         Reset(EndScale, Time);
+        this->Start = sf::Vector2f(1.0f, 1.0f);
     }
 
     void Reset(sf::Vector2f EndScale, int32_t Time)
