@@ -308,8 +308,8 @@ protected:
     void SetLocalVariable(const string& Identifier, Variable* pVar);
     void SetVariable(const string& Identifier, Variable* pVar, std::map<string, Variable*>& Container);
     void CallScriptSymbol(const string& Prefix);
-    DrawableBase* GetDrawable(); // Return current drawable as specified by HandleName
-    Playable* GetPlayable();
+    DrawableBase* GetDrawable(bool Expect = true); // Return current drawable as specified by HandleName
+    Playable* GetPlayable(bool Expect = true); // Expect = true: Error if not found, Expect = false: Error if found
 
     bool NsbAssert(bool expr, string error);
 
