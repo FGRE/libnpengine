@@ -21,6 +21,7 @@
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
 #include "npaiterator.hpp"
+#include "object.hpp"
 
 struct AppSrc
 {
@@ -29,7 +30,7 @@ struct AppSrc
     gsize Offset;
 };
 
-class Playable
+class Playable : public Object
 {
     friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
 public:
@@ -44,6 +45,8 @@ public:
     void Stop();
     void Play();
     int32_t GetTimeLeft();
+    void Request(Game* pGame, const string& State);
+    void Delete(Game* pGame, NsbInterpreter* pInterpreter);
 
     AppSrc* Appsrc;
 protected:

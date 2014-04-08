@@ -107,8 +107,8 @@ void NsbInterpreter::CreateChoice()
 
 void NsbInterpreter::SetAlias()
 {
-    string unk0 = Pop<string>();
-    string unk1 = Pop<string>();
+    string Identifier = Pop<string>();
+    string Alias = string("@") + Pop<string>();
 }
 
 void NsbInterpreter::SoundAmplitude()
@@ -144,13 +144,15 @@ void NsbInterpreter::LoadImage()
 
 void NsbInterpreter::TextureWidth()
 {
-    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(Pop<string>()))
+    HandleName = Pop<string>();
+    if (DrawableBase* pDrawable = GetDrawable())
         Stack.push(new Variable(pDrawable->ToSprite()->getTexture()->getSize().x));
 }
 
 void NsbInterpreter::TextureHeight()
 {
-    if (DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(Pop<string>()))
+    HandleName = Pop<string>();
+    if (DrawableBase* pDrawable = GetDrawable())
         Stack.push(new Variable(pDrawable->ToSprite()->getTexture()->getSize().y));
 }
 
@@ -360,11 +362,15 @@ void NsbInterpreter::GetMovieTime()
     NSBGetMovieTime();
 }
 
+// TODO: Not sure about this...
+// Maybe local variables do not exist at all: Maybe it's just aliases?
 void NsbInterpreter::SetParam()
 {
     if (pContext->GetLineArgs()[0] == "STRING")
     {
         string Value = pContext->GetLineArgs()[1];
+
+        // Check local variables
         for (auto iter = LocalVariables.begin(); iter != LocalVariables.end(); ++iter)
         {
             if (iter->first == Value)
@@ -373,8 +379,7 @@ void NsbInterpreter::SetParam()
                 return;
             }
         }
-        // TODO: Not sure about this...
-        // Maybe local variables do not exist at all?
+        // Check global variables
         if (Value[0] == '$')
             Push(GetVariable<string>(Value));
         else

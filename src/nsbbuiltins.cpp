@@ -162,7 +162,7 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
 
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
     pSprite->setPosition(x, y);
-    CacheHolder<DrawableBase>::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
+    ObjectHolder::Write(HandleName, new Drawable(pSprite, Priority, DRAWABLE_TEXTURE));
 }
 
 void NsbInterpreter::GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio)
@@ -187,7 +187,7 @@ void NsbInterpreter::GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool 
     // Probably unused
     //pMovie->SetPosition(x, y);
 
-    CacheHolder<Playable>::Write(HandleName, pMovie);
+    ObjectHolder::Write(HandleName, pMovie);
     pGame->AddDrawable(pMovie);
 }
 
@@ -214,60 +214,37 @@ void NsbInterpreter::GLLoadTextureClip(int32_t Priority, PosFunc XFunc, PosFunc 
 
     if (!pTexture)
     {
-        CacheHolder<DrawableBase>::Write(HandleName, nullptr);
+        ObjectHolder::Write(HandleName, nullptr);
         return;
     }
 
     sf::Sprite* pSprite = new sf::Sprite(*pTexture);
     pSprite->setPosition(XFunc(pTexture->getSize().x), YFunc(pTexture->getSize().y));
     Drawable* pDrawable = new Drawable(pSprite, Priority, DRAWABLE_TEXTURE);
-    CacheHolder<DrawableBase>::Write(HandleName, pDrawable);
+    ObjectHolder::Write(HandleName, pDrawable);
     pGame->AddDrawable(pDrawable);
 }
 
 void NsbInterpreter::GLParseText(const string& Box, const string& XML)
 {
-    string NewHandle = Box + "/" + HandleName;
-    SetVariable("$SYSTEM_present_text", new Variable(NewHandle));
-    if (DrawableBase* pText = CacheHolder<DrawableBase>::Read(NewHandle))
+    HandleName = Box + "/" + HandleName;
+    SetVariable("$SYSTEM_present_text", new Variable(HandleName));
+    if (DrawableBase* pText = GetDrawable())
         delete pText;
     Text* pText = new Text(XML);
-    CacheHolder<DrawableBase>::Write(NewHandle, pText);
+    ObjectHolder::Write(HandleName, pText);
 }
 
 void NsbInterpreter::GLDelete(DrawableBase* pDrawable)
 {
-    if (pDrawable) // Not really needed?
-        pGame->RemoveDrawable(pDrawable);
+    pGame->RemoveDrawable(pDrawable);
     delete pDrawable;
 }
 
 void NsbInterpreter::NSBRequest(const string& State)
 {
-    if (Drawable* pDrawable = (Drawable*)GetDrawable(false))
-    {
-        if (State == "Smoothing")
-        {
-            if (NsbAssert(pDrawable->Type == DRAWABLE_TEXTURE, "Smoothing non-texture drawable"))
-                return;
-
-            pGame->GLCallback([pDrawable]()
-            {
-                sf::Texture* pTexture = const_cast<sf::Texture*>(pDrawable->ToSprite()->getTexture());
-                pTexture->setSmooth(true);
-            });
-        }
-    }
-    else if (Playable* pPlayable = GetPlayable(false))
-    {
-        if (State == "Play")
-            pPlayable->Play();
-    }
-    else if (NsbContext* pThread = CacheHolder<NsbContext>::Read(HandleName))
-    {
-        if (State == "Start")
-            pThread->Start();
-    }
+    if (Object* pObject = GetObject())
+        pObject->Request(pGame, State);
 }
 
 void NsbInterpreter::NSBCreateWindow(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1)
@@ -295,7 +272,7 @@ void NsbInterpreter::NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opac
             return;
 
         pGame->GLCallback(std::bind(&Game::ClearText, pGame));
-        CacheHolder<DrawableBase>::Write(HandleName, nullptr); // hack: see Game::ClearText
+        ObjectHolder::Write(HandleName, nullptr); // hack: see Game::ClearText
     }
     else
         ((Drawable*)pDrawable)->Fade(Opacity, Time);
@@ -312,11 +289,11 @@ void NsbInterpreter::NSBCreateSound(const string& Type, const string& File)
     NpaIterator AudioFile = sResourceMgr->GetFile(File);
     if (NsbAssert(AudioFile.GetFileSize() > 0, "Attempting to create Playable from empty file"))
     {
-        CacheHolder<Playable>::Write(HandleName, nullptr);
+        ObjectHolder::Write(HandleName, nullptr);
         return;
     }
 
-    CacheHolder<Playable>::Write(HandleName, new Playable(AudioFile));
+    ObjectHolder::Write(HandleName, new Playable(AudioFile));
 }
 
 void NsbInterpreter::NSBWaitText(Text* pText, const string& unk)
@@ -375,30 +352,14 @@ void NsbInterpreter::NSBDelete()
 {
     // Hack: Do not destroy * (aka everything)
     if (HandleName.back() == '*' && HandleName.size() != 1)
-    {
-        WildcardCall<DrawableBase>(HandleName, [this](DrawableBase* pDrawable)
+        WildcardCall<Object>(HandleName, [this] (Object* pObject)
         {
-            pGame->GLCallback(std::bind(&NsbInterpreter::GLDelete, this, pDrawable));
-            CacheHolder<DrawableBase>::Write(HandleName, nullptr);
+            pObject->Delete(pGame, this);
         });
-        WildcardCall<Playable>(HandleName, [this](Playable* pMovie)
-        {
-            delete pMovie;
-            pGame->AddDrawable((Movie*)nullptr);
-            CacheHolder<Playable>::Write(HandleName, nullptr);
-        });
-    }
-    else if (DrawableBase* pDrawable = GetDrawable())
-    {
-        pGame->GLCallback(std::bind(&NsbInterpreter::GLDelete, this, pDrawable));
-        CacheHolder<DrawableBase>::Write(HandleName, nullptr);
-    }
-    else if (Playable* pMovie = GetPlayable())
-    {
-        delete pMovie;
-        pGame->AddDrawable((Movie*)nullptr);
-        CacheHolder<Playable>::Write(HandleName, nullptr);
-    }
+    else if (Object* pObject = GetObject())
+        pObject->Delete(pGame, this);
+
+    ObjectHolder::Write(HandleName, nullptr);
 }
 
 // ShellExecute
@@ -469,7 +430,7 @@ cleanup:
 
 void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function)
 {
-    if (NsbContext* pThread = CacheHolder<NsbContext>::Read(HandleName))
+    if (NsbContext* pThread = (NsbContext*)ObjectHolder::Read(HandleName))
     {
         Threads.remove(pThread);
         delete pThread;
@@ -477,7 +438,7 @@ void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, 
 
     NsbContext* pThread = new NsbContext(HandleName);
     pThread->CallSubroutine(pContext->GetScript(), Function);
-    CacheHolder<NsbContext>::Write(HandleName, pThread);
+    ObjectHolder::Write(HandleName, pThread);
     Threads.push_back(pThread);
 }
 

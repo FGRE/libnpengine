@@ -19,6 +19,7 @@
 #include "nsbmagic.hpp"
 #include "text.hpp"
 #include "nsbcontext.hpp"
+#include "playable.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -343,16 +344,23 @@ void NsbInterpreter::Pop()
 
 DrawableBase* NsbInterpreter::GetDrawable(bool Expect)
 {
-    DrawableBase* pDrawable = CacheHolder<DrawableBase>::Read(HandleName);
+    DrawableBase* pDrawable = dynamic_cast<DrawableBase*>(ObjectHolder::Read(HandleName));
     if (Expect) NsbAssert(pDrawable, "Failed to find drawable");
     return pDrawable;
 }
 
 Playable* NsbInterpreter::GetPlayable(bool Expect)
 {
-    Playable* pPlayable = CacheHolder<Playable>::Read(HandleName);
+    Playable* pPlayable = dynamic_cast<Playable*>(ObjectHolder::Read(HandleName));
     if (Expect) NsbAssert(pPlayable, "Failed to find playable");
     return pPlayable;
+}
+
+Object* NsbInterpreter::GetObject(bool Expect)
+{
+    Object* pObject = ObjectHolder::Read(HandleName);
+    if (Expect) NsbAssert(pObject, "Failed to find object");
+    return pObject;
 }
 
 void NsbInterpreter::WaitForResume()

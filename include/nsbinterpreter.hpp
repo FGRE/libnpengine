@@ -20,6 +20,7 @@
 
 #include "scriptfile.hpp"
 #include "resourcemgr.hpp"
+#include "object.hpp"
 
 #include <stack>
 #include <cstdint>
@@ -34,7 +35,6 @@
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
-using std::string;
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 576
@@ -62,6 +62,7 @@ class NsbContext;
 
 typedef std::list<std::pair<string, ArrayVariable*>> ArrayMembers;
 typedef std::function<int32_t(int32_t)> PosFunc;
+typedef CacheHolder<Object> ObjectHolder;
 
 class SpecialPosVisitor : public boost::static_visitor<PosFunc>
 {
@@ -161,6 +162,7 @@ public:
 
     void ExecuteScriptLocal(const string& InitScript);
 
+    void GLDelete(DrawableBase* pDrawable);
 protected:
     void Run();
     void Sleep(int32_t ms);
@@ -284,7 +286,6 @@ protected:
     // See: Game::GLCallback
     void GLZoom(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
     void GLMove(DrawableBase* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait);
-    void GLDelete(DrawableBase* pDrawable);
     void GLCreateTexture(int32_t Priority, PosFunc XFunc, PosFunc YFunc, const string& File);
     void GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32_t Width, int32_t Height, const string& Color);
     // NOTE: Chaos;Head doesn't have last parameter (音声同期)
@@ -309,6 +310,7 @@ protected:
     void CallScriptSymbol(const string& Prefix);
     DrawableBase* GetDrawable(bool Expect = true); // Return current drawable as specified by HandleName
     Playable* GetPlayable(bool Expect = true); // Expect = true: Error if not found, Expect = false: Error if found
+    Object* GetObject(bool Expect = true);
 
     bool NsbAssert(bool expr, string error);
 
@@ -354,13 +356,13 @@ sf::Texture* LoadTextureFromColor(string Color, int32_t Width, int32_t Height);
 
 template <class T> void NsbInterpreter::WildcardCall(std::string Handle, std::function<void(T*)> Func)
 {
-    for (auto i = CacheHolder<T>::ReadFirstMatch(Handle);
-         i != CacheHolder<T>::Cache.end();
-         i = CacheHolder<T>::ReadNextMatch(Handle, i))
+    for (auto i = ObjectHolder::ReadFirstMatch(Handle);
+         i != ObjectHolder::Cache.end();
+         i = ObjectHolder::ReadNextMatch(Handle, i))
     {
         HandleName = i->first;
-        if (i->second)
-            Func(i->second);
+        if (T* pT = dynamic_cast<T*>(i->second))
+            Func(pT);
     }
 }
 

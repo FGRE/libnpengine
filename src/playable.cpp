@@ -154,3 +154,14 @@ void Playable::SetRange(int32_t Begin, int32_t End)
     this->Begin = gint64(Begin) * 1000000;
     this->End = gint64(End) * 1000000;
 }
+
+void Playable::Request(Game* pGame, const string& State)
+{
+    if (State == "Play")
+        Play();
+}
+
+void Playable::Delete(Game* pGame, NsbInterpreter* pInterpreter)
+{
+    delete this;
+}

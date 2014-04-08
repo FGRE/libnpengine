@@ -72,3 +72,8 @@ Movie::~Movie()
 {
 }
 
+void Movie::Delete(Game* pGame, NsbInterpreter* pInterpreter)
+{
+    pGame->AddDrawable((Movie*)nullptr);
+    delete this;
+}
