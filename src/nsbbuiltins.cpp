@@ -358,7 +358,7 @@ void NsbInterpreter::NSBSetLoopPoint(Playable* pMusic, int32_t Begin, int32_t En
 // NumSeconds is actually milliseconds
 void NsbInterpreter::NSBSetVolume(Playable* pMusic, int32_t NumSeconds, int32_t Volume, const string& Tempo)
 {
-    pMusic->SetVolume(Volume / 1000.0d);
+    pMusic->SetVolume(Volume / 1000.0);
 }
 
 void NsbInterpreter::GLZoom(Drawable* pDrawable, int32_t Time, int32_t x, int32_t y, const string& Tempo, bool Wait)
