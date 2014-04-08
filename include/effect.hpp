@@ -159,7 +159,7 @@ class MaskEffect : public LerpEffect
         "   gl_FragColor = Pixel;"
         "}";
 public:
-    MaskEffect(sf::Texture* pMask, int32_t StartOpacity, int32_t EndOpacity, int32_t Time)
+    MaskEffect(sf::Texture* pMask, int32_t StartOpacity, int32_t EndOpacity, int32_t Time) : pMask(nullptr)
     {
         if (!Shader.loadFromMemory(MaskShader, sf::Shader::Fragment))
             assert(false);
@@ -174,6 +174,7 @@ public:
 
     void Reset(sf::Texture* pMask, int32_t StartOpacity, int32_t EndOpacity, int32_t Time)
     {
+        delete this->pMask;
         this->pMask = pMask;
         LerpEffect::Reset(sf::Vector2f(StartOpacity, 0), sf::Vector2f(EndOpacity, 0), Time);
         Shader.setParameter("Mask", *pMask);
