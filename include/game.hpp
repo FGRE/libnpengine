@@ -40,12 +40,12 @@ public:
     void GLCallback(const std::function<void()>& Func); // Request main thread to call Func
     void AddDrawable(DrawableBase* pDrawable);
     void RemoveDrawable(DrawableBase* pDrawable);
+    void AddDrawable(Movie* pMovie);
 
 protected:
     virtual void HandleEvent(sf::Event Event);
     void ClearText();
     void SetText(Text* pText);
-    void AddDrawable(Movie* pMovie);
 
     boost::mutex GLMutex;
     std::queue<std::function<void()>> GLCallbacks; // TODO: Only one is (probably?) actually possible in practice

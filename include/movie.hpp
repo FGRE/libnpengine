@@ -31,6 +31,7 @@ public:
     ~Movie();
 
     int32_t GetPriority() { return Priority; }
+    void Delete(Game* pGame, NsbInterpreter* pInterpreter);
 private:
     int32_t Priority;
     GstElement* VideoBin;

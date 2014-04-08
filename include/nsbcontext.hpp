@@ -18,6 +18,8 @@
 #ifndef NSB_CONTEXT_HPP
 #define NSB_CONTEXT_HPP
 
+#include "object.hpp"
+
 // Element of call stack
 // Contains script and line to which function will return upon ending
 struct FuncReturn
@@ -26,7 +28,7 @@ struct FuncReturn
     uint32_t SourceLine;
 };
 
-class NsbContext
+class NsbContext : public Object
 {
 public:
     NsbContext(const string& Name);
@@ -44,6 +46,7 @@ public:
     void Stop() { Active = false; }
     void Sleep(int32_t ms);
     void Run(NsbInterpreter* pInterpreter);
+    void Request(Game* pGame, const string& State);
 
     void WriteTrace(std::ostream& Stream);
 

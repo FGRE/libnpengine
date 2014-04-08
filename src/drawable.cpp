@@ -22,6 +22,7 @@
 #include <SFML/Graphics/RenderTexture.hpp>
 
 #include "effect.hpp"
+#include "game.hpp"
 
 DrawableBase::DrawableBase(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type) :
 pDrawable(pDrawable),
@@ -114,4 +115,21 @@ void Drawable::Zoom(int32_t x, int32_t y, int32_t Time)
 void Drawable::SetCenter(int32_t x, int32_t y)
 {
     Center = sf::Vector2f(x, y);
+}
+
+void Drawable::Request(Game* pGame, const string& State)
+{
+    if (State == "Smoothing")
+    {
+        pGame->GLCallback([this]()
+        {
+            sf::Texture* pTexture = const_cast<sf::Texture*>(ToSprite()->getTexture());
+            pTexture->setSmooth(true);
+        });
+    }
+}
+
+void Drawable::Delete(Game* pGame, NsbInterpreter* pInterpreter)
+{
+    pGame->GLCallback(std::bind(&NsbInterpreter::GLDelete, pInterpreter, this));
 }

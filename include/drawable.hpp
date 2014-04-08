@@ -18,6 +18,8 @@
 #ifndef DRAWABLE_HPP
 #define DRAWABLE_HPP
 
+#include "object.hpp"
+
 #include <cstdint>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Graphics/Shader.hpp>
@@ -50,7 +52,7 @@ namespace sf
 
 class Effect;
 
-class DrawableBase
+class DrawableBase : public Object
 {
 public:
     DrawableBase(sf::Drawable* pDrawable, int32_t Priority, uint8_t Type);
@@ -83,6 +85,8 @@ public:
     void Move(int32_t x, int32_t y, int32_t Time);
     void Zoom(int32_t x, int32_t y, int32_t Time);
     void SetCenter(int32_t x, int32_t y);
+    void Request(Game* pGame, const string& State);
+    void Delete(Game* pGame, NsbInterpreter* pInterpreter);
 
 private:
     sf::Vector2f Center;

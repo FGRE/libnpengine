@@ -43,7 +43,7 @@ void NsbContext::Run(NsbInterpreter* pInterpreter)
         if (!pScript || !NextLine())
         {
             pInterpreter->Threads.remove(this);
-            CacheHolder<NsbContext>::Write(Name, nullptr);
+            ObjectHolder::Write(Name, nullptr);
             delete this;
             return;
         }
@@ -132,4 +132,10 @@ void NsbContext::WriteTrace(std::ostream& Stream)
         Stream << Stack.top().pScript->GetName() << " at " << Stack.top().SourceLine << std::endl;
         Stack.pop();
     }
+}
+
+void NsbContext::Request(Game* pGame, const string& State)
+{
+    if (State == "Start")
+        Start();
 }
