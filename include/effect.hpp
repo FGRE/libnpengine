@@ -56,13 +56,17 @@ protected:
         this->ElapsedTime = 0;
     }
 
+    float GetProgress()
+    {
+        if (ElapsedTime >= Time)
+            return 1.0f;
+        return float(ElapsedTime) / float(Time);
+    }
+
     sf::Vector2f Update(int32_t diff)
     {
         ElapsedTime += diff;
-        float Progress = float(ElapsedTime) / float(Time);
-        if (Progress > 1.0f)
-            Progress = 1.0f;
-        return Lerp(Start, End, Progress);
+        return Lerp(Start, End, GetProgress());
     }
 
     sf::Vector2f Start;
