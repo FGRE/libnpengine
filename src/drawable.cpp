@@ -58,7 +58,8 @@ Drawable::~Drawable()
 
 void Drawable::Draw(sf::RenderWindow* pWindow)
 {
-    ToSprite()->setPosition(sf::Vector2f(0.0f, 0.0f));
+    if (Effects[EFFECT_MOVE])
+        ToSprite()->setPosition(sf::Vector2f(0.0f, 0.0f));
 
     int32_t diff = Clock.getElapsedTime().asMilliseconds();
     Clock.restart();
