@@ -27,6 +27,8 @@
 #include <boost/chrono.hpp>
 #include <boost/thread/thread.hpp>
 
+std::map<std::string, std::string> ObjectHolder::Aliases;
+
 NsbInterpreter::NsbInterpreter() :
 StopInterpreter(false),
 pGame(nullptr),
@@ -344,23 +346,17 @@ void NsbInterpreter::Pop()
 
 DrawableBase* NsbInterpreter::GetDrawable(bool Expect)
 {
-    DrawableBase* pDrawable = dynamic_cast<DrawableBase*>(ObjectHolder::Read(HandleName));
-    if (Expect) NsbAssert(pDrawable, "Failed to find drawable");
-    return pDrawable;
+    return Get<DrawableBase>(Expect);
 }
 
 Playable* NsbInterpreter::GetPlayable(bool Expect)
 {
-    Playable* pPlayable = dynamic_cast<Playable*>(ObjectHolder::Read(HandleName));
-    if (Expect) NsbAssert(pPlayable, "Failed to find playable");
-    return pPlayable;
+    return Get<Playable>(Expect);
 }
 
 Object* NsbInterpreter::GetObject(bool Expect)
 {
-    Object* pObject = ObjectHolder::Read(HandleName);
-    if (Expect) NsbAssert(pObject, "Failed to find object");
-    return pObject;
+    return Get<Object>(Expect);
 }
 
 void NsbInterpreter::WaitForResume()
