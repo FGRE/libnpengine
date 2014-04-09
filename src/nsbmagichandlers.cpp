@@ -602,7 +602,7 @@ void NsbInterpreter::DrawTransition()
     int32_t End = Pop<int32_t>();
     int32_t Start = Pop<int32_t>();
     int32_t Time = Pop<int32_t>();
-    string HandleName = Pop<string>();
+    HandleName = Pop<string>();
     if (Drawable* pDrawable = (Drawable*)GetDrawable())
         pGame->GLCallback(std::bind(&NsbInterpreter::GLDrawTransition, this, pDrawable, Time, Start, End, Range, Tempo, File, Wait));
 }
