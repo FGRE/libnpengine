@@ -415,7 +415,7 @@ void NsbInterpreter::Zoom()
     int32_t Y = Pop<int32_t>();
     int32_t X = Pop<int32_t>();
     int32_t Time = Pop<int32_t>();
-    string HandleName = Pop<string>();
+    HandleName = Pop<string>();
     if (Drawable* pDrawable = (Drawable*)GetDrawable())
         pGame->GLCallback(std::bind(&NsbInterpreter::GLZoom, this, pDrawable, Time, X, Y, Tempo, Wait));
 }
@@ -488,7 +488,7 @@ void NsbInterpreter::CreateWindow()
 void NsbInterpreter::ApplyBlur()
 {
     string Heaviness = Pop<string>();
-    string HandleName = Pop<string>();
+    HandleName = Pop<string>();
     if (Drawable* pDrawable = (Drawable*)GetDrawable())
         pGame->GLCallback(std::bind(&NsbInterpreter::GLApplyBlur, this, pDrawable, Heaviness));
 }
