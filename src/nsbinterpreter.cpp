@@ -267,6 +267,7 @@ template <> bool NsbInterpreter::Pop()
     if (Val == "true") return true;
     if (Val == "false") return false;
     NsbAssert(false, "Boolean must be either true or false!");
+    // TODO: no retval
 }
 
 void NsbInterpreter::Sleep(int32_t ms)
