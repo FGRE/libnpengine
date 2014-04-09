@@ -1,6 +1,6 @@
 /* 
  * libnpengine: Nitroplus script interpreter
- * Copyright (C) 2013-2014 Mislav Blažević <krofnica996@gmail.com>
+ * Copyright (C) 2014 Mislav Blažević <krofnica996@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
@@ -15,36 +15,21 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef TEXT_HPP
-#define TEXT_HPP
+#ifndef OBJECT_HPP
+#define OBJECT_HPP
 
-#include <SFML/Graphics/Text.hpp>
-#include "drawable.hpp"
+#include <string>
+using std::string;
 
-class Playable;
+class Game;
+class NsbInterpreter;
 
-struct Voice
+class Object
 {
-    Playable* pMusic;
-    sf::String String;
-};
-
-struct Text : DrawableBase
-{
-    Text(const std::string& XML);
-    virtual ~Text();
-
-    bool NextLine();
-    std::vector<Voice> Voices;
-    size_t LineIter;
-
-    void Request(Game* pGame, const string& State) { }
-
-    void StopMusic();
-    Playable* pCurrentMusic;
-    static void Initialize(const std::string& FontFile);
-    static sf::Font Font;
-    static bool Fuwanovel;
+public:
+    virtual ~Object() {}
+    virtual void Request(Game* pGame, const string& State) {}
+    virtual void Delete(Game* pGame, NsbInterpreter* pInterpreter) {}
 };
 
 #endif

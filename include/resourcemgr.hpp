@@ -37,36 +37,6 @@ struct MapDeleter
 template <class T>
 struct CacheHolder
 {
-    typedef typename std::map<std::string, T*>::iterator CacheIter;
-
-    static CacheIter ReadFirstMatch(const std::string& Key)
-    {
-        auto i = Cache.begin();
-        if (i == Cache.end())
-            return i;
-        else if (CheckWildcard(Key, i))
-            return i;
-        else
-            return ReadNextMatch(Key, i);
-        return i;
-    }
-
-    static CacheIter ReadNextMatch(const std::string& Key, CacheIter i)
-    {
-        while (++i != Cache.end())
-            if (CheckWildcard(Key, i))
-                return i;
-        return i;
-    }
-
-    static bool CheckWildcard(const std::string& Key, const CacheIter& i)
-    {
-        if (Key.size() - 1 <= i->first.size())
-            if (std::memcmp(Key.c_str(), i->first.c_str(), Key.size() - 1) == 0)
-                return true;
-        return false;
-    }
-
     static void Clear()
     {
         std::for_each(Cache.begin(), Cache.end(), MapDeleter());
@@ -89,8 +59,7 @@ struct CacheHolder
     static std::map<std::string, T*> Cache;
 };
 
-template <class T>
-std::map<std::string, T*> CacheHolder<T>::Cache;
+template <class T> std::map<std::string, T*> CacheHolder<T>::Cache;
 
 class ResourceMgr
 {

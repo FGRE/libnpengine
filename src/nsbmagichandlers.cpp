@@ -107,8 +107,10 @@ void NsbInterpreter::CreateChoice()
 
 void NsbInterpreter::SetAlias()
 {
-    string Identifier = Pop<string>();
     string Alias = string("@") + Pop<string>();
+    string Identifier = Pop<string>();
+    if (ObjectHolder::Read(Identifier))
+        ObjectHolder::Aliases[Alias] = Identifier;
 }
 
 void NsbInterpreter::SoundAmplitude()
@@ -352,7 +354,7 @@ void NsbInterpreter::WaitText()
 {
     string unk = Pop<string>();
     HandleName = Pop<string>();
-    if (Text* pText = (Text*)GetDrawable())
+    if (Text* pText = Get<Text>(true))
         NSBWaitText(pText, unk);
 }
 

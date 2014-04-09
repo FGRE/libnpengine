@@ -19,8 +19,8 @@
 #define NSB_INTERPRETER_HPP
 
 #include "scriptfile.hpp"
-#include "resourcemgr.hpp"
 #include "object.hpp"
+#include "objectholder.hpp"
 
 #include <stack>
 #include <cstdint>
@@ -58,11 +58,12 @@ class DrawableBase;
 class ArrayVariable;
 class Text;
 class Playable;
+class Variable;
 class NsbContext;
 
 typedef std::list<std::pair<string, ArrayVariable*>> ArrayMembers;
 typedef std::function<int32_t(int32_t)> PosFunc;
-typedef CacheHolder<Object> ObjectHolder;
+typedef std::map<string, Variable*> VariableStore;
 
 class SpecialPosVisitor : public boost::static_visitor<PosFunc>
 {
@@ -298,8 +299,9 @@ protected:
     void GLLoadTextureClip(int32_t Priority, PosFunc XFunc, PosFunc YFunc, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
     void GLLoadImage(const string& File);
 
-    template <class T> void Push(T Val);
     void Pop();
+    template <class T> void Push(T Val);
+    template <class T> T* Get(bool Expect);
     template <class T> T Pop();
     template <class T, class U> void BinaryOperator(std::function<U(T, T)> Func);
     template <class T> T GetVariable(const string& Identifier); // Transforms identifier to value
@@ -322,8 +324,8 @@ protected:
 
     string HandleName; // Identifier of current Drawable/Playable used by NSB and GL functions
     std::vector<ScriptFile*> LoadedScripts; // Scripts considered in symbol lookup
-    std::map<string, Variable*> Variables; // Global variables
-    std::map<string, Variable*> LocalVariables;
+    VariableStore Variables; // Global variables
+    VariableStore LocalVariables;
     std::map<string, ArrayVariable*> Arrays; // Same as above, except these are trees (TODO: merge?)
     _stack<Variable*> Stack; // Variable stack (builtin function parameters)
     std::vector<BuiltinFunc> Builtins; // Jump table for builtin functions
@@ -354,33 +356,26 @@ sf::Texture* LoadTextureFromColor(string Color, int32_t Width, int32_t Height);
 
 /* Template member function definitions */
 
+template <class T> T* NsbInterpreter::Get(bool Expect)
+{
+    T* pObject = dynamic_cast<T*>(ObjectHolder::Read(HandleName));
+    if (Expect) NsbAssert(pObject, "Failed to find object");
+    return pObject;
+}
+
 template <class T> void NsbInterpreter::WildcardCall(std::string Handle, std::function<void(T*)> Func)
 {
-    for (auto i = ObjectHolder::ReadFirstMatch(Handle);
-         i != ObjectHolder::Cache.end();
-         i = ObjectHolder::ReadNextMatch(Handle, i))
-    {
-        HandleName = i->first;
-        if (T* pT = dynamic_cast<T*>(i->second))
-            Func(pT);
-    }
+    ObjectHolder::ForeachWildcard<T>(Handle, Func, HandleName);
 }
 
 template <class T> T NsbInterpreter::GetVariable(const string& Identifier)
 {
-    // TODO: remove this
-    if (Identifier[0] == '@')
-        return boost::lexical_cast<T>(string(Identifier.c_str() + 1));
-
     auto iter = Variables.find(Identifier);
     try
     {
         // Not a variable but a literal
         if (iter == Variables.end())
             return boost::lexical_cast<T>(Identifier);
-        // Special variable. I don't know why this works...
-        //else if (iter->second.Value[0] == '@')
-            //return boost::lexical_cast<T>(string(iter->second.Value.c_str() + 1));
         // Regular variable, TODO: Only dereference if $?
         else
             return boost::get<T>(iter->second->Value);

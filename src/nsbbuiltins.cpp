@@ -229,10 +229,9 @@ void NsbInterpreter::GLParseText(const string& Box, const string& XML)
 {
     HandleName = Box + "/" + HandleName;
     SetVariable("$SYSTEM_present_text", new Variable(HandleName));
-    if (DrawableBase* pText = GetDrawable())
-        delete pText;
-    Text* pText = new Text(XML);
-    ObjectHolder::Write(HandleName, pText);
+    if (Object* pObject = GetObject(false))
+        delete pObject;
+    ObjectHolder::Write(HandleName, new Text(XML));
 }
 
 void NsbInterpreter::GLDelete(DrawableBase* pDrawable)
@@ -321,7 +320,6 @@ void NsbInterpreter::GLMove(DrawableBase* pDrawable, int32_t Time, int32_t x, in
     }
     else
         ((Drawable*)pDrawable)->Move(x, y, Time);
-
     if (Wait)
         pContext->Sleep(Time);
 }
@@ -354,12 +352,14 @@ void NsbInterpreter::NSBDelete()
     if (HandleName.back() == '*' && HandleName.size() != 1)
         WildcardCall<Object>(HandleName, [this] (Object* pObject)
         {
+            ObjectHolder::Write(HandleName, nullptr);
             pObject->Delete(pGame, this);
         });
     else if (Object* pObject = GetObject())
+    {
+        ObjectHolder::Write(HandleName, nullptr);
         pObject->Delete(pGame, this);
-
-    ObjectHolder::Write(HandleName, nullptr);
+    }
 }
 
 // ShellExecute
