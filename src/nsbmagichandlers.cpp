@@ -335,7 +335,7 @@ void NsbInterpreter::SetLoop()
 void NsbInterpreter::Wait()
 {
     int32_t Time = Pop<int32_t>();
-    Sleep(Time);
+    pContext->Sleep(Time);
 }
 
 void NsbInterpreter::Move()
