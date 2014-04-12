@@ -60,18 +60,23 @@ void NsbInterpreter::PrintVariable(Variable* pVar)
     else assert(false);
 }
 
-void NsbInterpreter::DebuggerTick()
+void NsbInterpreter::DebuggerTick(uint16_t Magic)
 {
     if (!DbgStepping)
     {
+        // Breakpoint on builtin
+        if (MagicBreakpoints[Magic])
+        {
+            DbgBreak();
+            return;
+        }
+        // Breakpoint on specific line
         for (auto iter = Breakpoints.begin(); iter != Breakpoints.end(); ++iter)
         {
             if (iter->first == pContext->GetScriptName() &&
                 iter->second == pContext->GetNextLineEntry())
             {
-                std::cout << "Breakpoint hit!" << std::endl;
-                DbgStepping = true;
-                Pause();
+                DbgBreak();
                 return;
             }
         }
@@ -80,13 +85,20 @@ void NsbInterpreter::DebuggerTick()
         Pause();
 }
 
+void NsbInterpreter::DbgBreak()
+{
+    std::cout << "Breakpoint hit!" << std::endl;
+    DbgStepping = true;
+    Pause();
+}
+
 void NsbInterpreter::Inspect(int32_t n)
 {
     ScriptFile* pScript = pContext->GetScript();
     uint32_t SourceIter = pContext->GetNextLineEntry();
-    for (uint32_t i = SourceIter - n; i < SourceIter + n; ++i)
+    for (uint32_t i = SourceIter - n - 1; i < SourceIter + n; ++i)
     {
-        if (i == SourceIter) std::cout << " > ";
+        if (i == SourceIter - 1) std::cout << " > ";
         else std::cout << "   ";
         std::cout << Disassemble(pScript->GetLine(i));
     }
@@ -145,6 +157,12 @@ void NsbInterpreter::DebuggerMain()
                 {
                     SetBreakpoint(Tokens[1], boost::lexical_cast<int32_t>(Tokens[2]));
                 } catch (...) { std::cout << "Bad command!" << std::endl; }
+            }
+            // Breakpoint on builtin call
+            else if (Tokens.size() == 2 && Tokens[0] == "b")
+            {
+                if (uint16_t Magic = Nsb::MagicifyString(Tokens[1].c_str()))
+                    MagicBreakpoints[Magic] = true;
             }
             // Breakpoint Clear
             else if (Tokens.size() == 2 && Tokens[0] == "b" && Tokens[1] == "c")

@@ -36,6 +36,8 @@ pDebuggerThread(nullptr),
 DbgStepping(false),
 BreakOnAssert(false)
 {
+    MagicBreakpoints.resize(MAGIC_UNK119 + 1, false);
+
     Builtins.resize(MAGIC_UNK119 + 1, nullptr);
     Builtins[MAGIC_BREAK] = &NsbInterpreter::Break;
     Builtins[MAGIC_JUMP] = &NsbInterpreter::Jump;
