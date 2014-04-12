@@ -176,6 +176,15 @@ void NsbInterpreter::DebuggerMain()
                     Inspect(boost::lexical_cast<int32_t>(Tokens[1]));
                 } catch (...) { std::cout << "Bad command!" << std::endl; }
             }
+            // Dump Variables
+            else if (Tokens.size() == 2 && Tokens[0] == "d" && Tokens[1] == "v")
+            {
+                for (auto iter = Variables.begin(); iter != Variables.end(); ++iter)
+                {
+                    std::cout << iter->first << " = ";
+                    PrintVariable(iter->second);
+                }
+            }
         }
     }
 }

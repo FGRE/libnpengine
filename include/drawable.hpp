@@ -59,7 +59,6 @@ public:
     virtual ~DrawableBase() = 0;
 
     virtual void Draw(sf::RenderWindow* pWindow);
-    virtual void Update() {}
 
     int32_t GetPriority() const { return Priority; }
     sf::Text* ToText() const { return (sf::Text*)pDrawable; }
