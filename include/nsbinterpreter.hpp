@@ -336,13 +336,15 @@ private:
     void WaitForResume();
 
     // NsbDebugger
+    void DbgBreak();
     void Inspect(int32_t n);
     void PrintVariable(Variable* pVar);
-    void DebuggerTick();
+    void DebuggerTick(uint16_t Magic);
     string Disassemble(Line* pLine);
     void DebuggerMain();
     void SetBreakpoint(const string& Script, int32_t LineNumber);
     std::list<std::pair<string, int32_t> > Breakpoints;
+    std::vector<bool> MagicBreakpoints;
     std::thread* pDebuggerThread;
     volatile bool DbgStepping;
     volatile bool BreakOnAssert;

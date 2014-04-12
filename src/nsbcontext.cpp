@@ -60,7 +60,8 @@ void NsbContext::Run(NsbInterpreter* pInterpreter)
             if (NsbInterpreter::BuiltinFunc pFunc = pInterpreter->Builtins[pLine->Magic])
                 (pInterpreter->*pFunc)();
 
-        pInterpreter->DebuggerTick();
+        // Break before Magic is executed
+        pInterpreter->DebuggerTick(pScript->GetLine(SourceIter)->Magic);
         pInterpreter->WaitForResume();
     } while (!pInterpreter->Stack.empty()); // When stack is empty, it is safe to switch context
 }
