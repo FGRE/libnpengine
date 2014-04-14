@@ -299,6 +299,9 @@ protected:
     void GLLoadTextureClip(int32_t Priority, PosFunc XFunc, PosFunc YFunc, int32_t tx, int32_t ty, int32_t width, int32_t height, const string& File);
     void GLLoadImage(const string& File);
 
+    // Set, Increment, Decrement...
+    virtual void OnVariableChanged(const string& Identifier) { }
+
     void Pop();
     template <class T> void Push(T Val);
     template <class T> T* Get(bool Expect);

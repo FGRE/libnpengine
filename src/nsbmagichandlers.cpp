@@ -203,6 +203,9 @@ void NsbInterpreter::Increment()
     assert(pInt); // Do not increment strings
     *pInt += 1;
     Pop<int32_t>();
+
+    Line* pLine = pContext->GetScript()->GetLine(pContext->GetNextLineEntry() - 2);
+    OnVariableChanged(pLine->Params[0]);
 }
 
 void NsbInterpreter::Substract()
@@ -517,7 +520,8 @@ void NsbInterpreter::PlaceholderParam()
 
 void NsbInterpreter::Set()
 {
-    if (pContext->GetLineArgs().back() == "__array_variable__")
+    const string& Identifier = pContext->GetLineArgs().back();
+    if (Identifier == "__array_variable__")
     {
         Variable* pSecond = Stack.top(); Stack.pop();
         Variable* pFirst = Stack.top(); Stack.pop();
@@ -543,6 +547,7 @@ void NsbInterpreter::Set()
         SetVariable(pContext->GetLineArgs()[0], pVar);
         Stack.pop();
     }
+    OnVariableChanged(Identifier);
 }
 
 void NsbInterpreter::ArrayRead()
