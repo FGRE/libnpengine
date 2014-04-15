@@ -75,6 +75,12 @@ void NsbInterpreter::Select()
     EventLoop = true;
 }
 
+void NsbInterpreter::While()
+{
+    pContext->SetScopeEndLabel(pContext->GetLineArgs()[0]);
+    If();
+}
+
 void NsbInterpreter::CaseBegin()
 {
     HandleName = pContext->GetLineArgs()[0];

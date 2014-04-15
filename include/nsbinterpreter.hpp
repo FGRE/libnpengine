@@ -258,6 +258,7 @@ protected:
     void SetPan();
     void SoundAmplitude();
     void Select();
+    void While();
     void CaseBegin();
     void UNK90();
 
