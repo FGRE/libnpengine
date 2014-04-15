@@ -81,7 +81,7 @@ BreakOnAssert(false)
     Builtins[MAGIC_GET] = &NsbInterpreter::Get;
     Builtins[MAGIC_DRAW_TO_TEXTURE] = &NsbInterpreter::DrawToTexture;
     Builtins[MAGIC_CREATE_RENDER_TEXTURE] = &NsbInterpreter::CreateRenderTexture;
-    Builtins[MAGIC_CREATE_MOVIE] = &NsbInterpreter::CreateMovie;
+    //Builtins[MAGIC_CREATE_MOVIE] = &NsbInterpreter::CreateMovie;
     Builtins[MAGIC_DRAW_TRANSITION] = &NsbInterpreter::DrawTransition;
     Builtins[MAGIC_CREATE_COLOR] = &NsbInterpreter::CreateColor;
     Builtins[MAGIC_CREATE_TEXTURE] = &NsbInterpreter::CreateTexture;
