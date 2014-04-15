@@ -121,6 +121,7 @@ BreakOnAssert(false)
     Builtins[MAGIC_SOUND_AMPLITUDE] = &NsbInterpreter::SoundAmplitude;
     Builtins[MAGIC_SELECT] = &NsbInterpreter::Select;
     Builtins[MAGIC_CASE_BEGIN] = &NsbInterpreter::CaseBegin;
+    Builtins[MAGIC_EXIT] = &NsbInterpreter::Exit;
     Builtins[MAGIC_UNK90] = &NsbInterpreter::UNK90;
     //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
     //Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
