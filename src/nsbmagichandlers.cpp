@@ -75,6 +75,16 @@ void NsbInterpreter::Select()
     EventLoop = true;
 }
 
+void NsbInterpreter::CaseBegin()
+{
+    HandleName = pContext->GetLineArgs()[0];
+    bool Flag = false;
+    if (Button* pButton = CacheHolder<Button>::Read(HandleName))
+        Flag = pButton->Clicked;
+    if (!Flag)
+        pContext->Jump(pContext->GetLineArgs()[1]);
+}
+
 void NsbInterpreter::UNK90()
 {
     EventLoop = false;
@@ -176,6 +186,7 @@ void NsbInterpreter::LoadTextureClip()
     int32_t Width = Pop<int32_t>();
     int32_t Ty = Pop<int32_t>();
     int32_t Tx = Pop<int32_t>();
+    // TODO: Pop<PosFunc>();
     PosFunc YFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
     Pop();
     PosFunc XFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);

@@ -258,7 +258,7 @@ protected:
     void SetPan();
     void SoundAmplitude();
     void Select();
-    void Case();
+    void CaseBegin();
     void UNK90();
 
     // Stubs
