@@ -119,7 +119,9 @@ BreakOnAssert(false)
     Builtins[MAGIC_SET_FREQUENCY] = &NsbInterpreter::SetFrequency;
     Builtins[MAGIC_SET_PAN] = &NsbInterpreter::SetPan;
     Builtins[MAGIC_SOUND_AMPLITUDE] = &NsbInterpreter::SoundAmplitude;
-    Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
+    Builtins[MAGIC_SELECT] = &NsbInterpreter::Select;
+    Builtins[MAGIC_UNK90] = &NsbInterpreter::UNK90;
+    //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
     //Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
     //Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
     //Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
@@ -323,6 +325,37 @@ void NsbInterpreter::CallScript(const string& FileName, const string& Symbol)
 {
     if (ScriptFile* pScript = sResourceMgr->GetScriptFile(FileName))
         pContext->CallSubroutine(pScript, Symbol);
+}
+void NsbInterpreter::HandleEvent(sf::Event Event)
+{
+    switch (Event.type)
+    {
+        case sf::Event::KeyPressed:
+            KeyPressed(Event.key.code);
+            break;
+        case sf::Event::MouseButtonPressed:
+            MouseClicked(Event.mouseButton);
+            break;
+        case sf::Event::MouseMoved:
+            MouseMoved(sf::Mouse::getPosition(*pGame));
+            break;
+        default:
+            break;
+    }
+}
+
+void NsbInterpreter::MouseMoved(sf::Vector2i Pos)
+{
+}
+
+void NsbInterpreter::MouseClicked(sf::Event::MouseButtonEvent Event)
+{
+    if (!EventLoop)
+        return;
+
+    for (auto iter = CacheHolder<Button>::Cache.begin();
+         iter != CacheHolder<Button>::Cache.end(); ++iter)
+         iter->second->CheckClicked(Event.x, Event.y);
 }
 
 void NsbInterpreter::KeyPressed(sf::Keyboard::Key Key)

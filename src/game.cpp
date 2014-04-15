@@ -88,19 +88,13 @@ void Game::HandleEvent(sf::Event Event)
     switch (Event.type)
     {
         case sf::Event::KeyPressed:
-            // TODO: Move to interpreter
             if (Event.key.code == sf::Keyboard::LControl)
                 IgnoreText = !IgnoreText;
-            pInterpreter->KeyPressed(Event.key.code);
             break;
         case sf::Event::MouseButtonPressed:
             if (pText && Event.mouseButton.button == sf::Mouse::Left)
                 if (!pText->NextLine())
                     pInterpreter->Start();
-            pInterpreter->MouseClicked(Event.mouseButton);
-            break;
-        case sf::Event::MouseMoved:
-                pInterpreter->MouseMoved(sf::Mouse::getPosition(*this));
             break;
         case sf::Event::Closed:
             IsRunning = false;
@@ -108,6 +102,7 @@ void Game::HandleEvent(sf::Event Event)
         default:
             break;
     }
+    pInterpreter->HandleEvent(Event);
 }
 
 void Game::GLCallback(const std::function<void()>& Func)
@@ -125,7 +120,7 @@ void Game::SetText(Text* pText)
 
 void Game::ClearText()
 {
-    delete pText; // Doesn't seem quite right...
+    delete pText; // Doesn't seem quite right... (voice doesn't die))
     pText = nullptr;
 }
 

@@ -22,6 +22,7 @@
 
 struct ObjectHolder : private CacheHolder<Object>
 {
+    // TODO: Complex wildcard (MSGWND/MSG_*/MouseUsual/*) is possible!
     template <class F> static void ForeachWildcard(const std::string& Key, std::function<void(F*)> Func, std::string& HandleName)
     {
         if (Key[0] == '@')
