@@ -245,7 +245,7 @@ void NsbInterpreter::GLLoadTextureClip(int32_t Priority, PosFunc XFunc, PosFunc 
     // Check if it's a button...
     std::vector<string> Tokens;
     boost::split(Tokens, HandleName, boost::is_any_of("/"));
-    if (Tokens.size() >= 2 && Tokens[2] == "img")
+    if (Tokens.size() >= 2 && Tokens.back() == "img")
         if (Button* pButton = CacheHolder<Button>::Read(Tokens[0]))
             pButton->Textures[HandleName] = pDrawable;
 }
