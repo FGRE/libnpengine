@@ -200,7 +200,8 @@ void NsbInterpreter::ReadFile()
 void NsbInterpreter::Increment()
 {
     int32_t* pInt = boost::get<int32_t>(&Stack.top()->Value);
-    assert(pInt); // Do not increment strings
+    if (NsbAssert(pInt, "Cannot increment non-integer value!"))
+        return;
     *pInt += 1;
     Pop<int32_t>();
 
