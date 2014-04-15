@@ -93,7 +93,7 @@ BreakOnAssert(false)
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_CALL_CHAPTER] = &NsbInterpreter::CallChapter;
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
-    Builtins[MAGIC_WHILE] = &NsbInterpreter::If;
+    Builtins[MAGIC_WHILE] = &NsbInterpreter::While;
     Builtins[MAGIC_LOGICAL_NOT] = &NsbInterpreter::LogicalNot;
     Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
     Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NsbInterpreter::LogicalNotEqual;

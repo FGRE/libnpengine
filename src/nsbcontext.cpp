@@ -75,10 +75,12 @@ void NsbContext::Jump(const string& Symbol)
 
 void NsbContext::Break()
 {
-    while (NextLine())
-        if (pLine->Magic == MAGIC_WHILE_END)
-            break;
-    NextLine();
+    Jump(ScopeEndLabel);
+}
+
+void NsbContext::SetScopeEndLabel(const string& Label)
+{
+    ScopeEndLabel = Label;
 }
 
 bool NsbContext::CallSubroutine(ScriptFile* pDestScript, const string& Symbol)

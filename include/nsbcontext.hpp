@@ -33,6 +33,7 @@ class NsbContext : public Object
 public:
     NsbContext(const string& Name);
 
+    void SetScopeEndLabel(const string& Label);
     void Break();
     void Jump(const string& Symbol);
     bool CallSubroutine(ScriptFile* pDestScript, const string& Symbol); // Attempts to call specified symbol in specified script
@@ -61,6 +62,7 @@ private:
     sf::Clock SleepClock; // SleepTime clock
     sf::Time SleepTime; // How long should interpreter wait before executing next line
     std::stack<FuncReturn> Returns; // Call stack
+    string ScopeEndLabel;
 };
 
 #endif
