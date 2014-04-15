@@ -23,7 +23,25 @@
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
+#include <boost/algorithm/string.hpp>
 #include <fstream>
+
+// TODO: Not really a nsb builtin... Move this code
+void Button::CheckClicked(int x, int y)
+{
+    if (Textures.empty())
+        return;
+
+    Drawable* pDrawable = Textures.begin()->second;
+    sf::Sprite* pSprite = pDrawable->ToSprite();
+
+    int x1 = pSprite->getPosition().x;
+    int x2 = x1 + pSprite->getLocalBounds().width;
+    int y1 = pSprite->getPosition().y;
+    int y2 = y1 + pSprite->getLocalBounds().height;
+    if (x > x1 && x < x2 && y > y1 && y < y2)
+        Clicked = true;
+}
 
 sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area = sf::IntRect())
 {
@@ -222,7 +240,14 @@ void NsbInterpreter::GLLoadTextureClip(int32_t Priority, PosFunc XFunc, PosFunc 
     pSprite->setPosition(XFunc(pTexture->getSize().x), YFunc(pTexture->getSize().y));
     Drawable* pDrawable = new Drawable(pSprite, Priority, DRAWABLE_TEXTURE);
     ObjectHolder::Write(HandleName, pDrawable);
-    pGame->AddDrawable(pDrawable);
+    pGame->AddDrawable(pDrawable); // TODO: This is wrong
+
+    // Check if it's a button...
+    std::vector<string> Tokens;
+    boost::split(Tokens, HandleName, boost::is_any_of("/"));
+    if (Tokens.size() >= 2 && Tokens[2] == "img")
+        if (Button* pButton = CacheHolder<Button>::Read(Tokens[0]))
+            pButton->Textures[HandleName] = pDrawable;
 }
 
 void NsbInterpreter::GLParseText(const string& Box, const string& XML)

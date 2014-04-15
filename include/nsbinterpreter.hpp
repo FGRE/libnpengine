@@ -102,6 +102,17 @@ private:
     };
 };
 
+struct Button
+{
+    Button() : Clicked(false)
+    {
+    }
+
+    void CheckClicked(int x, int y);
+    std::map<string, Drawable*> Textures;
+    bool Clicked;
+};
+
 // Represents Nitroscript variable
 struct Variable
 {
@@ -157,12 +168,8 @@ public:
     void StartDebugger();
 
     void CallScript(const string& FileName, const string& Symbol);
-    void KeyPressed(sf::Keyboard::Key Key);
-    virtual void MouseMoved(sf::Vector2i Pos) {}
-    virtual void MouseClicked(sf::Event::MouseButtonEvent Event) {}
-
     void ExecuteScriptLocal(const string& InitScript);
-
+    void HandleEvent(sf::Event Event);
     void GLDelete(DrawableBase* pDrawable);
 protected:
     void Run();
@@ -212,7 +219,7 @@ protected:
     void Request();
     void RegisterCallback();
     void ArrayRead();
-    virtual void Set();
+    void Set();
     void Negative();
     void PlaceholderParam();
     void Zoom();
@@ -250,6 +257,9 @@ protected:
     void SetFrequency();
     void SetPan();
     void SoundAmplitude();
+    void Select();
+    void Case();
+    void UNK90();
 
     // Stubs
     void UNK20();
@@ -317,6 +327,11 @@ protected:
     Playable* GetPlayable(bool Expect = true); // Expect = true: Error if not found, Expect = false: Error if found
     Object* GetObject(bool Expect = true);
 
+    // Event handlers
+    void KeyPressed(sf::Keyboard::Key Key);
+    virtual void MouseMoved(sf::Vector2i Pos);
+    virtual void MouseClicked(sf::Event::MouseButtonEvent Event);
+
     bool NsbAssert(bool expr, string error);
 
     Game* pGame;
@@ -325,6 +340,7 @@ protected:
     volatile bool RunInterpreter;
     volatile bool StopInterpreter;
 
+    bool EventLoop;
     string HandleName; // Identifier of current Drawable/Playable used by NSB and GL functions
     std::vector<ScriptFile*> LoadedScripts; // Scripts considered in symbol lookup
     VariableStore Variables; // Global variables

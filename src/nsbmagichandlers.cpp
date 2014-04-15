@@ -70,6 +70,16 @@ void NsbInterpreter::UNK161()
     Push<string>("false");
 }
 
+void NsbInterpreter::Select()
+{
+    EventLoop = true;
+}
+
+void NsbInterpreter::UNK90()
+{
+    EventLoop = false;
+}
+
 void NsbInterpreter::ClearScore()
 {
     string unk = Pop<string>();
@@ -103,6 +113,7 @@ void NsbInterpreter::CreateChoice()
     for (int i = 0; i < pContext->GetLineArgs().size() - 1; ++i)
         Pop<int32_t>(); // Unused optional params, always 0
     HandleName = Pop<string>();
+    CacheHolder<Button>::Write(HandleName, new Button);
 }
 
 void NsbInterpreter::SetAlias()
