@@ -259,6 +259,7 @@ protected:
     void SoundAmplitude();
     void Select();
     void While();
+    void Exit();
     void CaseBegin();
     void UNK90();
 

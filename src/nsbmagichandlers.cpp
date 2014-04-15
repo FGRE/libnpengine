@@ -70,6 +70,11 @@ void NsbInterpreter::UNK161()
     Push<string>("false");
 }
 
+void NsbInterpreter::Exit()
+{
+    Stop();
+}
+
 void NsbInterpreter::Select()
 {
     EventLoop = true;
