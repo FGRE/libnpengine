@@ -185,7 +185,7 @@ void NsbInterpreter::GLCreateColor(int32_t Priority, int32_t x, int32_t y, int32
 
 void NsbInterpreter::GLCreateMovie(int32_t Priority, int32_t x, int32_t y, bool Loop, bool Alpha, const string& File, bool Audio)
 {
-    if (std::ifstream("NOMOVIE"))
+    if (std::ifstream("NOMOVIE") || File == "dx/title.ngs")
         return;
 
     if (Playable* pMovie = GetPlayable(false))
