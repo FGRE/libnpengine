@@ -204,7 +204,8 @@ void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 
 void NsbInterpreter::Run()
 {
-    StartDebugger();
+    if (std::ifstream("DEBUG"))
+        StartDebugger();
     Threads.push_back(pMainContext);
     do
     {
