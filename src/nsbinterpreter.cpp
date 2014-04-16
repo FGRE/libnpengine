@@ -265,11 +265,12 @@ template <> void NsbInterpreter::Push(bool Val)
 {
     if (Val) Push("true");
     else Push("false");
+    // TODO: What if Val != "false"
 }
 
 template <> bool NsbInterpreter::Pop()
 {
-    bool Val;
+    bool Val = true; // TODO: hack if NsbAssert fails
     if (int32_t* pInt = boost::get<int32_t>(&Stack.top()->Value))
     {
         Val = (*pInt) != 0;
