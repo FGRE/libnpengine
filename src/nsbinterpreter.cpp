@@ -269,11 +269,20 @@ template <> void NsbInterpreter::Push(bool Val)
 
 template <> bool NsbInterpreter::Pop()
 {
-    string Val = Pop<string>();
-    if (Val == "true") return true;
-    if (Val == "false") return false;
-    NsbAssert(false, "Boolean must be either true or false!");
-    // TODO: no retval
+    bool Val;
+    if (int32_t* pInt = boost::get<int32_t>(&Stack.top()->Value))
+    {
+        Val = (*pInt) != 0;
+        Pop();
+    }
+    else
+    {
+        string SVal = Pop<string>();
+        if (SVal == "true") Val = true;
+        else if (SVal == "false") Val = false;
+        else NsbAssert(false, "Boolean must be either true or false");
+    }
+    return Val;
 }
 
 void NsbInterpreter::Sleep(int32_t ms)
