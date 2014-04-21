@@ -18,15 +18,13 @@
 #ifndef RESOURCE_MGR_HPP
 #define RESOURCE_MGR_HPP
 
-#include "npaiterator.hpp"
-
 #include <vector>
 #include <map>
 #include <utility>
 #include <algorithm>
 #include <cstring>
 
-class NpaFile;
+class INpaFile;
 class ScriptFile;
 
 struct MapDeleter
@@ -67,13 +65,11 @@ public:
     ResourceMgr(const std::vector<std::string>& AchieveFileNames);
     ~ResourceMgr();
 
-    NpaIterator GetFile(std::string Path);
-    char* Read(const std::string& Path, uint32_t* Size);
+    char* Read(std::string Path, uint32_t& Size);
     ScriptFile* GetScriptFile(const std::string& Path);
 
 private:
-    std::map<std::string, NpaIterator> FileRegistry;
-    std::vector<NpaFile*> Achieves;
+    std::vector<INpaFile*> Achieves;
 };
 
 extern ResourceMgr* sResourceMgr;

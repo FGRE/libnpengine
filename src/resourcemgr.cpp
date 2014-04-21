@@ -16,54 +16,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "resourcemgr.hpp"
-#include "npafile.hpp"
+#include "inpafile.hpp"
 #include "scriptfile.hpp"
 
 #include <memory>
-#include <boost/locale.hpp>
-using namespace boost::locale;
-using namespace boost::locale::conv;
 
 ResourceMgr* sResourceMgr;
 
 ResourceMgr::ResourceMgr(const std::vector<std::string>& AchieveFileNames)
 {
-    std::locale loc = generator().generate("ja_JP.SHIFT-JIS");
     Achieves.resize(AchieveFileNames.size());
     for (uint32_t i = 0; i < AchieveFileNames.size(); ++i)
-    {
-        NpaFile* pAchieve = new NpaFile(AchieveFileNames[i], NPA_READ);
-        Achieves[i] = pAchieve;
-        for (NpaIterator File = pAchieve->Begin(); File != pAchieve->End(); ++File)
-            FileRegistry.insert(std::pair<std::string, NpaIterator>(to_utf<char>(File.GetFileNameRaw(), File.GetFileNameRaw() + File.GetFileNameSize(), loc), File));
-    }
+        Achieves[i] = new INpaFile(AchieveFileNames[i]);
 }
 
 ResourceMgr::~ResourceMgr()
 {
-    std::for_each(Achieves.begin(), Achieves.end(), std::default_delete<NpaFile>());
+    std::for_each(Achieves.begin(), Achieves.end(), std::default_delete<INpaFile>());
     CacheHolder<ScriptFile>::Clear();
 }
 
-char* ResourceMgr::Read(const std::string& Path, uint32_t* Size)
-{
-    NpaIterator File = GetFile(Path);
-    if (File)
-    {
-        *Size = File.GetFileSize();
-        return File.GetFileData();
-    }
-    *Size = 0;
-    return nullptr;
-}
-
-NpaIterator ResourceMgr::GetFile(std::string Path)
+char* ResourceMgr::Read(std::string Path, uint32_t& Size)
 {
     std::transform(Path.begin(), Path.end(), Path.begin(), ::tolower);
-    auto iter = FileRegistry.find(Path);
-    if (iter != FileRegistry.end())
-        return iter->second;
-    return NpaIterator();
+    for (uint32_t i = 0; i < Achieves.size(); ++i)
+        if (char* pData = Achieves[i]->ReadFile(Path, Size))
+            return pData;
+    Size = 0;
+    return nullptr;
 }
 
 ScriptFile* ResourceMgr::GetScriptFile(const std::string& Path)
@@ -78,9 +58,9 @@ ScriptFile* ResourceMgr::GetScriptFile(const std::string& Path)
 
     // Check achieves
     uint32_t NsbSize;
-    char* NsbData = Read(Path, &NsbSize);
+    char* NsbData = Read(Path, NsbSize);
     uint32_t MapSize;
-    char* MapData = Read(MapPath, &MapSize);
+    char* MapData = Read(MapPath, MapSize);
 
     // Both files found
     if (NsbData && MapData)
