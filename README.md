@@ -15,7 +15,7 @@ It is the choice of the Steins Gate if you can build from master branch today:
     $ git clone https://github.com/FGRE/libnpengine.git
     $ cd libnpengine
 
-optinally, check out latest tag, if master branch status is red:
+optionally, check out latest tag, if master branch status is red:
 
     $ git checkout `git describe --tags --abbrev=0`
 
