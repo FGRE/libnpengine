@@ -20,13 +20,15 @@
 
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
-#include "npaiterator.hpp"
 #include "object.hpp"
 
+// TODO: Read from offset chunk by chunk instead
 struct AppSrc
 {
+    ~AppSrc() { delete[] pData; }
     GstAppSrc* Appsrc;
-    NpaIterator File;
+    char* pData;
+    uint32_t Size;
     gsize Offset;
 };
 
@@ -35,7 +37,7 @@ class Playable : public Object
     friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
 public:
     Playable(const std::string& FileName);
-    Playable(NpaIterator File);
+    Playable(char* pData, uint32_t Size);
     ~Playable();
 
     void Update();

@@ -46,7 +46,7 @@ void Button::CheckClicked(int x, int y)
 sf::Texture* LoadTextureFromFile(const string& File, const sf::IntRect& Area = sf::IntRect())
 {
     uint32_t Size;
-    char* pPixels = sResourceMgr->Read(File, &Size);
+    char* pPixels = sResourceMgr->Read(File, Size);
     if (!pPixels)
     {
         std::cout << "Failed to load " << File << " pixels" << std::endl;
@@ -310,14 +310,15 @@ void NsbInterpreter::NSBCreateSound(const string& Type, const string& File)
     if (Playable* pMusic = GetPlayable(false))
         delete pMusic;
 
-    NpaIterator AudioFile = sResourceMgr->GetFile(File);
-    if (NsbAssert(AudioFile.GetFileSize() > 0, "Attempting to create Playable from empty file"))
+    uint32_t Size;
+    char* pAudioFile = sResourceMgr->Read(File, Size);
+    if (NsbAssert(pAudioFile && Size > 0, "Attempting to create Playable from empty or non-existing file"))
     {
         ObjectHolder::Write(HandleName, nullptr);
         return;
     }
 
-    ObjectHolder::Write(HandleName, new Playable(AudioFile));
+    ObjectHolder::Write(HandleName, new Playable(pAudioFile, Size));
 }
 
 void NsbInterpreter::NSBWaitText(Text* pText, const string& unk)
