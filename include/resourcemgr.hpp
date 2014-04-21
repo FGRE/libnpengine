@@ -80,7 +80,7 @@ public:
     ResourceMgr(const std::vector<std::string>& AchieveFileNames);
     ~ResourceMgr();
 
-    Resource GetResource(const std::string& Path);
+    Resource GetResource(std::string Path);
     char* Read(std::string Path, uint32_t& Size);
     ScriptFile* GetScriptFile(const std::string& Path);
 private:

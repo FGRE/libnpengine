@@ -36,8 +36,9 @@ ResourceMgr::~ResourceMgr()
     CacheHolder<ScriptFile>::Clear();
 }
 
-Resource ResourceMgr::GetResource(const std::string& Path)
+Resource ResourceMgr::GetResource(std::string Path)
 {
+    std::transform(Path.begin(), Path.end(), Path.begin(), ::tolower);
     for (uint32_t i = 0; i < Archives.size(); ++i)
     {
         auto File = Archives[i]->FindFile(Path);
