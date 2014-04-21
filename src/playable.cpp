@@ -43,17 +43,16 @@ static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
 {
     GstFlowReturn ret;
     gsize Size = 4096;
-    if (pAppsrc->Offset + Size > pAppsrc->Size)
+    if (pAppsrc->Offset + Size > pAppsrc->File.GetSize())
     {
-        if (pAppsrc->Offset >= pAppsrc->Size)
+        if (pAppsrc->Offset >= pAppsrc->File.GetSize())
         {
             g_signal_emit_by_name(pAppsrc->Appsrc, "end-of-stream", &ret);
             return;
         }
-        Size = pAppsrc->Size - pAppsrc->Offset;
+        Size = pAppsrc->File.GetSize() - pAppsrc->Offset;
     }
-    char* pData = (char*)g_malloc(Size);
-    memcpy(pData, pAppsrc->pData + pAppsrc->Offset, Size);
+    char* pData = pAppsrc->File.ReadData(pAppsrc->Offset, Size);
     GstBuffer* Buffer = gst_buffer_new_wrapped(pData, Size);
     g_signal_emit_by_name(pAppsrc->Appsrc, "push-buffer", Buffer, &ret);
     gst_buffer_unref(Buffer);
@@ -72,14 +71,12 @@ End(0)
     InitPipeline(Filesrc);
 }
 
-Playable::Playable(char* pData, uint32_t Size) :
+Playable::Playable(Resource Res) :
 Loop(false),
 Begin(0)
 {
-    Appsrc = new AppSrc;
+    Appsrc = new AppSrc(Res);
     Appsrc->Appsrc = (GstAppSrc*)gst_element_factory_make("appsrc", "source");
-    Appsrc->pData = pData;
-    Appsrc->Size = Size;
     Appsrc->Offset = 0;
     g_signal_connect(Appsrc->Appsrc, "need-data", G_CALLBACK(FeedData), Appsrc);
     InitPipeline((GstElement*)Appsrc->Appsrc);

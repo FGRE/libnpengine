@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "resourcemgr.hpp"
-#include "inpafile.hpp"
 #include "scriptfile.hpp"
 
 #include <memory>
@@ -25,22 +24,34 @@ ResourceMgr* sResourceMgr;
 
 ResourceMgr::ResourceMgr(const std::vector<std::string>& AchieveFileNames)
 {
-    Achieves.resize(AchieveFileNames.size());
+    Archives.resize(AchieveFileNames.size());
     for (uint32_t i = 0; i < AchieveFileNames.size(); ++i)
-        Achieves[i] = new INpaFile(AchieveFileNames[i]);
+        Archives[i] = new INpaFile(AchieveFileNames[i]);
+    assert(!Archives.empty());
 }
 
 ResourceMgr::~ResourceMgr()
 {
-    std::for_each(Achieves.begin(), Achieves.end(), std::default_delete<INpaFile>());
+    std::for_each(Archives.begin(), Archives.end(), std::default_delete<INpaFile>());
     CacheHolder<ScriptFile>::Clear();
+}
+
+Resource ResourceMgr::GetResource(const std::string& Path)
+{
+    for (uint32_t i = 0; i < Archives.size(); ++i)
+    {
+        auto File = Archives[i]->FindFile(Path);
+        if (File != Archives[i]->End())
+            return Resource(Archives[i], File);
+    }
+    return Resource(nullptr, Archives[0]->End());
 }
 
 char* ResourceMgr::Read(std::string Path, uint32_t& Size)
 {
     std::transform(Path.begin(), Path.end(), Path.begin(), ::tolower);
-    for (uint32_t i = 0; i < Achieves.size(); ++i)
-        if (char* pData = Achieves[i]->ReadFile(Path, Size))
+    for (uint32_t i = 0; i < Archives.size(); ++i)
+        if (char* pData = Archives[i]->ReadFile(Path, Size))
             return pData;
     Size = 0;
     return nullptr;
@@ -56,7 +67,7 @@ ScriptFile* ResourceMgr::GetScriptFile(const std::string& Path)
     std::string MapPath(Path, 0, Path.size() - 3);
     MapPath += "map";
 
-    // Check achieves
+    // Check Archives
     uint32_t NsbSize;
     char* NsbData = Read(Path, NsbSize);
     uint32_t MapSize;
