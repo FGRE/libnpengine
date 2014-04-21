@@ -21,15 +21,14 @@
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
 #include "object.hpp"
+#include "resourcemgr.hpp"
 
-// TODO: Read from offset chunk by chunk instead
 struct AppSrc
 {
-    ~AppSrc() { delete[] pData; }
+    AppSrc(Resource& Res) : File(Res) { }
     GstAppSrc* Appsrc;
-    char* pData;
-    uint32_t Size;
     gsize Offset;
+    Resource File;
 };
 
 class Playable : public Object
@@ -37,7 +36,7 @@ class Playable : public Object
     friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
 public:
     Playable(const std::string& FileName);
-    Playable(char* pData, uint32_t Size);
+    Playable(Resource Res);
     ~Playable();
 
     void Update();

@@ -310,15 +310,14 @@ void NsbInterpreter::NSBCreateSound(const string& Type, const string& File)
     if (Playable* pMusic = GetPlayable(false))
         delete pMusic;
 
-    uint32_t Size;
-    char* pAudioFile = sResourceMgr->Read(File, Size);
-    if (NsbAssert(pAudioFile && Size > 0, "Attempting to create Playable from empty or non-existing file"))
+    Resource Res = sResourceMgr->GetResource(File);
+    if (NsbAssert(Res.IsValid(), "Attempting to create Playable from empty or non-existing file"))
     {
         ObjectHolder::Write(HandleName, nullptr);
         return;
     }
 
-    ObjectHolder::Write(HandleName, new Playable(pAudioFile, Size));
+    ObjectHolder::Write(HandleName, new Playable(Res));
 }
 
 void NsbInterpreter::NSBWaitText(Text* pText, const string& unk)

@@ -23,8 +23,9 @@
 #include <utility>
 #include <algorithm>
 #include <cstring>
+#include <glib.h>
+#include "inpafile.hpp"
 
-class INpaFile;
 class ScriptFile;
 
 struct MapDeleter
@@ -59,17 +60,31 @@ struct CacheHolder
 
 template <class T> std::map<std::string, T*> CacheHolder<T>::Cache;
 
+class Resource
+{
+public:
+    Resource(INpaFile* pArchive, INpaFile::NpaIterator File) : pArchive(pArchive), File(File) { }
+
+    bool IsValid() { return pArchive != nullptr; }
+    uint32_t GetSize() { return File->second.Size; }
+    char* ReadData(uint32_t Offset, uint32_t Size) { return pArchive->ReadFile(File, Offset, Size, g_malloc); }
+
+private:
+    INpaFile* pArchive;
+    INpaFile::NpaIterator File;
+};
+
 class ResourceMgr
 {
 public:
     ResourceMgr(const std::vector<std::string>& AchieveFileNames);
     ~ResourceMgr();
 
+    Resource GetResource(const std::string& Path);
     char* Read(std::string Path, uint32_t& Size);
     ScriptFile* GetScriptFile(const std::string& Path);
-
 private:
-    std::vector<INpaFile*> Achieves;
+    std::vector<INpaFile*> Archives;
 };
 
 extern ResourceMgr* sResourceMgr;
