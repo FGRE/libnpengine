@@ -161,7 +161,7 @@ void NsbInterpreter::Initialize(Game* pGame)
     this->pGame = pGame;
     gst_init(nullptr, nullptr);
     Text::Initialize("/usr/share/fonts/cjkuni-uming/uming.ttc");
-    NpaFile::SetLocale("ja_JP.SHIFT-JIS");
+    NpaFile::SetLocale("ja_JP.CP932");
     sResourceMgr = new ResourceMgr({"cg.npa", "nss.npa", "voice.npa", "sound.npa"});
 
     // TODO: include.nss/herpderp.nss from .map files instead
