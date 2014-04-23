@@ -374,7 +374,7 @@ void NsbInterpreter::GLZoom(Drawable* pDrawable, int32_t Time, int32_t x, int32_
 void NsbInterpreter::NSBDelete()
 {
     // Hack: Do not destroy * (aka everything)
-    if (HandleName.back() == '*' && HandleName.size() != 1)
+    if (HandleName.back() == '*' && HandleName != "*" && HandleName != "@*")
         WildcardCall<Object>(HandleName, [this] (Object* pObject)
         {
             ObjectHolder::Write(HandleName, nullptr);
