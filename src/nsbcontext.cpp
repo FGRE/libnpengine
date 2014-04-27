@@ -142,3 +142,8 @@ void NsbContext::Request(Game* pGame, const string& State)
     if (State == "Start")
         Start();
 }
+
+void NsbContext::Jump(uint32_t SourceLine)
+{
+    SourceIter = SourceLine;
+}
