@@ -175,6 +175,14 @@ void NsbInterpreter::DebuggerMain()
             {
                 BreakOnAssert = true;
             }
+            // Jump
+            else if (Tokens.size() == 2 && Tokens[0] == "j")
+            {
+                try
+                {
+                    pMainContext->Jump(boost::lexical_cast<int32_t>(Tokens[1]));
+                } catch (...) { std::cout << "Bad command!" << std::endl; }
+            }
             // Print
             else if (Tokens.size() == 2 && Tokens[0] == "p")
             {

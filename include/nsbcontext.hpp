@@ -35,6 +35,7 @@ public:
 
     void SetScopeEndLabel(const string& Label);
     void Break();
+    void Jump(uint32_t SourceLine);
     void Jump(const string& Symbol);
     bool CallSubroutine(ScriptFile* pDestScript, const string& Symbol); // Attempts to call specified symbol in specified script
     void ReturnSubroutine(); // Function return: pop the call stack
