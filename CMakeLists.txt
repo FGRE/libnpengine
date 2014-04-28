@@ -34,18 +34,19 @@ find_package(SFML 2 REQUIRED COMPONENTS system window graphics)
 find_package(Boost REQUIRED COMPONENTS locale)
 find_package(GStreamer REQUIRED)
 find_package(GLIB REQUIRED)
+find_package(NPA REQUIRED)
 
 include_directories(
     ${SFML_INCLUDE_DIR}
     ${GSTREAMER_VIDEO_INCLUDE_DIRS}
     ${GLIB_INCLUDE_DIRS}
+    ${NPA_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/../libnpa/include
 )
 
 link_directories(
     ${Boost_LIBRARY_DIRS}
-    ${CMAKE_SOURCE_DIR}/../libnpa/
+    ${NPA_LIBRARY_DIR}
 )
 
 add_library(npengine SHARED
