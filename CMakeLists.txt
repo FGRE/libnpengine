@@ -1,10 +1,34 @@
 cmake_minimum_required(VERSION 2.8)
-project (libnpengine CXX)
 
+# add modules
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+
+# set version
+set(LIBNPENGINE_VERSION_MAJOR "0")
+set(LIBNPENGINE_VERSION_MINOR "3")
+set(LIBNPENGINE_VERSION_PATCH "1")
+set(LIBNPENGINE_VERSION
+    "${LIBNPENGINE_VERSION_MAJOR}.${LIBNPENGINE_VERSION_MINOR}.${LIBNPENGINE_VERSION_PATCH}"
+)
+
+# append git revision if available
+include(get-git-revision)
+get_git_revision(LIBNPENGINE_VERSION_GIT)
+if(NOT "${LIBNPENGINE_VERSION_GIT}" STREQUAL "")
+    set(LIBNPENGINE_VERSION "${LIBNPENGINE_VERSION}-${LIBNPENGINE_VERSION_GIT}")
+endif()
+
+message(STATUS "Configuring libnpengine version " ${LIBNPENGINE_VERSION})
+
+# project name and language
+project (libnpengine CXX)
 
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O2")
+
+# include version number in header
+configure_file(${PROJECT_SOURCE_DIR}/include/npengineversion.hpp.in
+    ${PROJECT_SOURCE_DIR}/include/npengineversion.hpp)
 
 find_package(SFML 2 REQUIRED COMPONENTS system window graphics)
 find_package(Boost REQUIRED COMPONENTS locale)

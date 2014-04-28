@@ -5,6 +5,7 @@ CMakeCache.txt
 *.cmake
 Makefile
 install_manifest.txt
+include/npengineversion.hpp
 !cmake/Modules/*.cmake
 
 # libraries
