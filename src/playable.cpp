@@ -16,8 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "movie.hpp"
-#include <boost/thread/thread.hpp>
-#include <boost/chrono.hpp>
+#include <thread>
 
 void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
 {
@@ -141,7 +140,7 @@ void Playable::Play()
 
 void Playable::Update()
 {
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
 void Playable::SetVolume(double Volume)
