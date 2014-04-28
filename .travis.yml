@@ -55,9 +55,8 @@ script:
   - cmake . && make
 
 after_success:
-  - >
-    if [ "$CXX" = "g++" ]; then
-      make package
+  - |
+    if [ "$CXX" = "g++-4.8" ]; then
       curl https://gist.githubusercontent.com/carstene1ns/a23f152a40a589f098c6/raw/upload.sh > upload.sh
-      bash upload.sh libnpengine-*.tar.bz2
+      make package && bash upload.sh libnpengine-*.tar.bz2
     fi
