@@ -4,7 +4,9 @@ CMakeFiles/
 CMakeCache.txt
 *.cmake
 Makefile
+_CPack_Packages
 install_manifest.txt
+*.tar.bz2
 include/npengineversion.hpp
 !cmake/Modules/*.cmake
 
