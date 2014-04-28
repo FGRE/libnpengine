@@ -25,8 +25,6 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
-#include <boost/chrono.hpp>
-#include <boost/thread/thread.hpp>
 
 std::map<std::string, std::string> ObjectHolder::Aliases;
 
@@ -296,7 +294,7 @@ template <> bool NsbInterpreter::Pop()
 
 void NsbInterpreter::Sleep(int32_t ms)
 {
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(ms));
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar)

@@ -3,7 +3,7 @@ project (libnpengine)
 
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
 find_package(SFML 2 REQUIRED COMPONENTS system window graphics)
-find_package(Boost REQUIRED COMPONENTS locale thread)
+find_package(Boost REQUIRED COMPONENTS locale)
 find_package(GStreamer REQUIRED)
 find_package(GLIB REQUIRED)
 
