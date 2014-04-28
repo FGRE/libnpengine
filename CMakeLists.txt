@@ -69,3 +69,8 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION include/libnpengine
     FILES_MATCHING PATTERN "*.hpp")
 install(TARGETS npengine DESTINATION lib)
+
+# create packages
+set(CPACK_GENERATOR "TBZ2")
+set(CPACK_PACKAGE_VERSION ${LIBNPENGINE_VERSION})
+include(CPack)

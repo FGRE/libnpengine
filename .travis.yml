@@ -35,5 +35,9 @@ before_script:
   - cd ../../$TRAVIS_REPO_SLUG
 
 script:
-  - cmake .
-  - make
+  - cmake . && make
+
+after_success:
+  - make package
+  - curl https://gist.githubusercontent.com/carstene1ns/a23f152a40a589f098c6/raw/upload.sh > upload.sh
+  - bash upload.sh libnpengine-*.tar.bz2
