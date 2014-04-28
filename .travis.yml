@@ -17,7 +17,8 @@ install:
     libsndfile1-dev libopenal-dev libudev-dev
     libgstreamer-plugins-base1.0-dev
     libglib2.0-dev
-    libboost-thread1.54-dev libboost-locale1.54-dev
+    libboost-locale1.55-dev
+    lftp
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
   - if [ "$CXX" = "clang++" ]; then sudo apt-get install -qq libstdc++-4.8-dev; fi
 
@@ -25,14 +26,10 @@ before_script:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
   - git clone --depth 1 https://github.com/LaurentGomila/SFML.git ../sfml
   - cd ../sfml
-  - cmake . -DSFML_BUILD_EXAMPLES=FALSE -DSFML_BUILD_DOC=FALSE
-  - make -j2
-  - sudo make install
-  - git clone --depth 1 https://github.com/FGRE/libnpa.git ../libnpa
-  - cd ../libnpa
-  - cmake .
-  - make
-  - cd ../../$TRAVIS_REPO_SLUG
+  - cmake . -DSFML_BUILD_EXAMPLES=FALSE -DSFML_BUILD_DOC=FALSE && make -j2 && sudo make install
+  - cd .. && mkdir libnpa && cd libnpa
+  - curl http://dev.pulsir.eu/krofna/downloads/latest.php?p=libnpa | tar jx --strip-components=1
+  - cd $TRAVIS_BUILD_DIR
 
 script:
   - cmake . && make
