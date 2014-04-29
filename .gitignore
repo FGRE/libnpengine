@@ -1,16 +1,18 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
+# cmake files
+CMakeFiles/
+CMakeCache.txt
+*.cmake
+Makefile
+_CPack_Packages
+install_manifest.txt
+*.tar.bz2
+include/npengineversion.hpp
+!cmake/Modules/*.cmake
 
-# Compiled Static libraries
-*.lai
-*.la
+# libraries
 *.a
-
-LOGIC
-TODO
+*.dll
+*.dylib
+*.lib
+*.so
