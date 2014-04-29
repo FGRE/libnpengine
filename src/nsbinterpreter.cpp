@@ -131,6 +131,7 @@ BreakOnAssert(false)
     // Stubs
     Builtins[MAGIC_UNK20] = &NsbInterpreter::UNK20;
     Builtins[MAGIC_UNK61] = &NsbInterpreter::UNK61;
+    Builtins[MAGIC_UNK63] = &NsbInterpreter::UNK63;
     Builtins[MAGIC_UNK66] = &NsbInterpreter::UNK66;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
