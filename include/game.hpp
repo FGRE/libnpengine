@@ -21,9 +21,9 @@
 #include "nsbinterpreter.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <boost/thread/mutex.hpp>
 #include <list>
 #include <queue>
+#include <mutex>
 
 class Text;
 class Drawable;
@@ -47,7 +47,7 @@ protected:
     void ClearText();
     void SetText(Text* pText);
 
-    boost::mutex GLMutex;
+    std::mutex GLMutex;
     std::queue<std::function<void()>> GLCallbacks; // TODO: Only one is (probably?) actually possible in practice
     std::list<DrawableBase*> Drawables; // Objects drawn to window sorted by Z coordinate
     Movie* pMovie; // Currently drawn movie
