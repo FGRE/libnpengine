@@ -266,6 +266,7 @@ protected:
     // Stubs
     void UNK20();
     void UNK61();
+    void UNK63();
     void UNK66();
     void UNK77();
     void UNK101();
