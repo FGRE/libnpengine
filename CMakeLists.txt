@@ -62,7 +62,6 @@ add_library(npengine SHARED
     src/resourcemgr.cpp
     src/text.cpp
 )
-target_link_libraries(npengine)
 
 # install headers and library
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
