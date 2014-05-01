@@ -18,7 +18,10 @@ notifications:
     on_failure: change
   irc:
     channels:
-      - "chat.freenode.net#fgre"
+      # WORKAROUND: prevents notifications from forks
+      secure: "cFBjGVmmraRbxe+LnWuKop66LdYI9psXaOg34RfGp9U18VwJJh7j6urC1BqfFwb8iPyAd07svTePboAU7TwgBRZJyB4MlHwNUsM/t+tYfNZlLF5WMbmI/meIq5m2QeCUsLm1ydzfvYWMZEc2qhsxGtra6qtF6qofZFY3pu1cbFA="
+    template:
+      - "%{repository_name} (%{commit}): %{message}, details: %{build_url}"
     on_success: change
     on_failure: change
     use_notice: true
