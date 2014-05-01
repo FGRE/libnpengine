@@ -46,7 +46,6 @@ include_directories(
 
 link_directories(
     ${Boost_LIBRARY_DIRS}
-    ${NPA_LIBRARY_DIR}
 )
 
 add_library(npengine SHARED
