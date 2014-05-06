@@ -38,6 +38,7 @@ struct Text : DrawableBase
     std::vector<Voice> Voices;
     size_t LineIter;
 
+    static std::string Wrap(std::string String, int Width);
     void Request(Game* pGame, const string& State) { }
 
     void StopMusic();
