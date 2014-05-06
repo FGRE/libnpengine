@@ -74,25 +74,15 @@ pCurrentMusic(nullptr)
         }
         else
         {
-            Voices.push_back({pMusic, sf::String::fromUtf8(TextLine.begin(), TextLine.end())});
-            sf::String* Str = &Voices[Voices.size() - 1].String;
             if (Fuwanovel)
             {
-                size_t i = 0, j, k = 1;
-                do
-                {
-                do
-                {
-                    j = i;
-                    i = Str->find(" ", i + 1);
-                } while (i < 52 * k && i < Str->getSize());
-                if (j+1 < Str->getSize() && i != sf::String::InvalidPos)
-                    Str->insert(j + 1, sf::String::fromUtf8(lf, lf + 1));
-                ++k;
-                } while (i != sf::String::InvalidPos);
+                string Wrapped = Wrap(TextLine, 50);
+                Voices.push_back({pMusic, sf::String::fromUtf8(Wrapped.begin(), Wrapped.end())});
             }
             else
             {
+                Voices.push_back({pMusic, sf::String::fromUtf8(TextLine.begin(), TextLine.end())});
+                sf::String* Str = &Voices[Voices.size() - 1].String;
                 size_t i = 28;
                 while (i < Str->getSize())
                 {
@@ -133,6 +123,27 @@ bool Text::NextLine()
         pCurrentMusic = pMusic;
     }
     return true;
+}
+
+std::string Text::Wrap(std::string String, int Width)
+{
+    int Space = -1, LineLen = 0;
+    for (int i = 0; i < String.size(); ++i, ++LineLen)
+    {
+        if (String[i] == ' ')
+        {
+            if (Space == -1)
+                Space = i;
+
+            if (LineLen >= Width)
+            {
+                String[Space] = '\n';
+                LineLen -= Width;
+            }
+            Space = i;
+        }
+    }
+    return String;
 }
 
 void Text::Initialize(const std::string& FontFile)
