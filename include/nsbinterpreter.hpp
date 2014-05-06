@@ -187,7 +187,7 @@ protected:
     void LogicalGreater();
     void LogicalLess();
     void ArraySize();
-    void SetParam();
+    virtual void SetParam();
     void Get();
     void DrawToTexture();
     void CreateColor();
