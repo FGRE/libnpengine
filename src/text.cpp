@@ -95,7 +95,8 @@ pCurrentMusic(nullptr)
     }
 
     ToText()->setFont(Font);
-    ToText()->setString(Voices[0].String);
+    if (!Voices.empty())
+        ToText()->setString(Voices[0].String);
 }
 
 Text::~Text()
