@@ -315,6 +315,8 @@ protected:
     // Set, Increment, Decrement...
     virtual void OnVariableChanged(const string& Identifier) { }
 
+    // Helpers
+    sf::Vector2u TextureSize();
     void Pop();
     template <class T> void Push(T Val);
     template <class T> T* Get(bool Expect);

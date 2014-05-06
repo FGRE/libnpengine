@@ -187,16 +187,21 @@ void NsbInterpreter::LoadImage()
 
 void NsbInterpreter::TextureWidth()
 {
-    HandleName = Pop<string>();
-    if (DrawableBase* pDrawable = GetDrawable())
-        Stack.push(new Variable(pDrawable->ToSprite()->getTexture()->getSize().x));
+    Stack.push(new Variable(TextureSize().x));
 }
 
 void NsbInterpreter::TextureHeight()
 {
+    Stack.push(new Variable(TextureSize().y));
+}
+
+sf::Vector2u NsbInterpreter::TextureSize()
+{
     HandleName = Pop<string>();
     if (DrawableBase* pDrawable = GetDrawable())
-        Stack.push(new Variable(pDrawable->ToSprite()->getTexture()->getSize().y));
+        return pDrawable->ToSprite()->getTexture()->getSize();
+    else
+        return sf::Vector2u(0, 0);
 }
 
 void NsbInterpreter::LoadTextureClip()
@@ -291,7 +296,7 @@ void NsbInterpreter::LogicalOr()
 {
     bool Val1 = Pop<bool>();
     bool Val2 = Pop<bool>();
-    Push (Val1 || Val2);
+    Push(Val1 || Val2);
 }
 
 void NsbInterpreter::LogicalNotEqual()
