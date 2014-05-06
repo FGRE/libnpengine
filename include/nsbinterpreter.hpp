@@ -326,7 +326,7 @@ protected:
     template <class T> void WildcardCall(std::string Handle, std::function<void(T*)> Func); // Calls Func for all handles matching wildcard
     void SetVariable(const string& Identifier, Variable* pVar); // Sets value of global variable
     void SetLocalVariable(const string& Identifier, Variable* pVar);
-    void SetVariable(const string& Identifier, Variable* pVar, std::map<string, Variable*>& Container);
+    void SetVariable(const string& Identifier, Variable* pVar, VariableStore& Container);
     void CallScriptSymbol(const string& Prefix);
     DrawableBase* GetDrawable(bool Expect = true); // Return current drawable as specified by HandleName
     Playable* GetPlayable(bool Expect = true); // Expect = true: Error if not found, Expect = false: Error if found

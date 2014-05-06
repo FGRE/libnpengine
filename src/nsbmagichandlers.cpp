@@ -287,16 +287,12 @@ void NsbInterpreter::Multiply()
 
 void NsbInterpreter::LogicalAnd()
 {
-    bool Val1 = Pop<bool>();
-    bool Val2 = Pop<bool>();
-    Push(Val1 && Val2);
+    BinaryOperator<bool, bool>([](bool a, bool b) { return a && b; });
 }
 
 void NsbInterpreter::LogicalOr()
 {
-    bool Val1 = Pop<bool>();
-    bool Val2 = Pop<bool>();
-    Push(Val1 || Val2);
+    BinaryOperator<bool, bool>([](bool a, bool b) { return a || b; });
 }
 
 void NsbInterpreter::LogicalNotEqual()
