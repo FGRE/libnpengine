@@ -322,10 +322,13 @@ void NsbInterpreter::NSBCreateSound(const string& Type, const string& File)
 
 void NsbInterpreter::NSBWaitText(Text* pText, const string& unk)
 {
-    if (Playable* pMusic = pText->Voices[0].pMusic)
+    if (!pText->Voices.empty())
     {
-        pMusic->Play();
-        pText->pCurrentMusic = pMusic;
+        if (Playable* pMusic = pText->Voices[0].pMusic)
+        {
+            pMusic->Play();
+            pText->pCurrentMusic = pMusic;
+        }
     }
     pGame->SetText(pText);
     Pause();
