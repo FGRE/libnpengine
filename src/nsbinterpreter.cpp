@@ -303,7 +303,7 @@ void NsbInterpreter::SetLocalVariable(const string& Identifier, Variable* pVar)
     SetVariable(Identifier, pVar, LocalVariables);
 }
 
-void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar, std::map<string, Variable*>& Container)
+void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar, VariableStore& Container)
 {
     auto iter = Container.find(Identifier);
     // Variable exists, copy the value
