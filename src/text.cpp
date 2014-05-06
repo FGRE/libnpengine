@@ -132,11 +132,12 @@ std::string Text::Wrap(std::string String, int Width)
     {
         if (String[i] == ' ')
         {
-            if (Space == -1)
-                Space = i;
-
             if (LineLen >= Width)
             {
+                // Word didn't fit on single one
+                if (Space == -1)
+                    Space = i;
+
                 String[Space] = '\n';
                 LineLen -= Width;
             }
