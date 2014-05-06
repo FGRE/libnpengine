@@ -131,7 +131,7 @@ std::string Text::Wrap(std::string String, int Width)
     int Space = -1, LineLen = 0;
     for (int i = 0; i < String.size(); ++i, ++LineLen)
     {
-        if (String[i] == ' ')
+        if (String[i] == ' ' || i == String.size() - 1)
         {
             if (LineLen >= Width)
             {
