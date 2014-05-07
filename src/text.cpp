@@ -140,7 +140,7 @@ std::string Text::Wrap(std::string String, int Width)
                     Space = i;
 
                 String[Space] = '\n';
-                LineLen -= Width;
+                LineLen = i - Space;
             }
             Space = i;
         }
