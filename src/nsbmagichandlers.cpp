@@ -79,6 +79,13 @@ void NsbInterpreter::UNK161()
     Push<string>("false");
 }
 
+void NsbInterpreter::StrStr()
+{
+    string Haystack = Pop<string>();
+    string Needle = Pop<string>();
+    Push(Haystack.find(Needle));
+}
+
 void NsbInterpreter::Exit()
 {
     Stop();

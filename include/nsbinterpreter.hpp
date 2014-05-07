@@ -261,6 +261,7 @@ protected:
     void While();
     void Exit();
     void CaseBegin();
+    void StrStr();
     void UNK90();
 
     // Stubs
