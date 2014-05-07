@@ -211,11 +211,8 @@ void NsbInterpreter::LoadTextureClip()
     int32_t Width = Pop<int32_t>();
     int32_t Ty = Pop<int32_t>();
     int32_t Tx = Pop<int32_t>();
-    // TODO: Pop<PosFunc>();
-    PosFunc YFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
-    Pop();
-    PosFunc XFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
-    Pop();
+    PosFunc YFunc = Pop<PosFunc>();
+    PosFunc XFunc = Pop<PosFunc>();
     int32_t Priority = Pop<int32_t>();
     HandleName = Pop<string>();
     pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadTextureClip, this, Priority, XFunc, YFunc, Tx, Ty, Width, Height, File));
@@ -710,10 +707,8 @@ void NsbInterpreter::End()
 void NsbInterpreter::CreateTexture()
 {
     string File = Pop<string>();
-    PosFunc YFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
-    Pop();
-    PosFunc XFunc = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
-    Pop();
+    PosFunc YFunc = Pop<PosFunc>();
+    PosFunc XFunc = Pop<PosFunc>();
     int32_t Priority = Pop<int32_t>();
     HandleName = Pop<string>();
     pGame->GLCallback(std::bind(&NsbInterpreter::GLCreateTexture, this, Priority, XFunc, YFunc, File));
