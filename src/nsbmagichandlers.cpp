@@ -83,7 +83,7 @@ void NsbInterpreter::StrStr()
 {
     string Haystack = Pop<string>();
     string Needle = Pop<string>();
-    Push(Haystack.find(Needle));
+    Push(Haystack.find(Needle) + 1);
 }
 
 void NsbInterpreter::Exit()
