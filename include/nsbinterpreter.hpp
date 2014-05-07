@@ -374,6 +374,7 @@ private:
     volatile bool BreakOnAssert;
 };
 
+template <> PosFunc NsbInterpreter::Pop();
 template <> bool NsbInterpreter::Pop();
 template <> void NsbInterpreter::Push(bool Val);
 

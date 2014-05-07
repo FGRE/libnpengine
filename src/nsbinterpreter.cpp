@@ -288,6 +288,13 @@ template <> bool NsbInterpreter::Pop()
     return Val;
 }
 
+template <> PosFunc NsbInterpreter::Pop()
+{
+    PosFunc Func = boost::apply_visitor(SpecialPosVisitor(), Stack.top()->Value);
+    Pop();
+    return Func;
+}
+
 void NsbInterpreter::Sleep(int32_t ms)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
