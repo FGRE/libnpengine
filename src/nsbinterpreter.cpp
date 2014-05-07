@@ -121,6 +121,7 @@ BreakOnAssert(false)
     Builtins[MAGIC_SELECT] = &NsbInterpreter::Select;
     Builtins[MAGIC_CASE_BEGIN] = &NsbInterpreter::CaseBegin;
     Builtins[MAGIC_EXIT] = &NsbInterpreter::Exit;
+    Builtins[MAGIC_STR_STR] = &NsbInterpreter::StrStr;
     Builtins[MAGIC_UNK90] = &NsbInterpreter::UNK90;
     Builtins[MAGIC_UNK105] = &NsbInterpreter::GetMovieTime;
     //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
