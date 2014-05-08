@@ -28,7 +28,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 sf::Font Text::Font;
-bool Text::WordWrap;
+bool Text::WordWrap = false;
 
 static const char* lf = "\n";
 
@@ -37,7 +37,6 @@ Text::Text(const std::string& XML) :
 LineIter(0),
 pCurrentMusic(nullptr)
 {
-    WordWrap = false;
     std::istringstream ss(XML);
     std::string TextLine;
     Playable* pMusic = nullptr;
