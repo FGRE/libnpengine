@@ -28,7 +28,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 sf::Font Text::Font;
-bool Text::Fuwanovel;
+bool Text::WordWrap;
 
 static const char* lf = "\n";
 
@@ -37,6 +37,7 @@ Text::Text(const std::string& XML) :
 LineIter(0),
 pCurrentMusic(nullptr)
 {
+    WordWrap = false;
     std::istringstream ss(XML);
     std::string TextLine;
     Playable* pMusic = nullptr;
@@ -74,7 +75,7 @@ pCurrentMusic(nullptr)
         }
         else
         {
-            if (Fuwanovel)
+            if (WordWrap)
             {
                 string Wrapped = Wrap(TextLine, 50);
                 Voices.push_back({pMusic, sf::String::fromUtf8(Wrapped.begin(), Wrapped.end())});
@@ -150,9 +151,5 @@ std::string Text::Wrap(std::string String, int Width)
 
 void Text::Initialize(const std::string& FontFile)
 {
-    if (std::ifstream("FUWANOVEL"))
-        Fuwanovel = true;
-    else
-        Fuwanovel = false;
     assert(Font.loadFromFile(FontFile));
 }
