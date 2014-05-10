@@ -33,7 +33,8 @@ StopInterpreter(false),
 pGame(nullptr),
 pDebuggerThread(nullptr),
 DbgStepping(false),
-BreakOnAssert(false)
+BreakOnAssert(false),
+EventLoop(false)
 {
     MagicBreakpoints.resize(MAGIC_UNK119 + 1, false);
 
