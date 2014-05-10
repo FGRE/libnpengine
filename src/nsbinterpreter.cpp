@@ -328,13 +328,13 @@ void NsbInterpreter::SetVariable(const string& Identifier, Variable* pVar, Varia
         // Make a copy of the variable
         if (pVar->IsPtr)
         {
-            pNew = new Variable(true);
+            pNew = new Variable;
             pNew->Value = pVar->Value;
         }
         // Turn literal into variable
-        else
-            pVar->IsPtr = true;
-        Container[Identifier] = pVar;
+        pNew->IsPtr = true;
+        // Set
+        Container[Identifier] = pNew;
     }
 }
 
