@@ -223,8 +223,7 @@ public:
     {
         pBlur = new sf::RenderTexture;
         pBlur->create(1024, 576);
-        if (!Shader.loadFromMemory(BlurShader, sf::Shader::Fragment))
-            assert(false);
+        assert(Shader.loadFromMemory(BlurShader, sf::Shader::Fragment));
         Shader.setParameter("Sigma", 3.0f); // Guess for SEMIHEAVY
         Shader.setParameter("Texture", sf::Shader::CurrentTexture);
     }
