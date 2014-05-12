@@ -225,6 +225,7 @@ void NsbInterpreter::Run()
                 NsbAssert(false, "Exception caught");
             }
         }
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
     } while (!StopInterpreter && !Threads.empty());
 }
 
