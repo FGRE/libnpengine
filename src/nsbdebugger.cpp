@@ -60,6 +60,16 @@ void NsbInterpreter::PrintVariable(Variable* pVar)
     else assert(false);
 }
 
+void NsbInterpreter::PrintArray(ArrayVariable* pArray)
+{
+    PrintVariable(pArray);
+    for (auto i : pArray->Members)
+    {
+        std::cout << i.first << " = ";
+        PrintArray(i.second);
+    }
+}
+
 void NsbInterpreter::DebuggerTick(uint16_t Magic)
 {
     if (!DbgStepping)
@@ -193,6 +203,14 @@ void NsbInterpreter::DebuggerMain()
                     PrintVariable(iter->second);
                 }
                 else std::cout << "Variable " << Tokens[1] << " not found!" << std::endl;
+            }
+            // Print Array
+            else if (Tokens.size() == 3 && Tokens[0] == "p" && Tokens[1] == "a")
+            {
+                auto iter = Arrays.find(Tokens[2]);
+                if (iter != Arrays.end())
+                    PrintArray(iter->second);
+                else std::cout << "Array " << Tokens[2] << " not found!" << std::endl;
             }
             // Inspect surrounding code
             else if (Tokens.size() == 2 && Tokens[0] == "i")

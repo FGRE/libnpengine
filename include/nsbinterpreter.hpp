@@ -363,6 +363,7 @@ private:
     // NsbDebugger
     void DbgBreak();
     void Inspect(int32_t n);
+    void PrintArray(ArrayVariable* pArray);
     void PrintVariable(Variable* pVar);
     void DebuggerTick(uint16_t Magic);
     string Disassemble(Line* pLine);
