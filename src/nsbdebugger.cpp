@@ -168,6 +168,11 @@ void NsbInterpreter::DebuggerMain()
                     SetBreakpoint(Tokens[1], boost::lexical_cast<int32_t>(Tokens[2]));
                 } catch (...) { std::cout << "Bad command!" << std::endl; }
             }
+            // Breakpoint on Assertion failure
+            else if (Tokens.size() == 2 && Tokens[0] == "b" && Tokens[1] == "a")
+            {
+                BreakOnAssert = true;
+            }
             // Breakpoint on builtin call
             else if (Tokens.size() == 2 && Tokens[0] == "b")
             {
@@ -179,11 +184,6 @@ void NsbInterpreter::DebuggerMain()
             {
                 Breakpoints.clear();
                 BreakOnAssert = false;
-            }
-            // Breakpoint on Assertion failure
-            else if (Tokens.size() == 2 && Tokens[0] == "b" && Tokens[1] == "a")
-            {
-                BreakOnAssert = true;
             }
             // Jump
             else if (Tokens.size() == 2 && Tokens[0] == "j")
