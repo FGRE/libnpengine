@@ -423,6 +423,7 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
         // Lookup by identifier
         if (string* Index = boost::get<string>(&Stack[StackIndex]->Value))
         {
+            bool Found = false;
             // Parameters contain identifiers of child nodes
             // for each level specifying which path to take
             for (auto i = Members.begin(); i != Members.end(); ++i)
@@ -431,10 +432,12 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
                 if (i->first == *Index)
                 {
                     pVariable = i->second;
+                    Found = true;
                     break; // Go to next level (if needed)
                 }
-                // TODO: Handle case when Identifier is not found
             }
+            if (NsbAssert(Found, "Failed to find string index in array"))
+                break;
         }
         // Lookup by index
         else if (int32_t* Index = boost::get<int32_t>(&Stack[StackIndex]->Value))
@@ -442,8 +445,12 @@ void NsbInterpreter::NSBArrayRead(int32_t Depth)
             auto i = Members.begin();
             for (int j = 0; j < *Index; ++j)
                 ++i;
-            if (i != Members.end())
-                pVariable = i->second;
+
+            if (NsbAssert(i != Members.end(), "Failed to find integer index in array"))
+                break;
+
+            // Node found, go to next level
+            pVariable = i->second;
         }
         ++StackIndex;
     }
