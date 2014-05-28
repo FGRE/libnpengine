@@ -173,6 +173,7 @@ void NsbInterpreter::Initialize(Game* pGame)
     LoadScript("nss/function_select.nsb");
     LoadScript("nss/function_stand.nsb");
     LoadScript("nss/sys_title.nsb");
+    LoadScript("nss/sys_save_function.nsb");
 
     for (char i = 'a'; i <= 'z'; ++i)
     {
