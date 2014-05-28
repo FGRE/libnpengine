@@ -31,7 +31,7 @@ configure_file(${PROJECT_SOURCE_DIR}/include/npengineversion.hpp.in
     ${PROJECT_SOURCE_DIR}/include/npengineversion.hpp)
 
 find_package(SFML 2 REQUIRED COMPONENTS system window graphics)
-find_package(Boost REQUIRED COMPONENTS locale)
+find_package(Boost REQUIRED COMPONENTS locale filesystem)
 find_package(GStreamer REQUIRED)
 find_package(GLIB REQUIRED)
 find_package(NPA REQUIRED)

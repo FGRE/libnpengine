@@ -24,6 +24,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include <fstream>
 
 // TODO: Not really a nsb builtin... Move this code
@@ -477,11 +478,28 @@ void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, 
     Threads.push_back(pThread);
 }
 
-void NsbInterpreter::NSBWriteFile(const string& Filename, const string& Data)
+void NsbInterpreter::NSBWriteFile(string& Filename, const string& Data)
 {
+    using namespace boost::filesystem;
+
+    // Create directories
+    std::string Path = Filename;
+    if (char* delim = strchr((char*)Filename.c_str(), '/'))
+    {
+        do
+        {
+            *delim = 0;
+            if (!exists(path(Path)))
+                create_directory(path(Path));
+            *delim = '/';
+        } while ((delim = strchr(delim + 1, '/')));
+    }
+
+    // Write File
     std::ofstream File(Filename, std::ios::binary);
+    if (NsbAssert(File, "WriteFile: Failed to open file"))
+        return;
     File.write(Data.c_str(), Data.size());
-    File.close();
 }
 
 void NsbInterpreter::NSBReadFile(const string& Filename)
