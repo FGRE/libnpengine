@@ -478,12 +478,12 @@ void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, 
     Threads.push_back(pThread);
 }
 
-void NsbInterpreter::NSBWriteFile(string& Filename, const string& Data)
+void NsbInterpreter::NSBWriteFile(string& Filename, string& Data)
 {
     using namespace boost::filesystem;
 
     // Create directories
-    std::string Path = Filename;
+    string Path = Filename;
     if (char* delim = strchr((char*)Filename.c_str(), '/'))
     {
         do
@@ -499,17 +499,23 @@ void NsbInterpreter::NSBWriteFile(string& Filename, const string& Data)
     std::ofstream File(Filename, std::ios::binary);
     if (NsbAssert(File, "WriteFile: Failed to open file"))
         return;
+
+    Data = NpaFile::FromUtf8(Data);
+    Data = NpaFile::Encrypt(&Data[0], Data.size());
     File.write(Data.c_str(), Data.size());
 }
 
 void NsbInterpreter::NSBReadFile(const string& Filename)
 {
     std::ifstream File(Filename, std::ios::binary);
-    File.seekg(0, std::ios::end);
     string Data;
+
+    File.seekg(0, std::ios::end);
     Data.resize(File.tellg());
     File.seekg(0, std::ios::beg);
     File.read(&Data[0], Data.size());
-    File.close();
+
+    Data = NpaFile::Decrypt(&Data[0], Data.size());
+    Data = NpaFile::ToUtf8(Data);
     Push(Data);
 }

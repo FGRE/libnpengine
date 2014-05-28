@@ -294,7 +294,7 @@ protected:
     void NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function);
     void NSBSystem(string Command, string Parameters, string Directory);
-    void NSBWriteFile(string& FileName, const string& Data);
+    void NSBWriteFile(string& FileName, string& Data);
     void NSBReadFile(const string& Filename);
 
     // GL functions are builtins like NSB, but need to be called from OpenGL thread
