@@ -239,7 +239,7 @@ void NsbInterpreter::WriteFile()
 {
     string Data = Pop<string>();
     string FileName = Pop<string>();
-    NSBWriteFile(Data, FileName);
+    NSBWriteFile(FileName, Data);
 }
 
 void NsbInterpreter::ReadFile()
