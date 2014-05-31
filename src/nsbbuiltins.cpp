@@ -20,12 +20,12 @@
 #include "text.hpp"
 #include "movie.hpp"
 #include "nsbcontext.hpp"
+#include "fscommon.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-#include <fstream>
+#include <fstream> // For std::ifstream("NOMOVIE")
 
 // TODO: Not really a nsb builtin... Move this code
 void Button::CheckClicked(int x, int y)
@@ -480,42 +480,16 @@ void NsbInterpreter::NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, 
 
 void NsbInterpreter::NSBWriteFile(string& Filename, string& Data)
 {
-    using namespace boost::filesystem;
-
-    // Create directories
-    string Path = Filename;
-    if (char* delim = strchr((char*)Filename.c_str(), '/'))
-    {
-        do
-        {
-            *delim = 0;
-            if (!exists(path(Path)))
-                create_directory(path(Path));
-            *delim = '/';
-        } while ((delim = strchr(delim + 1, '/')));
-    }
-
-    // Write File
-    std::ofstream File(Filename, std::ios::binary);
-    if (NsbAssert(File, "WriteFile: Failed to open file"))
-        return;
-
     Data = NpaFile::FromUtf8(Data);
-    Data = NpaFile::Encrypt(&Data[0], Data.size());
-    File.write(Data.c_str(), Data.size());
+    uint32_t Size = Data.size();
+    fs::WriteFileDirectory(Filename, NpaFile::Encrypt(&Data[0], Size), Size);
 }
 
 void NsbInterpreter::NSBReadFile(const string& Filename)
 {
-    std::ifstream File(Filename, std::ios::binary);
-    string Data;
-
-    File.seekg(0, std::ios::end);
-    Data.resize(File.tellg());
-    File.seekg(0, std::ios::beg);
-    File.read(&Data[0], Data.size());
-
-    Data = NpaFile::Decrypt(&Data[0], Data.size());
-    Data = NpaFile::ToUtf8(Data);
-    Push(Data);
+    uint32_t Size;
+    char* pData = fs::ReadFile(Filename, Size);
+    NpaFile::Decrypt(pData, Size);
+    Push(NpaFile::ToUtf8(pData));
+    delete[] pData;
 }
