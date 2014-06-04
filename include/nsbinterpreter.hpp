@@ -186,7 +186,7 @@ protected:
     void Increment();
     void LogicalGreater();
     void LogicalLess();
-    void ArraySize();
+    void Count();
     virtual void SetParam();
     void Get();
     void DrawToTexture();
@@ -217,7 +217,7 @@ protected:
     void SetLoop();
     void ParseText();
     void Request();
-    void RegisterCallback();
+    void SetShortcut();
     void ArrayRead();
     void Set();
     void Negative();
@@ -249,8 +249,8 @@ protected:
     void Substract();
     void StringToVariable();
     void ReadFile();
-    void BindIdentifier();
-    void CreateArray();
+    void AssocArray();
+    void Array();
     void SetAlias();
     void CreateChoice();
     void SetNextFocus();
@@ -268,13 +268,13 @@ protected:
     void UNK20();
     void UNK61();
     void UNK63();
-    void UNK66();
     void UNK77();
     void UNK101();
-    void UNK103();
-    void UNK104();
     void UNK115();
-    void UNK161();
+    void LockVideo();
+    void Save();
+    void DeleteSaveFile();
+    void Conquest();
     void ClearScore();
     void ClearBacklog();
 

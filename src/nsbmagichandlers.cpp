@@ -45,7 +45,7 @@ void NsbInterpreter::UNK63()
     SetVariable(Identifier, new Variable(GetVariable<int32_t>(Identifier) - unk));
 }
 
-void NsbInterpreter::UNK66()
+void NsbInterpreter::LockVideo()
 {
     bool unk = Pop<bool>();
 }
@@ -55,12 +55,12 @@ void NsbInterpreter::UNK101()
     string unk = Pop<string>();
 }
 
-void NsbInterpreter::UNK103()
+void NsbInterpreter::Save()
 {
     int32_t unk = Pop<int32_t>();
 }
 
-void NsbInterpreter::UNK104()
+void NsbInterpreter::DeleteSaveFile()
 {
     int32_t unk = Pop<int32_t>();
 }
@@ -71,7 +71,7 @@ void NsbInterpreter::UNK115()
     string unk1 = Pop<string>();
 }
 
-void NsbInterpreter::UNK161()
+void NsbInterpreter::Conquest()
 {
     string unk0 = Pop<string>();
     string unk1 = Pop<string>();
@@ -352,7 +352,7 @@ void NsbInterpreter::Break()
     pContext->Break();
 }
 
-void NsbInterpreter::RegisterCallback()
+void NsbInterpreter::SetShortcut()
 {
     string Script = Pop<string>();
     string Key = Pop<string>();
@@ -774,7 +774,7 @@ void NsbInterpreter::Format()
     Push(Fmt.str());
 }
 
-void NsbInterpreter::ArraySize()
+void NsbInterpreter::Count()
 {
     auto iter = Arrays.find(Pop<string>());
     if (NsbAssert(iter != Arrays.end(), "Trying to get size of non-existing array"))
@@ -823,7 +823,7 @@ void NsbInterpreter::StringToVariable()
         assert(false && "This will trigger when we get new season of Haruhi");
 }
 
-void NsbInterpreter::CreateArray()
+void NsbInterpreter::Array()
 {
     size_t Index = Stack.size() - pContext->GetLineArgs().size();
     ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack[Index]);
@@ -848,7 +848,7 @@ void NsbInterpreter::CreateArray()
     Stack.pop(); // Identifier
 }
 
-void NsbInterpreter::BindIdentifier()
+void NsbInterpreter::AssocArray()
 {
     size_t Index = Stack.size() - pContext->GetLineArgs().size();
     ArrayVariable* pArr = dynamic_cast<ArrayVariable*>(Stack[Index]);

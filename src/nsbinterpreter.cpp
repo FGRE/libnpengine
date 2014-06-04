@@ -57,14 +57,14 @@ EventLoop(false)
     Builtins[MAGIC_INCREMENT] = &NsbInterpreter::Increment;
     Builtins[MAGIC_LOGICAL_GREATER] = &NsbInterpreter::LogicalGreater;
     Builtins[MAGIC_LOGICAL_LESS] = &NsbInterpreter::LogicalLess;
-    Builtins[MAGIC_ARRAY_SIZE] = &NsbInterpreter::ArraySize;
+    Builtins[MAGIC_COUNT] = &NsbInterpreter::Count;
     Builtins[MAGIC_SET_VERTEX] = &NsbInterpreter::SetVertex;
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
     Builtins[MAGIC_NEGATIVE] = &NsbInterpreter::Negative;
-    Builtins[MAGIC_CREATE_ARRAY] = &NsbInterpreter::CreateArray;
+    Builtins[MAGIC_ARRAY] = &NsbInterpreter::Array;
     Builtins[MAGIC_SET] = &NsbInterpreter::Set;
     Builtins[MAGIC_ARRAY_READ] = &NsbInterpreter::ArrayRead;
-    Builtins[MAGIC_REGISTER_CALLBACK] = &NsbInterpreter::RegisterCallback;
+    Builtins[MAGIC_SET_SHORTCUT] = &NsbInterpreter::SetShortcut;
     Builtins[MAGIC_REQUEST] = &NsbInterpreter::Request;
     Builtins[MAGIC_PARSE_TEXT] = &NsbInterpreter::ParseText;
     Builtins[MAGIC_SET_LOOP] = &NsbInterpreter::SetLoop;
@@ -89,7 +89,7 @@ EventLoop(false)
     Builtins[MAGIC_ADD] = &NsbInterpreter::Add;
     Builtins[MAGIC_DELETE] = &NsbInterpreter::Delete;
     Builtins[MAGIC_FADE] = &NsbInterpreter::Fade;
-    Builtins[MAGIC_BIND_IDENTIFIER] = &NsbInterpreter::BindIdentifier;
+    Builtins[MAGIC_ASSOC_ARRAY] = &NsbInterpreter::AssocArray;
     Builtins[MAGIC_FUNCTION_BEGIN] = &NsbInterpreter::Begin;
     Builtins[MAGIC_CALL_CHAPTER] = &NsbInterpreter::CallChapter;
     Builtins[MAGIC_IF] = &NsbInterpreter::If;
@@ -134,13 +134,13 @@ EventLoop(false)
     Builtins[MAGIC_UNK20] = &NsbInterpreter::UNK20;
     Builtins[MAGIC_UNK61] = &NsbInterpreter::UNK61;
     Builtins[MAGIC_UNK63] = &NsbInterpreter::UNK63;
-    Builtins[MAGIC_UNK66] = &NsbInterpreter::UNK66;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
-    Builtins[MAGIC_UNK103] = &NsbInterpreter::UNK103;
-    Builtins[MAGIC_UNK104] = &NsbInterpreter::UNK104;
     Builtins[MAGIC_UNK115] = &NsbInterpreter::UNK115;
-    Builtins[MAGIC_UNK161] = &NsbInterpreter::UNK161;
+    Builtins[MAGIC_LOCK_VIDEO] = &NsbInterpreter::LockVideo;
+    Builtins[MAGIC_SAVE] = &NsbInterpreter::Save;
+    Builtins[MAGIC_DELETE_SAVE_FILE] = &NsbInterpreter::DeleteSaveFile;
+    Builtins[MAGIC_CONQUEST] = &NsbInterpreter::Conquest;
     Builtins[MAGIC_CLEAR_SCORE] = &NsbInterpreter::ClearScore;
     Builtins[MAGIC_CLEAR_BACKLOG] = &NsbInterpreter::ClearBacklog;
 
