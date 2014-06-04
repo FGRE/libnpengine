@@ -238,13 +238,13 @@ protected:
     void CallScene();
     void Time();
     void Shake();
-    void GetScriptName();
+    void GetModuleFileName();
     void ScopeBegin();
     void ScopeEnd();
     void WriteFile();
     void Divide();
-    void TextureWidth();
-    void TextureHeight();
+    void ImageHorizon();
+    void ImageVertical();
     void Multiply();
     void Substract();
     void StringToVariable();
