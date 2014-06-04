@@ -46,8 +46,8 @@ EventLoop(false)
     Builtins[MAGIC_LOGICAL_GREATER_EQUAL] = &NsbInterpreter::LogicalGreaterEqual;
     Builtins[MAGIC_LOGICAL_LESS_EQUAL] = &NsbInterpreter::LogicalLessEqual;
     Builtins[MAGIC_SUBSTRACT] = &NsbInterpreter::Substract;
-    Builtins[MAGIC_TEXTURE_WIDTH] = &NsbInterpreter::TextureWidth;
-    Builtins[MAGIC_TEXTURE_HEIGHT] = &NsbInterpreter::TextureHeight;
+    Builtins[MAGIC_IMAGE_HORIZON] = &NsbInterpreter::ImageHorizon;
+    Builtins[MAGIC_IMAGE_VERTICAL] = &NsbInterpreter::ImageVertical;
     Builtins[MAGIC_SHAKE] = &NsbInterpreter::Shake;
     Builtins[MAGIC_TIME] = &NsbInterpreter::Time;
     Builtins[MAGIC_CALL_SCENE] = &NsbInterpreter::CallScene;
@@ -102,7 +102,7 @@ EventLoop(false)
     Builtins[MAGIC_CHAPTER_END] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
-    Builtins[MAGIC_GET_SCRIPT_NAME] = &NsbInterpreter::GetScriptName;
+    Builtins[MAGIC_GET_MODULE_FILE_NAME] = &NsbInterpreter::GetModuleFileName;
     Builtins[MAGIC_SCOPE_BEGIN] = &NsbInterpreter::ScopeBegin;
     Builtins[MAGIC_SCOPE_END] = &NsbInterpreter::ScopeEnd;
     Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format;

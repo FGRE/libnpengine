@@ -192,12 +192,12 @@ void NsbInterpreter::LoadImage()
     pGame->GLCallback(std::bind(&NsbInterpreter::GLLoadImage, this, File));
 }
 
-void NsbInterpreter::TextureWidth()
+void NsbInterpreter::ImageHorizon()
 {
     Stack.push(new Variable(TextureSize().x));
 }
 
-void NsbInterpreter::TextureHeight()
+void NsbInterpreter::ImageVertical()
 {
     Stack.push(new Variable(TextureSize().y));
 }
@@ -471,7 +471,7 @@ void NsbInterpreter::Zoom()
         pGame->GLCallback(std::bind(&NsbInterpreter::GLZoom, this, pDrawable, Time, X, Y, Tempo, Wait));
 }
 
-void NsbInterpreter::GetScriptName()
+void NsbInterpreter::GetModuleFileName()
 {
     string Name = pContext->GetScriptName();
     Push(Name.substr(4, Name.size() - 8)); // Remove nss/ and .nsb
