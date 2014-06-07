@@ -105,12 +105,12 @@ EventLoop(false)
     Builtins[MAGIC_GET_MODULE_FILE_NAME] = &NsbInterpreter::GetModuleFileName;
     Builtins[MAGIC_SCOPE_BEGIN] = &NsbInterpreter::ScopeBegin;
     Builtins[MAGIC_SCOPE_END] = &NsbInterpreter::ScopeEnd;
-    Builtins[MAGIC_FORMAT] = &NsbInterpreter::Format;
+    Builtins[MAGIC_STRING] = &NsbInterpreter::String;
     Builtins[MAGIC_WRITE_FILE] = &NsbInterpreter::WriteFile;
     Builtins[MAGIC_DIVIDE] = &NsbInterpreter::Divide;
     Builtins[MAGIC_MULTIPLY] = &NsbInterpreter::Multiply;
     Builtins[MAGIC_RETURN] = &NsbInterpreter::End;
-    Builtins[MAGIC_STRING_TO_VARIABLE] = &NsbInterpreter::StringToVariable;
+    Builtins[MAGIC_VARIABLE_VALUE] = &NsbInterpreter::VariableValue;
     Builtins[MAGIC_LOAD_IMAGE] = &NsbInterpreter::LoadImage;
     Builtins[MAGIC_READ_FILE] = &NsbInterpreter::ReadFile;
     Builtins[MAGIC_SET_ALIAS] = &NsbInterpreter::SetAlias;

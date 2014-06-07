@@ -760,7 +760,7 @@ void NsbInterpreter::CallChapter()
     CallScriptSymbol("chapter.");
 }
 
-void NsbInterpreter::Format()
+void NsbInterpreter::String()
 {
     size_t Index = Stack.size() - pContext->GetLineArgs().size();
     boost::format Fmt(boost::get<string>(Stack[Index]->Value));
@@ -803,7 +803,8 @@ void NsbInterpreter::SetVertex()
         pDrawable->SetCenter(X, Y);
 }
 
-void NsbInterpreter::StringToVariable()
+// TODO: Support for arrays
+void NsbInterpreter::VariableValue()
 {
     // Set
     if (pContext->GetLineArgs().size() == 3)

@@ -198,7 +198,7 @@ protected:
     void Delete();
     void CallFunction();
     void Add();
-    void Format();
+    void String();
     void CreateMovie();
     void DrawTransition();
     void ClearParams();
@@ -248,7 +248,7 @@ protected:
     void ImageVertical();
     void Multiply();
     void Substract();
-    void StringToVariable();
+    void VariableValue();
     void ReadFile();
     void AssocArray();
     void Array();
