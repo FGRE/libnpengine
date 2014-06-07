@@ -24,7 +24,8 @@ Name(Name),
 pScript(nullptr),
 pLine(nullptr),
 SourceIter(0),
-Active(false)
+Active(false),
+WaitKey(false)
 {
 }
 
@@ -35,9 +36,8 @@ void NsbContext::Run(NsbInterpreter* pInterpreter)
 
     if (SleepClock.getElapsedTime() < SleepTime)
         return;
-    else
-        SleepTime = sf::Time::Zero;
 
+    Resume();
     do
     {
         if (!pScript || !NextLine())
@@ -115,6 +115,18 @@ void NsbContext::Sleep(int32_t ms)
 {
     SleepTime = sf::milliseconds(ms);
     SleepClock.restart();
+}
+
+void NsbContext::SleepKey(int32_t ms)
+{
+    Sleep(ms);
+    WaitKey = true;
+}
+
+void NsbContext::Resume()
+{
+    SleepTime = sf::Time::Zero;
+    WaitKey = false;
 }
 
 bool NsbContext::NextLine()

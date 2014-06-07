@@ -26,9 +26,10 @@
 #include <boost/format.hpp>
 #include <fstream>
 
-void NsbInterpreter::UNK20()
+void NsbInterpreter::Wait()
 {
-    int32_t unk = Pop<int32_t>();
+    int32_t Time = Pop<int32_t>();
+    pContext->Sleep(Time);
 }
 
 void NsbInterpreter::AddAssign()
@@ -383,10 +384,10 @@ void NsbInterpreter::SetLoop()
         NSBSetLoop(pMusic, Loop);
 }
 
-void NsbInterpreter::Wait()
+void NsbInterpreter::WaitKey()
 {
     int32_t Time = Pop<int32_t>();
-    pContext->Sleep(Time);
+    pContext->SleepKey(Time);
 }
 
 void NsbInterpreter::Move()

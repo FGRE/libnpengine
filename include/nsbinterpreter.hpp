@@ -215,6 +215,7 @@ protected:
     void WaitText();
     void Move();
     void Wait();
+    void WaitKey();
     void SetLoop();
     void ParseText();
     void Request();
@@ -268,7 +269,6 @@ protected:
     void UNK90();
 
     // Stubs
-    void UNK20();
     void UNK77();
     void UNK101();
     void UNK115();

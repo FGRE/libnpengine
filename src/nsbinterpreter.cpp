@@ -69,6 +69,7 @@ EventLoop(false)
     Builtins[MAGIC_PARSE_TEXT] = &NsbInterpreter::ParseText;
     Builtins[MAGIC_SET_LOOP] = &NsbInterpreter::SetLoop;
     Builtins[MAGIC_WAIT] = &NsbInterpreter::Wait;
+    Builtins[MAGIC_WAIT_KEY] = &NsbInterpreter::WaitKey;
     Builtins[MAGIC_MOVE] = &NsbInterpreter::Move;
     Builtins[MAGIC_WAIT_TEXT] = &NsbInterpreter::WaitText;
     Builtins[MAGIC_SET_VOLUME] = &NsbInterpreter::SetVolume;
@@ -133,7 +134,6 @@ EventLoop(false)
     //Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
 
     // Stubs
-    Builtins[MAGIC_UNK20] = &NsbInterpreter::UNK20;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
     Builtins[MAGIC_UNK115] = &NsbInterpreter::UNK115;
@@ -375,6 +375,10 @@ void NsbInterpreter::MouseMoved(sf::Vector2i Pos)
 
 void NsbInterpreter::MouseClicked(sf::Event::MouseButtonEvent Event)
 {
+    for (auto iter = Threads.begin(); iter != Threads.end(); ++iter)
+        if ((*iter)->WaitKey)
+            (*iter)->Resume();
+
     if (!EventLoop)
         return;
 
