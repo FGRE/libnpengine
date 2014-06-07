@@ -124,6 +124,7 @@ EventLoop(false)
     Builtins[MAGIC_EXIT] = &NsbInterpreter::Exit;
     Builtins[MAGIC_STR_STR] = &NsbInterpreter::StrStr;
     Builtins[MAGIC_ADD_ASSIGN] = &NsbInterpreter::AddAssign;
+    Builtins[MAGIC_SUB_ASSIGN] = &NsbInterpreter::SubAssign;
     Builtins[MAGIC_UNK90] = &NsbInterpreter::UNK90;
     Builtins[MAGIC_DURATION_TIME] = &NsbInterpreter::DurationTime;
     //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
@@ -133,7 +134,6 @@ EventLoop(false)
 
     // Stubs
     Builtins[MAGIC_UNK20] = &NsbInterpreter::UNK20;
-    Builtins[MAGIC_UNK63] = &NsbInterpreter::UNK63;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
     Builtins[MAGIC_UNK115] = &NsbInterpreter::UNK115;
