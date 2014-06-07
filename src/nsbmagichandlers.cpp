@@ -38,7 +38,7 @@ void NsbInterpreter::AddAssign()
     SetVariable(Identifier, new Variable(GetVariable<int32_t>(Identifier) + unk));
 }
 
-void NsbInterpreter::UNK63()
+void NsbInterpreter::SubAssign()
 {
     const string& Identifier = pContext->GetLineArgs()[0];
     int32_t unk = Pop<int32_t>();

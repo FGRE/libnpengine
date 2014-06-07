@@ -264,11 +264,11 @@ protected:
     void CaseBegin();
     void StrStr();
     void AddAssign();
+    void SubAssign();
     void UNK90();
 
     // Stubs
     void UNK20();
-    void UNK63();
     void UNK77();
     void UNK101();
     void UNK115();
