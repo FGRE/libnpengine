@@ -278,14 +278,23 @@ void NsbInterpreter::NSBCreateWindow(int32_t unk0, int32_t x, int32_t y, int32_t
     CacheHolder<sf::IntRect>::Write(HandleName, pRect);
 }
 
-// TODO: Rename; works for any playable
-void NsbInterpreter::NSBGetMovieTime()
+void NsbInterpreter::NSBRemainTime()
+{
+    int32_t TimeLeft = 0;
+    if (Playable* pPlayable = GetPlayable())
+        TimeLeft = pPlayable->GetTimeLeft();
+    else
+        std::cout << "Failed to get time left because there is no Playable " << HandleName << std::endl;
+    Push(TimeLeft);
+}
+
+void NsbInterpreter::NSBDurationTime()
 {
     int32_t Duration = 0;
     if (Playable* pPlayable = GetPlayable())
-        Duration = pPlayable->GetTimeLeft();
+        Duration = pPlayable->GetDuration();
     else
-        std::cout << "Failed to get movie time because there is no Playable " << HandleName << std::endl;
+        std::cout << "Failed to get playable duration because there is no Playable " << HandleName << std::endl;
     Push(Duration);
 }
 

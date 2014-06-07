@@ -46,6 +46,7 @@ public:
     void Stop();
     void Play();
     int32_t GetTimeLeft();
+    int32_t GetDuration();
     void Request(Game* pGame, const string& State);
     void Delete(Game* pGame, NsbInterpreter* pInterpreter);
 

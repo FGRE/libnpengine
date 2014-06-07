@@ -76,7 +76,7 @@ EventLoop(false)
     Builtins[MAGIC_CREATE_SOUND] = &NsbInterpreter::CreateSound;
     Builtins[MAGIC_CREATE_WINDOW] = &NsbInterpreter::CreateWindow;
     Builtins[MAGIC_APPLY_BLUR] = &NsbInterpreter::ApplyBlur;
-    Builtins[MAGIC_GET_MOVIE_TIME] = &NsbInterpreter::GetMovieTime;
+    Builtins[MAGIC_REMAIN_TIME] = &NsbInterpreter::RemainTime;
     Builtins[MAGIC_LITERAL] = &NsbInterpreter::Literal;
     Builtins[MAGIC_GET] = &NsbInterpreter::Get;
     Builtins[MAGIC_DRAW_TO_TEXTURE] = &NsbInterpreter::DrawToTexture;
@@ -125,7 +125,7 @@ EventLoop(false)
     Builtins[MAGIC_STR_STR] = &NsbInterpreter::StrStr;
     Builtins[MAGIC_ADD_ASSIGN] = &NsbInterpreter::AddAssign;
     Builtins[MAGIC_UNK90] = &NsbInterpreter::UNK90;
-    Builtins[MAGIC_UNK105] = &NsbInterpreter::GetMovieTime;
+    Builtins[MAGIC_DURATION_TIME] = &NsbInterpreter::DurationTime;
     //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
     //Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
     //Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
