@@ -203,7 +203,8 @@ protected:
     void DrawTransition();
     void ClearParams();
     void CreateRenderTexture();
-    void GetMovieTime();
+    void RemainTime();
+    void DurationTime();
     void ApplyBlur();
     void CreateWindow();
     void SetTextboxAttributes();
@@ -290,7 +291,8 @@ protected:
     void NSBCreateSound(const string& Type, const string& File);
     //void NSBSetTextboxAttributes(int32_t unk0, const string& Font, int32_t unk1, const string& Color1, const string& Color2, int32_t unk2, const string& unk3);
     void NSBCreateWindow(int32_t unk0, int32_t x, int32_t y, int32_t Width, int32_t Height, bool unk1);
-    void NSBGetMovieTime();
+    void NSBRemainTime();
+    void NSBDurationTime();
     void NSBFade(DrawableBase* pDrawable, int32_t Time, int32_t Opacity, const string& Tempo, bool Wait);
     void NSBCreateProcess(int32_t unk1, int32_t unk2, int32_t unk3, const string& Function);
     void NSBSystem(string Command, string Parameters, string Directory);

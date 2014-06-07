@@ -409,10 +409,16 @@ void NsbInterpreter::WaitText()
         NSBWaitText(pText, unk);
 }
 
-void NsbInterpreter::GetMovieTime()
+void NsbInterpreter::RemainTime()
 {
     HandleName = Pop<string>();
-    NSBGetMovieTime();
+    NSBRemainTime();
+}
+
+void NsbInterpreter::DurationTime()
+{
+    HandleName = Pop<string>();
+    NSBDurationTime();
 }
 
 // TODO: Not sure about this...

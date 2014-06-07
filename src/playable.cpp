@@ -121,6 +121,14 @@ int32_t Playable::GetTimeLeft()
     return (Length - Position) / 1000000;
 }
 
+int32_t Playable::GetDuration()
+{
+    gint64 Length;
+    gst_element_get_state(Pipeline, NULL, NULL, GST_CLOCK_TIME_NONE);
+    gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length);
+    return Length / 1000000;
+}
+
 void Playable::SetLoop(bool Loop)
 {
     this->Loop = Loop;
