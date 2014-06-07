@@ -62,7 +62,7 @@ EventLoop(false)
     Builtins[MAGIC_ZOOM] = &NsbInterpreter::Zoom;
     Builtins[MAGIC_NEGATIVE] = &NsbInterpreter::Negative;
     Builtins[MAGIC_ARRAY] = &NsbInterpreter::Array;
-    Builtins[MAGIC_SET] = &NsbInterpreter::Set;
+    Builtins[MAGIC_ASSIGN] = &NsbInterpreter::Assign;
     Builtins[MAGIC_ARRAY_READ] = &NsbInterpreter::ArrayRead;
     Builtins[MAGIC_SET_SHORTCUT] = &NsbInterpreter::SetShortcut;
     Builtins[MAGIC_REQUEST] = &NsbInterpreter::Request;
@@ -77,7 +77,7 @@ EventLoop(false)
     Builtins[MAGIC_CREATE_WINDOW] = &NsbInterpreter::CreateWindow;
     Builtins[MAGIC_APPLY_BLUR] = &NsbInterpreter::ApplyBlur;
     Builtins[MAGIC_GET_MOVIE_TIME] = &NsbInterpreter::GetMovieTime;
-    Builtins[MAGIC_SET_PARAM] = &NsbInterpreter::SetParam;
+    Builtins[MAGIC_LITERAL] = &NsbInterpreter::Literal;
     Builtins[MAGIC_GET] = &NsbInterpreter::Get;
     Builtins[MAGIC_DRAW_TO_TEXTURE] = &NsbInterpreter::DrawToTexture;
     Builtins[MAGIC_CREATE_RENDER_TEXTURE] = &NsbInterpreter::CreateRenderTexture;
@@ -98,8 +98,8 @@ EventLoop(false)
     Builtins[MAGIC_LOGICAL_EQUAL] = &NsbInterpreter::LogicalEqual;
     Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NsbInterpreter::LogicalNotEqual;
     Builtins[MAGIC_FUNCTION_END] = &NsbInterpreter::End;
-    Builtins[MAGIC_SCENE_END] = &NsbInterpreter::End;
-    Builtins[MAGIC_CHAPTER_END] = &NsbInterpreter::End;
+    Builtins[MAGIC_END_SCENE] = &NsbInterpreter::End;
+    Builtins[MAGIC_END_CHAPTER] = &NsbInterpreter::End;
     Builtins[MAGIC_FWN_UNK] = &NsbInterpreter::End; // Fuwanovel hack, unknown purpose
     Builtins[MAGIC_CLEAR_PARAMS] = &NsbInterpreter::ClearParams;
     Builtins[MAGIC_GET_MODULE_FILE_NAME] = &NsbInterpreter::GetModuleFileName;
@@ -123,6 +123,7 @@ EventLoop(false)
     Builtins[MAGIC_CASE_BEGIN] = &NsbInterpreter::CaseBegin;
     Builtins[MAGIC_EXIT] = &NsbInterpreter::Exit;
     Builtins[MAGIC_STR_STR] = &NsbInterpreter::StrStr;
+    Builtins[MAGIC_ADD_ASSIGN] = &NsbInterpreter::AddAssign;
     Builtins[MAGIC_UNK90] = &NsbInterpreter::UNK90;
     Builtins[MAGIC_UNK105] = &NsbInterpreter::GetMovieTime;
     //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
@@ -132,7 +133,6 @@ EventLoop(false)
 
     // Stubs
     Builtins[MAGIC_UNK20] = &NsbInterpreter::UNK20;
-    Builtins[MAGIC_UNK61] = &NsbInterpreter::UNK61;
     Builtins[MAGIC_UNK63] = &NsbInterpreter::UNK63;
     Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
