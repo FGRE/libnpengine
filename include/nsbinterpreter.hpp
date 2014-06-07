@@ -187,7 +187,7 @@ protected:
     void LogicalGreater();
     void LogicalLess();
     void Count();
-    virtual void SetParam();
+    virtual void Literal();
     void Get();
     void DrawToTexture();
     void CreateColor();
@@ -219,7 +219,7 @@ protected:
     void Request();
     void SetShortcut();
     void ArrayRead();
-    void Set();
+    void Assign();
     void Negative();
     void PlaceholderParam();
     void Zoom();
@@ -262,11 +262,11 @@ protected:
     void Exit();
     void CaseBegin();
     void StrStr();
+    void AddAssign();
     void UNK90();
 
     // Stubs
     void UNK20();
-    void UNK61();
     void UNK63();
     void UNK77();
     void UNK101();

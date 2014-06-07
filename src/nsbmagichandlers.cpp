@@ -31,7 +31,7 @@ void NsbInterpreter::UNK20()
     int32_t unk = Pop<int32_t>();
 }
 
-void NsbInterpreter::UNK61()
+void NsbInterpreter::AddAssign()
 {
     const string& Identifier = pContext->GetLineArgs()[0];
     int32_t unk = Pop<int32_t>();
@@ -417,7 +417,7 @@ void NsbInterpreter::GetMovieTime()
 
 // TODO: Not sure about this...
 // Maybe local variables do not exist at all: Maybe it's just aliases?
-void NsbInterpreter::SetParam()
+void NsbInterpreter::Literal()
 {
     if (pContext->GetLineArgs()[0] == "STRING")
     {
@@ -566,7 +566,7 @@ void NsbInterpreter::PlaceholderParam()
     // This works around the issue: See: NsbInterpreter::GetParam<T>
 }
 
-void NsbInterpreter::Set()
+void NsbInterpreter::Assign()
 {
     const string& Identifier = pContext->GetLineArgs().back();
     if (Identifier == "__array_variable__")
