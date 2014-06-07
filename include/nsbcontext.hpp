@@ -47,11 +47,14 @@ public:
     void Start() { Active = true; }
     void Stop() { Active = false; }
     void Sleep(int32_t ms);
+    void SleepKey(int32_t ms);
+    void Resume();
     void Run(NsbInterpreter* pInterpreter);
     void Request(Game* pGame, const string& State);
 
     void WriteTrace(std::ostream& Stream);
 
+    bool WaitKey;
 private:
     bool NextLine(); // Next instruction
 
