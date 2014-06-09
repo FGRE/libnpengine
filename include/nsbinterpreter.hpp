@@ -267,9 +267,10 @@ protected:
     void AddAssign();
     void SubAssign();
     void UNK90();
+    void CursorPosition();
 
     // Stubs
-    void UNK77();
+    void CreateName();
     void UNK101();
     void UNK115();
     void LockVideo();

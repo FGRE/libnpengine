@@ -128,13 +128,14 @@ EventLoop(false)
     Builtins[MAGIC_SUB_ASSIGN] = &NsbInterpreter::SubAssign;
     Builtins[MAGIC_UNK90] = &NsbInterpreter::UNK90;
     Builtins[MAGIC_DURATION_TIME] = &NsbInterpreter::DurationTime;
+    Builtins[MAGIC_CURSOR_POSITION] = &NsbInterpreter::CursorPosition;
     //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
     //Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
     //Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
     //Builtins[MAGIC_PLACEHOLDER_PARAM] = &NsbInterpreter::PlaceholderParam;
 
     // Stubs
-    Builtins[MAGIC_UNK77] = &NsbInterpreter::UNK77;
+    Builtins[MAGIC_CREATE_NAME] = &NsbInterpreter::CreateName;
     Builtins[MAGIC_UNK101] = &NsbInterpreter::UNK101;
     Builtins[MAGIC_UNK115] = &NsbInterpreter::UNK115;
     Builtins[MAGIC_LOCK_VIDEO] = &NsbInterpreter::LockVideo;

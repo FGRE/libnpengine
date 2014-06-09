@@ -26,6 +26,15 @@
 #include <boost/format.hpp>
 #include <fstream>
 
+void NsbInterpreter::CursorPosition()
+{
+    string YPosVar = Pop<string>();
+    string XPosVar = Pop<string>();
+    sf::Vector2i Pos = sf::Mouse::getPosition(*pGame);
+    SetVariable(XPosVar, new Variable(Pos.x));
+    SetVariable(XPosVar, new Variable(Pos.y));
+}
+
 void NsbInterpreter::Wait()
 {
     int32_t Time = Pop<int32_t>();
@@ -563,7 +572,7 @@ void NsbInterpreter::ScopeEnd()
 }
 
 // CreateDialog, see: cg/sys/dialog/
-void NsbInterpreter::UNK77()
+void NsbInterpreter::CreateName()
 {
 }
 
