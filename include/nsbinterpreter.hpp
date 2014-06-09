@@ -269,6 +269,7 @@ protected:
     void UNK90();
     void CursorPosition();
     void MoveCursor();
+    void Position();
 
     // Stubs
     void CreateName();

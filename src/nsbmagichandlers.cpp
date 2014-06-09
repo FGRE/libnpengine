@@ -32,7 +32,7 @@ void NsbInterpreter::CursorPosition()
     string XPosVar = Pop<string>();
     sf::Vector2i Pos = sf::Mouse::getPosition(*pGame);
     SetVariable(XPosVar, new Variable(Pos.x));
-    SetVariable(XPosVar, new Variable(Pos.y));
+    SetVariable(YPosVar, new Variable(Pos.y));
 }
 
 void NsbInterpreter::MoveCursor()
@@ -40,6 +40,19 @@ void NsbInterpreter::MoveCursor()
     int32_t Y = Pop<int32_t>();
     int32_t X = Pop<int32_t>();
     sf::Mouse::setPosition(sf::Vector2i(X, Y), *pGame);
+}
+
+void NsbInterpreter::Position()
+{
+    string YPosVar = Pop<string>();
+    string XPosVar = Pop<string>();
+    HandleName = Pop<string>();
+    if (DrawableBase* pDrawable = GetDrawable())
+    {
+        sf::Sprite* pSprite = pDrawable->ToSprite();
+        SetVariable(XPosVar, new Variable((int32_t)pSprite->getPosition().x));
+        SetVariable(YPosVar, new Variable((int32_t)pSprite->getPosition().y));
+    }
 }
 
 void NsbInterpreter::Wait()
