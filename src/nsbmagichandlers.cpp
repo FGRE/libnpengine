@@ -35,6 +35,13 @@ void NsbInterpreter::CursorPosition()
     SetVariable(XPosVar, new Variable(Pos.y));
 }
 
+void NsbInterpreter::MoveCursor()
+{
+    int32_t Y = Pop<int32_t>();
+    int32_t X = Pop<int32_t>();
+    sf::Mouse::setPosition(sf::Vector2i(X, Y), *pGame);
+}
+
 void NsbInterpreter::Wait()
 {
     int32_t Time = Pop<int32_t>();
@@ -44,15 +51,15 @@ void NsbInterpreter::Wait()
 void NsbInterpreter::AddAssign()
 {
     const string& Identifier = pContext->GetLineArgs()[0];
-    int32_t unk = Pop<int32_t>();
-    SetVariable(Identifier, new Variable(GetVariable<int32_t>(Identifier) + unk));
+    int32_t Val = Pop<int32_t>();
+    SetVariable(Identifier, new Variable(GetVariable<int32_t>(Identifier) + Val));
 }
 
 void NsbInterpreter::SubAssign()
 {
     const string& Identifier = pContext->GetLineArgs()[0];
-    int32_t unk = Pop<int32_t>();
-    SetVariable(Identifier, new Variable(GetVariable<int32_t>(Identifier) - unk));
+    int32_t Val = Pop<int32_t>();
+    SetVariable(Identifier, new Variable(GetVariable<int32_t>(Identifier) - Val));
 }
 
 void NsbInterpreter::LockVideo()

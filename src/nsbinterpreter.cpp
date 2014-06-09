@@ -129,6 +129,7 @@ EventLoop(false)
     Builtins[MAGIC_UNK90] = &NsbInterpreter::UNK90;
     Builtins[MAGIC_DURATION_TIME] = &NsbInterpreter::DurationTime;
     Builtins[MAGIC_CURSOR_POSITION] = &NsbInterpreter::CursorPosition;
+    Builtins[MAGIC_MOVE_CURSOR] = &NsbInterpreter::MoveCursor;
     //Builtins[MAGIC_CREATE_PROCESS] = &NsbInterpreter::CreateProcess;
     //Builtins[MAGIC_SET_FONT_ATTRIBUTES] = &NsbInterpreter::SetFontAttributes;
     //Builtins[MAGIC_SET_TEXTBOX_ATTRIBUTES] = &NsbInterpreter::SetTextboxAttributes;
