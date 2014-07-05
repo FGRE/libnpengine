@@ -166,7 +166,6 @@ void NsbInterpreter::Initialize(Game* pGame)
     this->pGame = pGame;
     gst_init(nullptr, nullptr);
     Text::Initialize("/usr/share/fonts/cjkuni-uming/uming.ttc");
-    sResourceMgr = new ResourceMgr({"cg.npa", "nss.npa", "voice.npa", "sound.npa"});
 
     // TODO: include.nss/herpderp.nss from .map files instead
     LoadScript("nss/macrosys2.nsb");
