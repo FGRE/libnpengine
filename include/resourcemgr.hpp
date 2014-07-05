@@ -66,7 +66,7 @@ public:
     Resource(INpaFile* pArchive, INpaFile::NpaIterator File) : pArchive(pArchive), File(File) { }
 
     bool IsValid() { return pArchive != nullptr; }
-    uint32_t GetSize() { return File->second.Size; }
+    uint32_t GetSize() { return pArchive->GetFileSize(File); }
     char* ReadData(uint32_t Offset, uint32_t Size) { return pArchive->ReadFile(File, Offset, Size, g_malloc); }
 
 private:
@@ -76,8 +76,10 @@ private:
 
 class ResourceMgr
 {
+    template <class T>
+    friend ResourceMgr* CreateResourceMgr(const std::vector<std::string>& AchieveFileNames);
+    ResourceMgr(const std::vector<INpaFile*>& Achieves);
 public:
-    ResourceMgr(const std::vector<std::string>& AchieveFileNames);
     ~ResourceMgr();
 
     Resource GetResource(std::string Path);
@@ -86,6 +88,16 @@ public:
 private:
     std::vector<INpaFile*> Archives;
 };
+
+template <class T>
+ResourceMgr* CreateResourceMgr(const std::vector<std::string>& AchieveFileNames)
+{
+    std::vector<INpaFile*> Archives;
+    Archives.resize(AchieveFileNames.size());
+    for (uint32_t i = 0; i < AchieveFileNames.size(); ++i)
+        Archives[i] = new T(AchieveFileNames[i]);
+    return new ResourceMgr(Archives);
+}
 
 extern ResourceMgr* sResourceMgr;
 

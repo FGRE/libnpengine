@@ -22,11 +22,9 @@
 
 ResourceMgr* sResourceMgr;
 
-ResourceMgr::ResourceMgr(const std::vector<std::string>& AchieveFileNames)
+ResourceMgr::ResourceMgr(const std::vector<INpaFile*>& Achieves) :
+Archives(Achieves)
 {
-    Archives.resize(AchieveFileNames.size());
-    for (uint32_t i = 0; i < AchieveFileNames.size(); ++i)
-        Archives[i] = new INpaFile(AchieveFileNames[i]);
     assert(!Archives.empty());
 }
 
