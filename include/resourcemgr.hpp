@@ -76,10 +76,8 @@ private:
 
 class ResourceMgr
 {
-    template <class T>
-    friend ResourceMgr* CreateResourceMgr(const std::vector<std::string>& AchieveFileNames);
-    ResourceMgr(const std::vector<INpaFile*>& Achieves);
 public:
+    ResourceMgr(const std::vector<INpaFile*>& Achieves);
     ~ResourceMgr();
 
     Resource GetResource(std::string Path);
@@ -88,16 +86,6 @@ public:
 private:
     std::vector<INpaFile*> Archives;
 };
-
-template <class T>
-ResourceMgr* CreateResourceMgr(const std::vector<std::string>& AchieveFileNames)
-{
-    std::vector<INpaFile*> Archives;
-    Archives.resize(AchieveFileNames.size());
-    for (uint32_t i = 0; i < AchieveFileNames.size(); ++i)
-        Archives[i] = new T(AchieveFileNames[i]);
-    return new ResourceMgr(Archives);
-}
 
 extern ResourceMgr* sResourceMgr;
 
