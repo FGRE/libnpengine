@@ -22,10 +22,8 @@
 
 ResourceMgr* sResourceMgr;
 
-ResourceMgr::ResourceMgr(const std::vector<INpaFile*>& Achieves) :
-Archives(Achieves)
+ResourceMgr::ResourceMgr()
 {
-    assert(!Archives.empty());
 }
 
 ResourceMgr::~ResourceMgr()
@@ -62,24 +60,10 @@ ScriptFile* ResourceMgr::GetScriptFile(const std::string& Path)
     if (ScriptFile* pCache = CacheHolder<ScriptFile>::Read(Path))
         return pCache;
 
-    ScriptFile* pScript = nullptr;
-    std::string MapPath(Path, 0, Path.size() - 3);
-    MapPath += "map";
+    ScriptFile* pScript = ReadScriptFile(Path);
+    if (!pScript)
+        return nullptr;
 
-    // Check Archives
-    uint32_t NsbSize;
-    char* NsbData = Read(Path, NsbSize);
-    uint32_t MapSize;
-    char* MapData = Read(MapPath, MapSize);
-
-    // Both files found
-    if (NsbData && MapData)
-    {
-        pScript = new ScriptFile(Path, NsbData, NsbSize, MapData, MapSize);
-        CacheHolder<ScriptFile>::Write(Path, pScript);
-    }
-
-    delete[] NsbData;
-    delete[] MapData;
+    CacheHolder<ScriptFile>::Write(Path, pScript);
     return pScript;
 }
