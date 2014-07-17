@@ -204,7 +204,7 @@ void NsbInterpreter::ExecuteScript(const string& ScriptName)
 void NsbInterpreter::ExecuteScriptLocal(const string& ScriptName)
 {
     // This leaks memory but nobody really cares
-    pMainContext->CallSubroutine(new ScriptFile(ScriptName), "chapter.main");
+    pMainContext->CallSubroutine(new ScriptFile(ScriptName, ScriptFile::NSB), "chapter.main");
     Run();
 }
 
