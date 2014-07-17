@@ -77,13 +77,15 @@ private:
 class ResourceMgr
 {
 public:
-    ResourceMgr(const std::vector<INpaFile*>& Achieves);
-    ~ResourceMgr();
+    ResourceMgr();
+    virtual ~ResourceMgr();
 
     Resource GetResource(std::string Path);
     char* Read(std::string Path, uint32_t& Size);
     ScriptFile* GetScriptFile(const std::string& Path);
-private:
+
+protected:
+    virtual ScriptFile* ReadScriptFile(const std::string& Path) = 0;
     std::vector<INpaFile*> Archives;
 };
 
