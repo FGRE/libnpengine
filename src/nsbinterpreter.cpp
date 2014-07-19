@@ -168,14 +168,9 @@ void NsbInterpreter::Initialize(Game* pGame)
     Text::Initialize("/usr/share/fonts/cjkuni-uming/uming.ttc");
 
     // TODO: include.nss/herpderp.nss from .map files instead
-    LoadScript("nss/macrosys2.nsb");
-    LoadScript("nss/function_steinsgate.nsb");
     LoadScript("nss/function.nsb");
-    LoadScript("nss/extra_achievements.nsb");
     LoadScript("nss/function_select.nsb");
     LoadScript("nss/function_stand.nsb");
-    LoadScript("nss/sys_title.nsb");
-    LoadScript("nss/sys_save_function.nsb");
 
     for (char i = 'a'; i <= 'z'; ++i)
     {
