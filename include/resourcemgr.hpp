@@ -81,7 +81,7 @@ public:
     virtual ~ResourceMgr();
 
     Resource GetResource(std::string Path);
-    char* Read(std::string Path, uint32_t& Size);
+    virtual char* Read(std::string Path, uint32_t& Size);
     ScriptFile* GetScriptFile(const std::string& Path);
 
 protected:
