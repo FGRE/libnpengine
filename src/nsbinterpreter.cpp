@@ -167,11 +167,6 @@ void NsbInterpreter::Initialize(Game* pGame)
     gst_init(nullptr, nullptr);
     Text::Initialize("/usr/share/fonts/cjkuni-uming/uming.ttc");
 
-    // TODO: include.nss/herpderp.nss from .map files instead
-    LoadScript("nss/function.nsb");
-    LoadScript("nss/function_select.nsb");
-    LoadScript("nss/function_stand.nsb");
-
     for (char i = 'a'; i <= 'z'; ++i)
     {
         string Identifier = "$SYSTEM_keydown_" + string(1, i);
