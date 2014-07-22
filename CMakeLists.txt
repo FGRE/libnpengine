@@ -38,6 +38,7 @@ find_package(NPA REQUIRED)
 
 include_directories(
     ${SFML_INCLUDE_DIR}
+    ${GSTREAMER_INCLUDE_DIRS}
     ${GSTREAMER_VIDEO_INCLUDE_DIRS}
     ${GLIB_INCLUDE_DIRS}
     ${NPA_INCLUDE_DIR}
