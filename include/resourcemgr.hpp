@@ -80,7 +80,7 @@ public:
     ResourceMgr();
     virtual ~ResourceMgr();
 
-    Resource GetResource(std::string Path);
+    virtual Resource GetResource(std::string Path);
     virtual char* Read(std::string Path, uint32_t& Size);
     ScriptFile* GetScriptFile(const std::string& Path);
 
