@@ -15,37 +15,32 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef WINDOW_HPP
-#define WINDOW_HPP
+#ifndef TEXTURE_HPP
+#define TEXTURE_HPP
 
-#include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
-#include <list>
+#include <string>
 using namespace std;
 
-class Texture;
-class Window
+class Texture
 {
 public:
-    Window(const char* WindowTitle, const int Width, const int Height);
-    virtual ~Window();
+    Texture();
+    virtual ~Texture();
 
-    void Run();
-    void AddTexture(Texture* pTexture);
-
-    const int WIDTH;
-    const int HEIGHT;
-protected:
-    virtual void HandleEvent(SDL_Event Event);
-    virtual void RunInterpreter() = 0;
-
-private:
+    void LoadFromFile(const string& Filename);
+    void SetPosition(int X, int Y);
+    void SetSmoothing(bool Set = true);
     void Draw();
 
-    bool IsRunning;
-    SDL_Window* SDLWindow;
-    SDL_GLContext GLContext;
-    list<Texture*> Textures;
+private:
+    void LoadPNG(uint8_t* pMem, uint32_t Size);
+    void LoadJPEG(uint8_t* pMem, uint32_t Size);
+    void Create(uint8_t* Pixels);
+
+    int X, Y;
+    int Width, Height;
+    GLuint GLTextureID;
 };
 
 #endif
