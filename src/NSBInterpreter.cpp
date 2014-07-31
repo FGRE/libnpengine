@@ -142,7 +142,7 @@ bool NSBContext::Return()
     return false;
 }
 
-NSBInterpreter::NSBInterpreter() : pContext(nullptr), Builtins(MAGIC_UNK119 + 1, nullptr)
+NSBInterpreter::NSBInterpreter() : pTest(nullptr), pContext(nullptr), Builtins(MAGIC_UNK119 + 1, nullptr)
 {
     Builtins[MAGIC_CALL_FUNCTION] = &NSBInterpreter::CallFunction;
     Builtins[MAGIC_CALL_SCENE] = &NSBInterpreter::CallScene;
@@ -184,31 +184,33 @@ NSBInterpreter::NSBInterpreter() : pContext(nullptr), Builtins(MAGIC_UNK119 + 1,
 
 NSBInterpreter::~NSBInterpreter()
 {
+    delete pTest;
     delete pContext;
     for_each(Variables.begin(), Variables.end(), MapDeleter());
 }
 
-void NSBInterpreter::Run()
+void NSBInterpreter::ExecuteLocalNSS(const string& Filename)
 {
     pContext = new NSBContext("__nitroscript_main__");
-    ScriptFile* pTest = new ScriptFile("test.nsb", ScriptFile::NSB);
+    pTest = new ScriptFile(Filename, ScriptFile::NSS);
     pContext->Call(pTest, "chapter.main");
+}
 
-    while (pContext)
+void NSBInterpreter::Run()
+{
+    if (!pContext)
+        return;
+
+    do
     {
-        do
-        {
-            uint32_t Magic = pContext->GetMagic();
-            if (Magic < Builtins.size())
-                if (BuiltinFunc pFunc = Builtins[Magic])
-                    (this->*pFunc)();
-            if (pContext)
-                pContext->Advance();
-        }
-        while (pContext && pContext->GetMagic() != MAGIC_CLEAR_PARAMS);
+        uint32_t Magic = pContext->GetMagic();
+        if (Magic < Builtins.size())
+            if (BuiltinFunc pFunc = Builtins[Magic])
+                (this->*pFunc)();
+        if (pContext)
+            pContext->Advance();
     }
-
-    delete pTest;
+    while (pContext && pContext->GetMagic() != MAGIC_CLEAR_PARAMS);
 }
 
 void NSBInterpreter::CallFunction()

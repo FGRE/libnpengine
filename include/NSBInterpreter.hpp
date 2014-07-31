@@ -148,6 +148,7 @@ public:
     NSBInterpreter();
     virtual ~NSBInterpreter();
 
+    void ExecuteLocalNSS(const string& Filename);
     void Run();
 
 private:
@@ -195,6 +196,7 @@ private:
     void IntUnaryOp(function<int(int)> Func);
     void IntBinaryOp(function<int(int, int)> Func);
 
+    ScriptFile* pTest;
     NSBContext* pContext;
     vector<BuiltinFunc> Builtins;
     Queue<Variable*> Params;
