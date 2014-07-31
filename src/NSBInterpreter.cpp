@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "NSBInterpreter.hpp"
+#include "Texture.hpp"
+#include "Window.hpp"
 #include "nsbmagic.hpp"
 #include "scriptfile.hpp"
 #include "npafile.hpp"
@@ -142,7 +144,11 @@ bool NSBContext::Return()
     return false;
 }
 
-NSBInterpreter::NSBInterpreter() : pTest(nullptr), pContext(nullptr), Builtins(MAGIC_UNK119 + 1, nullptr)
+NSBInterpreter::NSBInterpreter(Window* pWindow) :
+pTest(nullptr),
+pWindow(pWindow),
+pContext(nullptr),
+Builtins(MAGIC_UNK119 + 1, nullptr)
 {
     Builtins[MAGIC_CALL_FUNCTION] = &NSBInterpreter::CallFunction;
     Builtins[MAGIC_CALL_SCENE] = &NSBInterpreter::CallScene;
@@ -180,6 +186,7 @@ NSBInterpreter::NSBInterpreter() : pTest(nullptr), pContext(nullptr), Builtins(M
     Builtins[MAGIC_SUB_ASSIGN] = &NSBInterpreter::SubAssign;
     Builtins[MAGIC_WRITE_FILE] = &NSBInterpreter::WriteFile;
     Builtins[MAGIC_READ_FILE] = &NSBInterpreter::ReadFile;
+    Builtins[MAGIC_CREATE_TEXTURE] = &NSBInterpreter::CreateTexture;
 }
 
 NSBInterpreter::~NSBInterpreter()
@@ -474,4 +481,20 @@ void NSBInterpreter::ReadFile()
     NpaFile::Decrypt(pData, Size);
     PushString(NpaFile::ToUtf8(pData));
     delete[] pData;
+}
+
+void NSBInterpreter::CreateTexture()
+{
+    string Handle = PopString();
+    int32_t Priority = PopInt();
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+    string Filename = PopString();
+
+    Texture* pTexture = new Texture;
+    pTexture->LoadFromFile(Filename);
+    pTexture->SetPosition(X, Y);
+
+    pWindow->AddTexture(pTexture);
+    CacheHolder<Texture>::Write(Handle, pTexture);
 }
