@@ -136,9 +136,10 @@ NSBContext::StackFrame* NSBContext::GetFrame()
     return &CallStack.top();
 }
 
-void NSBContext::Advance()
+uint32_t NSBContext::Advance()
 {
     GetFrame()->SourceLine++;
+    return GetMagic();
 }
 
 bool NSBContext::Return()
@@ -214,16 +215,12 @@ void NSBInterpreter::Run()
     if (!pContext)
         return;
 
-    while (pContext)
+    while (pContext && pContext->Advance() != MAGIC_CLEAR_PARAMS)
     {
-        pContext->Advance();
         uint32_t Magic = pContext->GetMagic();
         if (Magic < Builtins.size())
             if (BuiltinFunc pFunc = Builtins[Magic])
                 (this->*pFunc)();
-
-        if (Magic == MAGIC_CLEAR_PARAMS)
-            break;
     }
 }
 
