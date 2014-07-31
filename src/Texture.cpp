@@ -52,6 +52,16 @@ void Texture::SetPosition(int X, int Y)
     this->Y = Y;
 }
 
+void Texture::SetPriority(int Priority)
+{
+    this->Priority = Priority;
+}
+
+int Texture::GetPriority()
+{
+    return Priority;
+}
+
 void Texture::Draw()
 {
     glBindTexture(GL_TEXTURE_2D, GLTextureID);

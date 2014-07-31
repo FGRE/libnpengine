@@ -32,12 +32,15 @@ public:
     void SetPosition(int X, int Y);
     void SetSmoothing(bool Set = true);
     void Draw();
+    void SetPriority(int Priority);
+    int GetPriority();
 
 private:
     void LoadPNG(uint8_t* pMem, uint32_t Size);
     void LoadJPEG(uint8_t* pMem, uint32_t Size);
     void Create(uint8_t* Pixels);
 
+    int Priority;
     int X, Y;
     int Width, Height;
     GLuint GLTextureID;
