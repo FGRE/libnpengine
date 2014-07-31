@@ -34,6 +34,7 @@ find_package(NPA REQUIRED)
 include(FindPkgConfig)
 
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
+PKG_SEARCH_MODULE(libpng REQUIRED libpng)
 
 include_directories(
     ${SDL2_INCLUDE_DIRS}
@@ -47,6 +48,8 @@ link_directories(
 add_library(npengine SHARED
     src/Window.cpp
     src/NSBInterpreter.cpp
+    src/ResourceMgr.cpp
+    src/Texture.cpp
 )
 
 # install headers and library

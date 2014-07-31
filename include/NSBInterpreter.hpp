@@ -18,10 +18,8 @@
 #ifndef NSB_INTERPRETER_HPP
 #define NSB_INTERPRETER_HPP
 
-#include <string>
+#include "ResourceMgr.hpp"
 #include <cstdint>
-#include <map>
-#include <vector>
 #include <stack>
 #include <queue>
 #include <functional>
@@ -136,16 +134,12 @@ public:
     }
 };
 
-struct MapDeleter
-{
-    template <class T> void operator() (T i) { delete i.second; }
-};
-
+class Window;
 class NSBInterpreter
 {
     typedef void (NSBInterpreter::*BuiltinFunc)();
 public:
-    NSBInterpreter();
+    NSBInterpreter(Window* pWindow);
     virtual ~NSBInterpreter();
 
     void ExecuteLocalNSS(const string& Filename);
@@ -185,6 +179,7 @@ private:
     void SubAssign();
     void WriteFile();
     void ReadFile();
+    void CreateTexture();
 
     int32_t PopInt();
     string PopString();
@@ -197,6 +192,7 @@ private:
     void IntBinaryOp(function<int(int, int)> Func);
 
     ScriptFile* pTest;
+    Window* pWindow;
     NSBContext* pContext;
     vector<BuiltinFunc> Builtins;
     Queue<Variable*> Params;

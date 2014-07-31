@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "Window.hpp"
+#include "Texture.hpp"
 
 Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), IsRunning(true)
 {
@@ -25,6 +26,12 @@ Window::Window(const char* WindowTitle, const int Width, const int Height) : WID
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glViewport(0, 0, WIDTH, HEIGHT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_TEXTURE_2D);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, WIDTH, HEIGHT, 0, -1, 1);
 }
 
 Window::~Window()
@@ -63,5 +70,12 @@ void Window::HandleEvent(SDL_Event Event)
 void Window::Draw()
 {
     glClear(GL_COLOR_BUFFER_BIT);
+    for (auto i = Textures.begin(); i != Textures.end(); ++i)
+        (*i)->Draw();
     SDL_GL_SwapWindow(SDLWindow);
+}
+
+void Window::AddTexture(Texture* pTexture)
+{
+    Textures.push_back(pTexture);
 }
