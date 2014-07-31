@@ -17,7 +17,7 @@
  * */
 #include "Window.hpp"
 
-Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height)
+Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), IsRunning(true)
 {
     SDL_Init(SDL_INIT_VIDEO);
     SDLWindow = SDL_CreateWindow(WindowTitle, 0, 0, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
