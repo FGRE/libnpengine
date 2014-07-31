@@ -142,7 +142,7 @@ bool NSBContext::Return()
     return false;
 }
 
-NSBInterpreter::NSBInterpreter() : Builtins(MAGIC_UNK119 + 1, nullptr)
+NSBInterpreter::NSBInterpreter() : pContext(nullptr), Builtins(MAGIC_UNK119 + 1, nullptr)
 {
     Builtins[MAGIC_CALL_FUNCTION] = &NSBInterpreter::CallFunction;
     Builtins[MAGIC_CALL_SCENE] = &NSBInterpreter::CallScene;
@@ -191,7 +191,8 @@ NSBInterpreter::~NSBInterpreter()
 void NSBInterpreter::Run()
 {
     pContext = new NSBContext("__nitroscript_main__");
-    pContext->Call(new ScriptFile("test.nsb", ScriptFile::NSB), "chapter.main");
+    ScriptFile* pTest = new ScriptFile("test.nsb", ScriptFile::NSB);
+    pContext->Call(pTest, "chapter.main");
 
     while (pContext)
     {
@@ -206,6 +207,8 @@ void NSBInterpreter::Run()
         }
         while (pContext && pContext->GetMagic() != MAGIC_CLEAR_PARAMS);
     }
+
+    delete pTest;
 }
 
 void NSBInterpreter::CallFunction()
