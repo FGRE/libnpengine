@@ -95,7 +95,7 @@ bool NSBContext::Call(ScriptFile* pScript, const string& Symbol)
     if (CodeLine == NSB_INVALIDE_LINE)
         return false;
 
-    CallStack.push({pScript, CodeLine});
+    CallStack.push({pScript, CodeLine - 1});
     return true;
 }
 
@@ -103,7 +103,7 @@ void NSBContext::Jump(const string& Symbol)
 {
     uint32_t CodeLine = GetScript()->GetSymbol(Symbol);
     if (CodeLine != NSB_INVALIDE_LINE)
-        GetFrame()->SourceLine = CodeLine;
+        GetFrame()->SourceLine = CodeLine - 1;
 }
 
 ScriptFile* NSBContext::GetScript()
@@ -214,16 +214,17 @@ void NSBInterpreter::Run()
     if (!pContext)
         return;
 
-    do
+    while (pContext)
     {
+        pContext->Advance();
         uint32_t Magic = pContext->GetMagic();
         if (Magic < Builtins.size())
             if (BuiltinFunc pFunc = Builtins[Magic])
                 (this->*pFunc)();
-        if (pContext)
-            pContext->Advance();
+
+        if (Magic == MAGIC_CLEAR_PARAMS)
+            break;
     }
-    while (pContext && pContext->GetMagic() != MAGIC_CLEAR_PARAMS);
 }
 
 void NSBInterpreter::FunctionDeclaration()
