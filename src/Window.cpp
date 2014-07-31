@@ -77,5 +77,12 @@ void Window::Draw()
 
 void Window::AddTexture(Texture* pTexture)
 {
-    Textures.push_back(pTexture);
+    auto Spot = Textures.begin();
+    while (Spot != Textures.end())
+    {
+        if ((*Spot)->GetPriority() >= pTexture->GetPriority())
+            break;
+        ++Spot;
+    }
+    Textures.insert(Spot, pTexture);
 }

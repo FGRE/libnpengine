@@ -494,6 +494,7 @@ void NSBInterpreter::CreateTexture()
     Texture* pTexture = new Texture;
     pTexture->LoadFromFile(Filename);
     pTexture->SetPosition(X, Y);
+    pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
     CacheHolder<Texture>::Write(Handle, pTexture);
