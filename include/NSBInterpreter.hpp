@@ -108,7 +108,7 @@ public:
     ScriptFile* GetScript();
     Line* GetLine();
     uint32_t GetMagic();
-    void Advance();
+    uint32_t Advance();
     bool Return();
 
 private:
