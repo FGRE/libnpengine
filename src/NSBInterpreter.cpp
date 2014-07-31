@@ -121,6 +121,11 @@ const string& NSBContext::GetParam(uint32_t Index)
     return GetLine()->Params[Index];
 }
 
+int NSBContext::GetNumParams()
+{
+    return GetLine()->Params.size();
+}
+
 uint32_t NSBContext::GetMagic()
 {
     return GetLine()->Magic;
@@ -150,6 +155,7 @@ pWindow(pWindow),
 pContext(nullptr),
 Builtins(MAGIC_UNK119 + 1, nullptr)
 {
+    Builtins[MAGIC_FUNCTION_DECLARATION] = &NSBInterpreter::FunctionDeclaration;
     Builtins[MAGIC_CALL_FUNCTION] = &NSBInterpreter::CallFunction;
     Builtins[MAGIC_CALL_SCENE] = &NSBInterpreter::CallScene;
     Builtins[MAGIC_CALL_CHAPTER] = &NSBInterpreter::CallChapter;
@@ -218,6 +224,12 @@ void NSBInterpreter::Run()
             pContext->Advance();
     }
     while (pContext && pContext->GetMagic() != MAGIC_CLEAR_PARAMS);
+}
+
+void NSBInterpreter::FunctionDeclaration()
+{
+    for (int i = 1; i < pContext->GetNumParams(); ++i)
+        Assign_(i);
 }
 
 void NSBInterpreter::CallFunction()
@@ -336,21 +348,7 @@ void NSBInterpreter::Literal()
 
 void NSBInterpreter::Assign()
 {
-    const string& Name = pContext->GetParam(0);
-    Variable* pVar = PopVar();
-    Variable* pNew = nullptr;
-
-    auto i = Variables.find(Name);
-    if (i != Variables.end())
-        delete i->second;
-
-    if (pVar->Literal)
-        pNew = pVar;
-    else
-        pNew = Variable::MakeCopy(pVar);
-
-    pNew->Literal = false;
-    Variables[Name] = pNew;
+    Assign_(0);
 }
 
 void NSBInterpreter::Get()
@@ -436,6 +434,25 @@ void NSBInterpreter::PushString(string Str)
 void NSBInterpreter::PushVar(Variable* pVar)
 {
     Params.push(pVar);
+}
+
+void NSBInterpreter::Assign_(int Index)
+{
+    const string& Name = pContext->GetParam(Index);
+    Variable* pVar = PopVar();
+    Variable* pNew = nullptr;
+
+    auto i = Variables.find(Name);
+    if (i != Variables.end())
+        delete i->second;
+
+    if (pVar->Literal)
+        pNew = pVar;
+    else
+        pNew = Variable::MakeCopy(pVar);
+
+    pNew->Literal = false;
+    Variables[Name] = pNew;
 }
 
 void NSBInterpreter::IntUnaryOp(function<int(int)> Func)
