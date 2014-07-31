@@ -104,6 +104,7 @@ public:
     bool Call(ScriptFile* pScript, const string& Symbol);
     void Jump(const string& Symbol);
     const string& GetParam(uint32_t Index);
+    int GetNumParams();
     ScriptFile* GetScript();
     Line* GetLine();
     uint32_t GetMagic();
@@ -146,6 +147,7 @@ public:
     void Run();
 
 private:
+    void FunctionDeclaration();
     void CallFunction();
     void CallScene();
     void CallChapter();
@@ -187,6 +189,7 @@ private:
     void PushInt(int32_t Int);
     void PushString(string Str);
     void PushVar(Variable* pVar);
+    void Assign_(int Index);
 
     void IntUnaryOp(function<int(int)> Func);
     void IntBinaryOp(function<int(int, int)> Func);
