@@ -22,6 +22,7 @@
 #include "scriptfile.hpp"
 #include "npafile.hpp"
 #include "fscommon.hpp"
+#include <boost/format.hpp>
 #include <iostream>
 #include <memory>
 #include <algorithm>
@@ -65,7 +66,7 @@ Variable* Variable::MakeCopy(Variable* pVar)
 
 int32_t Variable::ToInt()
 {
-    if (Tag != INT)
+    if (IsString())
     {
         NSB_ERROR("Converting String to Int", ToString());
         return 0;
@@ -75,12 +76,22 @@ int32_t Variable::ToInt()
 
 string Variable::ToString()
 {
-    if (Tag != STRING)
+    if (IsInt())
     {
         NSB_ERROR("Converting Int to String", ToInt());
         return "";
     }
     return *Val.Str;
+}
+
+bool Variable::IsInt()
+{
+    return Tag == INT;
+}
+
+bool Variable::IsString()
+{
+    return Tag == STRING;
 }
 
 NSBContext::NSBContext(const string& Name) : Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false)
@@ -735,6 +746,17 @@ void NSBInterpreter::System()
 
 void NSBInterpreter::String()
 {
+    boost::format Fmt(PopString());
+    for (int i = 1; i < pContext->GetNumParams(); ++i)
+    {
+        Variable* pVar = PopVar();
+        if (pVar->IsString())
+            Fmt % pVar->ToString();
+        else if (pVar->IsInt())
+            Fmt % pVar->ToInt();
+        Variable::Destroy(pVar);
+    }
+    PushString(Fmt.str());
 }
 
 void NSBInterpreter::VariableValue()
