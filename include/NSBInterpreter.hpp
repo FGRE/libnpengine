@@ -49,6 +49,8 @@ public:
 
     int32_t ToInt();
     string ToString();
+    bool IsInt();
+    bool IsString();
 
     static Variable* Add(Variable* pFirst, Variable* pSecond)
     {
