@@ -337,7 +337,13 @@ void NSBInterpreter::ExecuteLocalNSS(const string& Filename)
     Threads.push_back(pContext);
 }
 
-void NSBInterpreter::Run()
+void NSBInterpreter::Run(int NumCommands)
+{
+    for (int i = 0; i < NumCommands; ++i)
+        RunCommand();
+}
+
+void NSBInterpreter::RunCommand()
 {
     if (Threads.empty())
         Exit();
