@@ -62,6 +62,26 @@ int Texture::GetPriority()
     return Priority;
 }
 
+int Texture::GetWidth()
+{
+    return Width;
+}
+
+int Texture::GetHeight()
+{
+    return Height;
+}
+
+int Texture::GetX()
+{
+    return X;
+}
+
+int Texture::GetY()
+{
+    return Y;
+}
+
 void Texture::Draw()
 {
     glBindTexture(GL_TEXTURE_2D, GLTextureID);
