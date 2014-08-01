@@ -111,6 +111,11 @@ void NSBContext::Break()
     Jump(BreakStack.top());
 }
 
+const string& NSBContext::GetScriptName()
+{
+    return GetScript()->GetName();
+}
+
 ScriptFile* NSBContext::GetScript()
 {
     return GetFrame()->pScript;
@@ -147,22 +152,33 @@ uint32_t NSBContext::Advance()
     return GetMagic();
 }
 
-bool NSBContext::Return()
+void NSBContext::Return()
 {
     CallStack.pop();
-    if (CallStack.empty())
-        return true;
-    return false;
 }
 
-void NSBContext::PushBreak(const string& Symbol)
+void NSBContext::PushBreak()
 {
-    BreakStack.push(Symbol);
+    BreakStack.push(GetParam(0));
 }
 
 void NSBContext::PopBreak()
 {
     BreakStack.pop();
+}
+
+void NSBContext::Wait(int32_t ms)
+{
+}
+
+void NSBContext::WaitKey(int32_t ms)
+{
+    Wait(ms);
+}
+
+bool NSBContext::IsStarving()
+{
+    return CallStack.empty();
 }
 
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
@@ -210,13 +226,24 @@ Builtins(MAGIC_UNK119 + 1, nullptr)
     Builtins[MAGIC_WRITE_FILE] = &NSBInterpreter::WriteFile;
     Builtins[MAGIC_READ_FILE] = &NSBInterpreter::ReadFile;
     Builtins[MAGIC_CREATE_TEXTURE] = &NSBInterpreter::CreateTexture;
+    Builtins[MAGIC_IMAGE_HORIZON] = &NSBInterpreter::ImageHorizon;
+    Builtins[MAGIC_IMAGE_VERTICAL] = &NSBInterpreter::ImageVertical;
+    Builtins[MAGIC_TIME] = &NSBInterpreter::Time;
+    Builtins[MAGIC_STR_STR] = &NSBInterpreter::StrStr;
+    Builtins[MAGIC_EXIT] = &NSBInterpreter::Exit;
+    Builtins[MAGIC_CURSOR_POSITION] = &NSBInterpreter::CursorPosition;
+    Builtins[MAGIC_MOVE_CURSOR] = &NSBInterpreter::MoveCursor;
+    Builtins[MAGIC_POSITION] = &NSBInterpreter::Position;
+    Builtins[MAGIC_WAIT] = &NSBInterpreter::Wait;
+    Builtins[MAGIC_WAIT_KEY] = &NSBInterpreter::WaitKey;
+    Builtins[MAGIC_NEGATIVE] = &NSBInterpreter::Negative;
 }
 
 NSBInterpreter::~NSBInterpreter()
 {
     delete pTest;
     delete pContext;
-    for_each(Variables.begin(), Variables.end(), MapDeleter());
+    CacheHolder<Variable>::Clear();
 }
 
 void NSBInterpreter::ExecuteLocalNSS(const string& Filename)
@@ -265,12 +292,12 @@ void NSBInterpreter::CallFunction()
 
 void NSBInterpreter::CallScene()
 {
-    //
+    CallScriptSymbol("scene.");
 }
 
 void NSBInterpreter::CallChapter()
 {
-    //
+    CallScriptSymbol("chapter.");
 }
 
 void NSBInterpreter::CmpLogicalAnd()
@@ -367,8 +394,7 @@ void NSBInterpreter::Assign()
 
 void NSBInterpreter::Get()
 {
-    const string& Name = pContext->GetParam(0);
-    PushVar(Variables[Name]);
+    PushVar(GetVar(pContext->GetParam(0)));
 }
 
 void NSBInterpreter::ScopeBegin()
@@ -381,11 +407,9 @@ void NSBInterpreter::ScopeEnd()
 
 void NSBInterpreter::Return()
 {
-    if (pContext->Return())
-    {
-        delete pContext;
-        pContext = nullptr;
-    }
+    pContext->Return();
+    if (pContext->IsStarving())
+        Exit();
 }
 
 void NSBInterpreter::If()
@@ -396,7 +420,7 @@ void NSBInterpreter::If()
 
 void NSBInterpreter::While()
 {
-    pContext->PushBreak(pContext->GetParam(0));
+    pContext->PushBreak();
     If();
 }
 
@@ -459,13 +483,74 @@ void NSBInterpreter::PushVar(Variable* pVar)
 
 void NSBInterpreter::Assign_(int Index)
 {
-    const string& Name = pContext->GetParam(Index);
-    Variable* pVar = PopVar();
+    SetVar(pContext->GetParam(Index), PopVar());
+}
+
+void NSBInterpreter::IntUnaryOp(function<int32_t(int32_t)> Func)
+{
+    PushInt(Func(PopInt()));
+}
+
+void NSBInterpreter::IntBinaryOp(function<int32_t(int32_t, int32_t)> Func)
+{
+    int32_t Val = PopInt();
+    PushInt(Func(Val, PopInt()));
+}
+
+void NSBInterpreter::CallScriptSymbol(const string& Prefix)
+{
+    string ScriptName = GetString(pContext->GetParam(0)), Symbol;
+    size_t i = ScriptName.find("->");
+    if (i != string::npos)
+    {
+        Symbol = ScriptName.substr(i + 2);
+        ScriptName.erase(i);
+    }
+    else
+        Symbol = "main";
+    CallScript(ScriptName == "@" ? pContext->GetScriptName() : ScriptName, Prefix + Symbol);
+}
+
+void NSBInterpreter::LoadScript(const string& Filename)
+{
+    if (ScriptFile* pScript = sResourceMgr->GetScriptFile(Filename))
+        Scripts.push_back(pScript);
+}
+
+void NSBInterpreter::CallScript(const string& Filename, const string& Symbol)
+{
+    if (ScriptFile* pScript = sResourceMgr->GetScriptFile(Filename))
+        pContext->Call(pScript, Symbol);
+}
+
+string NSBInterpreter::GetString(const string& Name)
+{
+    if (Name[0] != '$' && Name[0] != '#')
+        return Name;
+
+    if (Variable* pVar = GetVar(Name))
+        return pVar->ToString();
+
+    NSB_ERROR("Failed to find string variable", Name);
+    return "";
+}
+
+Variable* NSBInterpreter::GetVar(const string& Name)
+{
+    return CacheHolder<Variable>::Read(Name);
+}
+
+Texture* NSBInterpreter::GetTexture(const string& Name)
+{
+    return CacheHolder<Texture>::Read(Name);
+}
+
+void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
+{
     Variable* pNew = nullptr;
 
-    auto i = Variables.find(Name);
-    if (i != Variables.end())
-        delete i->second;
+    if (Variable* pVar = GetVar(Name))
+        delete pVar;
 
     if (pVar->Literal)
         pNew = pVar;
@@ -473,18 +558,12 @@ void NSBInterpreter::Assign_(int Index)
         pNew = Variable::MakeCopy(pVar);
 
     pNew->Literal = false;
-    Variables[Name] = pNew;
+    CacheHolder<Variable>::Write(Name, pNew);
 }
 
-void NSBInterpreter::IntUnaryOp(function<int(int)> Func)
+void NSBInterpreter::SetInt(const string& Name, int32_t Val)
 {
-    PushInt(Func(PopInt()));
-}
-
-void NSBInterpreter::IntBinaryOp(function<int(int, int)> Func)
-{
-    int32_t Val = PopInt();
-    PushInt(Func(Val, PopInt()));
+    SetVar(Name, Variable::MakeInt(Val));
 }
 
 void NSBInterpreter::AddAssign()
@@ -536,4 +615,71 @@ void NSBInterpreter::CreateTexture()
 
     pWindow->AddTexture(pTexture);
     CacheHolder<Texture>::Write(Handle, pTexture);
+}
+
+void NSBInterpreter::ImageHorizon()
+{
+    Texture* pTexture = GetTexture(PopString());
+    PushInt(pTexture->GetWidth());
+}
+
+void NSBInterpreter::ImageVertical()
+{
+    Texture* pTexture = GetTexture(PopString());
+    PushInt(pTexture->GetHeight());
+}
+
+void NSBInterpreter::Time()
+{
+    PushInt(time(0));
+}
+
+void NSBInterpreter::StrStr()
+{
+    string Haystack = PopString();
+    string Needle = PopString();
+    PushInt(Haystack.find(Needle) + 1);
+}
+
+void NSBInterpreter::Exit()
+{
+    delete pContext;
+    pContext = nullptr;
+}
+
+void NSBInterpreter::CursorPosition()
+{
+    int32_t X, Y;
+    SDL_PumpEvents();
+    SDL_GetMouseState(&X, &Y);
+    SetInt(PopString(), X);
+    SetInt(PopString(), Y);
+}
+
+void NSBInterpreter::MoveCursor()
+{
+    int32_t X = PopInt();
+    pWindow->MoveCursor(X, PopInt());
+}
+
+void NSBInterpreter::Position()
+{
+    Texture* pTexture = GetTexture(PopString());
+    SetInt(PopString(), pTexture->GetX());
+    SetInt(PopString(), pTexture->GetY());
+}
+
+void NSBInterpreter::Wait()
+{
+    pContext->Wait(PopInt());
+}
+
+void NSBInterpreter::WaitKey()
+{
+    pContext->WaitKey(PopInt());
+}
+
+void NSBInterpreter::Negative()
+{
+    IntUnaryOp(negate<int32_t>());
 }

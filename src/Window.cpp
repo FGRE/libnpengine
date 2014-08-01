@@ -86,3 +86,8 @@ void Window::AddTexture(Texture* pTexture)
     }
     Textures.insert(Spot, pTexture);
 }
+
+void Window::MoveCursor(int32_t X, int32_t Y)
+{
+    SDL_WarpMouseInWindow(SDLWindow, X, Y);
+}
