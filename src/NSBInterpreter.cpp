@@ -106,6 +106,11 @@ void NSBContext::Jump(const string& Symbol)
         GetFrame()->SourceLine = CodeLine - 1;
 }
 
+void NSBContext::Break()
+{
+    Jump(BreakStack.top());
+}
+
 ScriptFile* NSBContext::GetScript()
 {
     return GetFrame()->pScript;
@@ -150,6 +155,16 @@ bool NSBContext::Return()
     return false;
 }
 
+void NSBContext::PushBreak(const string& Symbol)
+{
+    BreakStack.push(Symbol);
+}
+
+void NSBContext::PopBreak()
+{
+    BreakStack.pop();
+}
+
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
 pTest(nullptr),
 pWindow(pWindow),
@@ -186,6 +201,7 @@ Builtins(MAGIC_UNK119 + 1, nullptr)
     Builtins[MAGIC_END_CHAPTER] = &NSBInterpreter::Return;
     Builtins[MAGIC_IF] = &NSBInterpreter::If;
     Builtins[MAGIC_WHILE] = &NSBInterpreter::While;
+    Builtins[MAGIC_WHILE_END] = &NSBInterpreter::WhileEnd;
     Builtins[MAGIC_SELECT] = &NSBInterpreter::Select;
     Builtins[MAGIC_BREAK] = &NSBInterpreter::Break;
     Builtins[MAGIC_JUMP] = &NSBInterpreter::Jump;
@@ -380,7 +396,13 @@ void NSBInterpreter::If()
 
 void NSBInterpreter::While()
 {
+    pContext->PushBreak(pContext->GetParam(0));
     If();
+}
+
+void NSBInterpreter::WhileEnd()
+{
+    pContext->PopBreak();
 }
 
 void NSBInterpreter::Select()
@@ -389,6 +411,7 @@ void NSBInterpreter::Select()
 
 void NSBInterpreter::Break()
 {
+    pContext->Break();
 }
 
 void NSBInterpreter::Jump()
