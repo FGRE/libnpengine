@@ -22,13 +22,14 @@
 #include <SDL2/SDL.h>
 #include <cstdint>
 #include <stack>
-#include <queue>
+#include <deque>
 #include <list>
 #include <functional>
 using namespace std;
 
 class Variable
 {
+protected:
     enum
     {
         INT,
@@ -41,17 +42,27 @@ class Variable
     } Val;
 
     Variable();
+
+    void Initialize(int32_t Int);
+    void Initialize(const string& Str);
+
 public:
-    ~Variable();
+    virtual ~Variable();
 
     static Variable* MakeInt(int32_t Int);
-    static Variable* MakeString(string Str);
+    static Variable* MakeString(const string& Str);
     static Variable* MakeCopy(Variable* pVar);
 
     int32_t ToInt();
     string ToString();
     bool IsInt();
     bool IsString();
+
+    Variable* IntUnaryOp(function<int32_t(int32_t)> Func)
+    {
+        Val.Int = Func(Val.Int);
+        return this;
+    }
 
     static Variable* Add(Variable* pFirst, Variable* pSecond)
     {
@@ -88,6 +99,20 @@ public:
     }
 
     bool Literal;
+};
+
+class ArrayVariable;
+typedef list<pair<string, ArrayVariable*>> ArrayMembers;
+class ArrayVariable : public Variable
+{
+public:
+    ArrayVariable();
+    static ArrayVariable* MakeCopy(Variable* pVar);
+    ArrayVariable* Find(const string& Key);
+    ArrayVariable* Find(int32_t Index);
+    void Push(ArrayVariable* pVar);
+
+    ArrayMembers Members;
 };
 
 class ScriptFile;
@@ -131,23 +156,6 @@ private:
     bool WaitInterrupt;
     stack<StackFrame> CallStack;
     stack<string> BreakStack;
-};
-
-template <class T>
-class Queue : public queue<T>
-{
-    typedef typename queue<T>::size_type size_type;
-public:
-    T& operator[] (size_type n)
-    {
-        assert(n < this->c.size());
-        return this->c[n];
-    }
-
-    size_type size()
-    {
-        return this->c.size();
-    }
 };
 
 class Window;
@@ -216,10 +224,16 @@ private:
     void String();
     void VariableValue();
     void CreateProcess();
+    void Count();
+    void Array();
+    void ArrayRead();
+    void AssocArray();
+    void GetModuleFileName();
 
     int32_t PopInt();
     string PopString();
     Variable* PopVar();
+    ArrayVariable* PopArr();
     void PushInt(int32_t Int);
     void PushString(string Str);
     void PushVar(Variable* pVar);
@@ -232,6 +246,7 @@ private:
     void SetVar(const string& Name, Variable* pVar);
     string GetString(const string& Name);
     Variable* GetVar(const string& Name);
+    ArrayVariable* GetArr(const string& Name);
     Texture* GetTexture(const string& Name);
     void CallFunction_(NSBContext* pThread, const string& Symbol);
     void CallScriptSymbol(const string& Prefix);
@@ -242,7 +257,7 @@ private:
     Window* pWindow;
     NSBContext* pContext;
     vector<BuiltinFunc> Builtins;
-    Queue<Variable*> Params;
+    deque<Variable*> Params;
     vector<ScriptFile*> Scripts;
     list<NSBContext*> Threads;
 };

@@ -41,19 +41,29 @@ Variable::~Variable()
         delete Val.Str;
 }
 
+void Variable::Initialize(int32_t Int)
+{
+    Val.Int = Int;
+    Tag = INT;
+}
+
+void Variable::Initialize(const string& Str)
+{
+    Val.Str = new string(Str);
+    Tag = STRING;
+}
+
 Variable* Variable::MakeInt(int32_t Int)
 {
     Variable* pVar = new Variable;
-    pVar->Val.Int = Int;
-    pVar->Tag = INT;
+    pVar->Initialize(Int);
     return pVar;
 }
 
-Variable* Variable::MakeString(string Str)
+Variable* Variable::MakeString(const string& Str)
 {
     Variable* pVar = new Variable;
-    pVar->Val.Str = new string(Str);
-    pVar->Tag = STRING;
+    pVar->Initialize(Str);
     return pVar;
 }
 
@@ -92,6 +102,43 @@ bool Variable::IsInt()
 bool Variable::IsString()
 {
     return Tag == STRING;
+}
+
+ArrayVariable* ArrayVariable::MakeCopy(Variable* pVar)
+{
+    ArrayVariable* pNew = new ArrayVariable;
+    if (pVar->IsString())
+        pNew->Initialize(pVar->ToString());
+    else
+        pNew->Initialize(pVar->ToInt());
+    pNew->Literal = false;
+    Variable::Destroy(pVar);
+    return pNew;
+}
+
+ArrayVariable::ArrayVariable()
+{
+    Literal = false;
+}
+
+ArrayVariable* ArrayVariable::Find(const string& Key)
+{
+    for (auto i = Members.begin(); i != Members.end(); ++i)
+        if (i->first == Key)
+            return i->second;
+    return nullptr;
+}
+
+ArrayVariable* ArrayVariable::Find(int32_t Index)
+{
+    auto i = Members.begin();
+    advance(i, Index);
+    return i->second;
+}
+
+void ArrayVariable::Push(ArrayVariable* pVar)
+{
+    Members.push_back(make_pair(string(), pVar));
 }
 
 NSBContext::NSBContext(const string& Name) : Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false)
@@ -270,6 +317,11 @@ Builtins(MAGIC_UNK119 + 1, nullptr)
     Builtins[MAGIC_STRING] = &NSBInterpreter::String;
     Builtins[MAGIC_VARIABLE_VALUE] = &NSBInterpreter::VariableValue;
     Builtins[MAGIC_CREATE_PROCESS] = &NSBInterpreter::CreateProcess;
+    Builtins[MAGIC_COUNT] = &NSBInterpreter::Count;
+    Builtins[MAGIC_ARRAY] = &NSBInterpreter::Array;
+    Builtins[MAGIC_ARRAY_READ] = &NSBInterpreter::ArrayRead;
+    Builtins[MAGIC_ASSOC_ARRAY] = &NSBInterpreter::AssocArray;
+    Builtins[MAGIC_GET_MODULE_FILE_NAME] = &NSBInterpreter::GetModuleFileName;
 }
 
 NSBInterpreter::~NSBInterpreter()
@@ -296,12 +348,9 @@ void NSBInterpreter::Run()
         pContext = *i;
 
         while (!pContext->IsStarving() && !pContext->IsSleeping() && pContext->Advance() != MAGIC_CLEAR_PARAMS)
-        {
-            uint32_t Magic = pContext->GetMagic();
-            if (Magic < Builtins.size())
-                if (BuiltinFunc pFunc = Builtins[Magic])
+            if (pContext->GetMagic() < Builtins.size())
+                if (BuiltinFunc pFunc = Builtins[pContext->GetMagic()])
                     (this->*pFunc)();
-        }
 
         if (pContext->IsStarving())
         {
@@ -309,6 +358,9 @@ void NSBInterpreter::Run()
             i = Threads.erase(i);
         }
     }
+
+    while (!Params.empty())
+        Variable::Destroy(PopVar());
 }
 
 void NSBInterpreter::HandleEvent(SDL_Event Event)
@@ -487,8 +539,13 @@ void NSBInterpreter::Jump()
 Variable* NSBInterpreter::PopVar()
 {
     Variable* pVar = Params.front();
-    Params.pop();
+    Params.pop_front();
     return pVar;
+}
+
+ArrayVariable* NSBInterpreter::PopArr()
+{
+    return dynamic_cast<ArrayVariable*>(PopVar());
 }
 
 int32_t NSBInterpreter::PopInt()
@@ -519,7 +576,7 @@ void NSBInterpreter::PushString(string Str)
 
 void NSBInterpreter::PushVar(Variable* pVar)
 {
-    Params.push(pVar);
+    Params.push_back(pVar);
 }
 
 void NSBInterpreter::Assign_(int Index)
@@ -529,7 +586,7 @@ void NSBInterpreter::Assign_(int Index)
 
 void NSBInterpreter::IntUnaryOp(function<int32_t(int32_t)> Func)
 {
-    PushInt(Func(PopInt()));
+    PushVar(PopVar()->IntUnaryOp(Func));
 }
 
 void NSBInterpreter::IntBinaryOp(function<int32_t(int32_t, int32_t)> Func)
@@ -595,6 +652,11 @@ string NSBInterpreter::GetString(const string& Name)
 Variable* NSBInterpreter::GetVar(const string& Name)
 {
     return CacheHolder<Variable>::Read(Name);
+}
+
+ArrayVariable* NSBInterpreter::GetArr(const string& Name)
+{
+    return dynamic_cast<ArrayVariable*>(GetVar(Name));
 }
 
 Texture* NSBInterpreter::GetTexture(const string& Name)
@@ -793,4 +855,55 @@ void NSBInterpreter::CreateProcess()
     NSBContext* pThread = new NSBContext(Handle);
     CallFunction_(pThread, Symbol);
     Threads.push_back(pThread);
+}
+
+void NSBInterpreter::Count()
+{
+    PushInt(PopArr()->Members.size());
+}
+
+void NSBInterpreter::Array()
+{
+    ArrayVariable* pArr = PopArr();
+    if (!pArr)
+    {
+        pArr = new ArrayVariable;
+        CacheHolder<Variable>::Write(pContext->GetParam(0), pArr);
+    }
+
+    for (int i = 1; i < pContext->GetNumParams(); ++i)
+        pArr->Push(ArrayVariable::MakeCopy(PopVar()));
+}
+
+void NSBInterpreter::ArrayRead()
+{
+    ArrayVariable* pArr = GetArr(pContext->GetParam(0));
+    int32_t Depth = stoi(pContext->GetParam(1));
+    int32_t Depth2 = Depth;
+    int32_t Iter = Params.size() - Depth;
+    while (Depth --> 0)
+    {
+        Variable* pVar = Params[Iter++];
+        if (pVar->IsInt())
+            pArr = pArr->Find(pVar->ToInt());
+        else
+            pArr = pArr->Find(pVar->ToString());
+        Variable::Destroy(pVar);
+    }
+    for (int i = 0; i < Depth2; ++i)
+        Params.pop_back();
+    PushVar(pArr);
+}
+
+void NSBInterpreter::AssocArray()
+{
+    ArrayVariable* pArr = PopArr();
+    for (auto i = pArr->Members.begin(); i != pArr->Members.end(); ++i)
+        i->first = PopString();
+}
+
+void NSBInterpreter::GetModuleFileName()
+{
+    string Name = pContext->GetScriptName();
+    PushString(Name.substr(4, Name.size() - 8)); // Remove nss/ and .nsb
 }
