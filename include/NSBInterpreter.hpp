@@ -19,6 +19,7 @@
 #define NSB_INTERPRETER_HPP
 
 #include "ResourceMgr.hpp"
+#include <SDL2/SDL.h>
 #include <cstdint>
 #include <stack>
 #include <queue>
@@ -112,14 +113,19 @@ public:
     void Return();
     void PushBreak();
     void PopBreak();
-    void Wait(int32_t ms);
-    void WaitKey(int32_t ms);
+    void Wait(int32_t Time, bool Interrupt);
+    void Wake();
+    void TryWake();
     bool IsStarving();
+    bool IsSleeping();
 
 private:
     StackFrame* GetFrame();
 
     const string Name;
+    uint64_t WaitTime;
+    uint64_t WaitStart;
+    bool WaitInterrupt;
     stack<StackFrame> CallStack;
     stack<string> BreakStack;
 };
@@ -151,6 +157,7 @@ public:
     virtual ~NSBInterpreter();
 
     void ExecuteLocalNSS(const string& Filename);
+    void HandleEvent(SDL_Event Event);
     void Run();
 
 private:

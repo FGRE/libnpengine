@@ -55,6 +55,11 @@ void Window::Run()
     }
 }
 
+void Window::Exit()
+{
+    IsRunning = false;
+}
+
 void Window::HandleEvent(SDL_Event Event)
 {
     switch (Event.type)

@@ -31,6 +31,7 @@ public:
     virtual ~Window();
 
     void Run();
+    void Exit();
     void AddTexture(Texture* pTexture);
     void MoveCursor(int32_t X, int32_t Y);
 
