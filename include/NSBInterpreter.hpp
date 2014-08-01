@@ -103,6 +103,7 @@ public:
 
     bool Call(ScriptFile* pScript, const string& Symbol);
     void Jump(const string& Symbol);
+    void Break();
     const string& GetParam(uint32_t Index);
     int GetNumParams();
     ScriptFile* GetScript();
@@ -110,12 +111,15 @@ public:
     uint32_t GetMagic();
     uint32_t Advance();
     bool Return();
+    void PushBreak(const string& Symbol);
+    void PopBreak();
 
 private:
     StackFrame* GetFrame();
 
     const string Name;
     stack<StackFrame> CallStack;
+    stack<string> BreakStack;
 };
 
 template <class T>
@@ -174,6 +178,7 @@ private:
     void Return();
     void If();
     void While();
+    void WhileEnd();
     void Select();
     void Break();
     void Jump();
