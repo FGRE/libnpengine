@@ -217,10 +217,11 @@ Builtins(MAGIC_UNK119 + 1, nullptr)
     Builtins[MAGIC_CMP_EQUAL] = &NSBInterpreter::CmpEqual;
     Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NSBInterpreter::LogicalNotEqual;
     Builtins[MAGIC_LOGICAL_NOT] = &NSBInterpreter::LogicalNot;
-    Builtins[MAGIC_ADD] = &NSBInterpreter::Add;
-    Builtins[MAGIC_SUBSTRACT] = &NSBInterpreter::Substract;
-    Builtins[MAGIC_MULTIPLY] = &NSBInterpreter::Multiply;
-    Builtins[MAGIC_DIVIDE] = &NSBInterpreter::Divide;
+    Builtins[MAGIC_ADD_EXPRESSION] = &NSBInterpreter::AddExpression;
+    Builtins[MAGIC_SUB_EXPRESSION] = &NSBInterpreter::SubExpression;
+    Builtins[MAGIC_MUL_EXPRESSION] = &NSBInterpreter::MulExpression;
+    Builtins[MAGIC_DIV_EXPRESSION] = &NSBInterpreter::DivExpression;
+    Builtins[MAGIC_MOD_EXPRESSION] = &NSBInterpreter::ModExpression;
     Builtins[MAGIC_INCREMENT] = &NSBInterpreter::Increment;
     Builtins[MAGIC_DECREMENT] = &NSBInterpreter::Decrement;
     Builtins[MAGIC_LITERAL] = &NSBInterpreter::Literal;
@@ -253,7 +254,11 @@ Builtins(MAGIC_UNK119 + 1, nullptr)
     Builtins[MAGIC_POSITION] = &NSBInterpreter::Position;
     Builtins[MAGIC_WAIT] = &NSBInterpreter::Wait;
     Builtins[MAGIC_WAIT_KEY] = &NSBInterpreter::WaitKey;
-    Builtins[MAGIC_NEGATIVE] = &NSBInterpreter::Negative;
+    Builtins[MAGIC_NEGA_EXPRESSION] = &NSBInterpreter::NegaExpression;
+    Builtins[MAGIC_SYSTEM] = &NSBInterpreter::System;
+    Builtins[MAGIC_STRING] = &NSBInterpreter::String;
+    Builtins[MAGIC_VARIABLE_VALUE] = &NSBInterpreter::VariableValue;
+    Builtins[MAGIC_CREATE_PROCESS] = &NSBInterpreter::CreateProcess;
 }
 
 NSBInterpreter::~NSBInterpreter()
@@ -369,25 +374,30 @@ void NSBInterpreter::LogicalNot()
     IntUnaryOp(logical_not<int32_t>());
 }
 
-void NSBInterpreter::Add()
+void NSBInterpreter::AddExpression()
 {
     Variable* pVar = PopVar();
     PushVar(Variable::Add(pVar, PopVar()));
 }
 
-void NSBInterpreter::Substract()
+void NSBInterpreter::SubExpression()
 {
     IntBinaryOp(minus<int32_t>());
 }
 
-void NSBInterpreter::Multiply()
+void NSBInterpreter::MulExpression()
 {
     IntBinaryOp(multiplies<int32_t>());
 }
 
-void NSBInterpreter::Divide()
+void NSBInterpreter::DivExpression()
 {
     IntBinaryOp(divides<int32_t>());
+}
+
+void NSBInterpreter::ModExpression()
+{
+    IntBinaryOp(modulus<int32_t>());
 }
 
 void NSBInterpreter::Increment()
@@ -592,7 +602,7 @@ void NSBInterpreter::SetInt(const string& Name, int32_t Val)
 void NSBInterpreter::AddAssign()
 {
     Get();
-    Add();
+    AddExpression();
     Assign();
 }
 
@@ -601,7 +611,7 @@ void NSBInterpreter::SubAssign()
     int32_t Val = PopInt();
     Get();
     PushInt(Val);
-    Substract();
+    SubExpression();
     Assign();
 }
 
@@ -703,7 +713,34 @@ void NSBInterpreter::WaitKey()
     pContext->Wait(PopInt(), true);
 }
 
-void NSBInterpreter::Negative()
+void NSBInterpreter::NegaExpression()
 {
     IntUnaryOp(negate<int32_t>());
+}
+
+void NSBInterpreter::System()
+{
+    static const string OpenStr = "OPEN:";
+    string Command = PopString();
+    string Parameters = PopString();
+    string Directory = PopString();
+    if (Command.substr(0, OpenStr.size()) != OpenStr)
+        return;
+
+    Command = Command.substr(OpenStr.size());
+
+    if (fork() == 0)
+        execlp("/usr/bin/xdg-open", "/usr/bin/xdg-open", Command.c_str(), NULL);
+}
+
+void NSBInterpreter::String()
+{
+}
+
+void NSBInterpreter::VariableValue()
+{
+}
+
+void NSBInterpreter::CreateProcess()
+{
 }

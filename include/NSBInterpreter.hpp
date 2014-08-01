@@ -174,10 +174,11 @@ private:
     void CmpEqual();
     void LogicalNotEqual();
     void LogicalNot();
-    void Add();
-    void Substract();
-    void Multiply();
-    void Divide();
+    void AddExpression();
+    void SubExpression();
+    void MulExpression();
+    void DivExpression();
+    void ModExpression();
     void Increment();
     void Decrement();
     void Literal();
@@ -207,7 +208,11 @@ private:
     void Position();
     void Wait();
     void WaitKey();
-    void Negative();
+    void NegaExpression();
+    void System();
+    void String();
+    void VariableValue();
+    void CreateProcess();
 
     int32_t PopInt();
     string PopString();
