@@ -761,6 +761,14 @@ void NSBInterpreter::String()
 
 void NSBInterpreter::VariableValue()
 {
+    string Type = PopString();
+    string Name = PopString();
+    if (pContext->GetNumParams() == 3)
+        SetVar(Type + Name, PopVar());
+    else if (pContext->GetNumParams() == 2)
+        PushVar(GetVar(Type + Name));
+    else
+        assert(false && "This will trigger when we get new season of Haruhi");
 }
 
 void NSBInterpreter::CreateProcess()
