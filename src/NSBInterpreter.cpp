@@ -25,6 +25,8 @@
 #include <iostream>
 #include <memory>
 #include <algorithm>
+#include <chrono>
+using namespace std::chrono;
 
 #define NSB_ERROR(MSG1, MSG2) cout << __PRETTY_FUNCTION__ << ": " << MSG1 << " " << MSG2 << endl;
 
@@ -81,7 +83,7 @@ string Variable::ToString()
     return *Val.Str;
 }
 
-NSBContext::NSBContext(const string& Name) : Name(Name)
+NSBContext::NSBContext(const string& Name) : Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false)
 {
 }
 
@@ -167,18 +169,33 @@ void NSBContext::PopBreak()
     BreakStack.pop();
 }
 
-void NSBContext::Wait(int32_t ms)
+void NSBContext::Wait(int32_t Time, bool Interrupt)
 {
+    WaitInterrupt = Interrupt;
+    WaitTime = Time;
+    WaitStart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
-void NSBContext::WaitKey(int32_t ms)
+void NSBContext::Wake()
 {
-    Wait(ms);
+    WaitTime = 0;
+}
+
+void NSBContext::TryWake()
+{
+    if (WaitInterrupt)
+        Wake();
 }
 
 bool NSBContext::IsStarving()
 {
     return CallStack.empty();
+}
+
+bool NSBContext::IsSleeping()
+{
+    uint64_t Now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    return (Now - WaitStart) < WaitTime;
 }
 
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
@@ -258,13 +275,19 @@ void NSBInterpreter::Run()
     if (!pContext)
         return;
 
-    while (pContext && pContext->Advance() != MAGIC_CLEAR_PARAMS)
+    while (pContext && !pContext->IsSleeping() && pContext->Advance() != MAGIC_CLEAR_PARAMS)
     {
         uint32_t Magic = pContext->GetMagic();
         if (Magic < Builtins.size())
             if (BuiltinFunc pFunc = Builtins[Magic])
                 (this->*pFunc)();
     }
+}
+
+void NSBInterpreter::HandleEvent(SDL_Event Event)
+{
+    if (Event.type == SDL_MOUSEBUTTONDOWN)
+        pContext->TryWake();
 }
 
 void NSBInterpreter::FunctionDeclaration()
@@ -645,6 +668,7 @@ void NSBInterpreter::Exit()
 {
     delete pContext;
     pContext = nullptr;
+    pWindow->Exit();
 }
 
 void NSBInterpreter::CursorPosition()
@@ -671,12 +695,12 @@ void NSBInterpreter::Position()
 
 void NSBInterpreter::Wait()
 {
-    pContext->Wait(PopInt());
+    pContext->Wait(PopInt(), false);
 }
 
 void NSBInterpreter::WaitKey()
 {
-    pContext->WaitKey(PopInt());
+    pContext->Wait(PopInt(), true);
 }
 
 void NSBInterpreter::Negative()
