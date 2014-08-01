@@ -169,7 +169,8 @@ public:
 
     void ExecuteLocalNSS(const string& Filename);
     void HandleEvent(SDL_Event Event);
-    void Run();
+    void Run(int NumCommands);
+    void RunCommand();
 
 private:
     void FunctionDeclaration();
