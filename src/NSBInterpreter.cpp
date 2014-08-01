@@ -111,7 +111,6 @@ ArrayVariable* ArrayVariable::MakeCopy(Variable* pVar)
         pNew->Initialize(pVar->ToString());
     else
         pNew->Initialize(pVar->ToInt());
-    pNew->Literal = false;
     Variable::Destroy(pVar);
     return pNew;
 }
@@ -359,6 +358,7 @@ void NSBInterpreter::Run()
         }
     }
 
+    // In case not all params were used (e.g. unimplemented builtin)
     while (!Params.empty())
         Variable::Destroy(PopVar());
 }
