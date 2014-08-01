@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <stack>
 #include <queue>
+#include <list>
 #include <functional>
 using namespace std;
 
@@ -232,6 +233,7 @@ private:
     string GetString(const string& Name);
     Variable* GetVar(const string& Name);
     Texture* GetTexture(const string& Name);
+    void CallFunction_(NSBContext* pThread, const string& Symbol);
     void CallScriptSymbol(const string& Prefix);
     void LoadScript(const string& Filename);
     void CallScript(const string& Filename, const string& Symbol);
@@ -242,6 +244,7 @@ private:
     vector<BuiltinFunc> Builtins;
     Queue<Variable*> Params;
     vector<ScriptFile*> Scripts;
+    list<NSBContext*> Threads;
 };
 
 #endif

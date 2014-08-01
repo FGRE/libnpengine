@@ -275,7 +275,6 @@ Builtins(MAGIC_UNK119 + 1, nullptr)
 NSBInterpreter::~NSBInterpreter()
 {
     delete pTest;
-    delete pContext;
     CacheHolder<Variable>::Clear();
 }
 
@@ -284,19 +283,31 @@ void NSBInterpreter::ExecuteLocalNSS(const string& Filename)
     pContext = new NSBContext("__nitroscript_main__");
     pTest = new ScriptFile(Filename, ScriptFile::NSS);
     pContext->Call(pTest, "chapter.main");
+    Threads.push_back(pContext);
 }
 
 void NSBInterpreter::Run()
 {
-    if (!pContext)
-        return;
+    if (Threads.empty())
+        Exit();
 
-    while (pContext && !pContext->IsSleeping() && pContext->Advance() != MAGIC_CLEAR_PARAMS)
+    for (auto i = Threads.begin(); i != Threads.end(); ++i)
     {
-        uint32_t Magic = pContext->GetMagic();
-        if (Magic < Builtins.size())
-            if (BuiltinFunc pFunc = Builtins[Magic])
-                (this->*pFunc)();
+        pContext = *i;
+
+        while (!pContext->IsStarving() && !pContext->IsSleeping() && pContext->Advance() != MAGIC_CLEAR_PARAMS)
+        {
+            uint32_t Magic = pContext->GetMagic();
+            if (Magic < Builtins.size())
+                if (BuiltinFunc pFunc = Builtins[Magic])
+                    (this->*pFunc)();
+        }
+
+        if (pContext->IsStarving())
+        {
+            delete pContext;
+            i = Threads.erase(i);
+        }
     }
 }
 
@@ -314,19 +325,7 @@ void NSBInterpreter::FunctionDeclaration()
 
 void NSBInterpreter::CallFunction()
 {
-    const string& FuncName = pContext->GetParam(0);
-    string FuncNameFull = string("function.") + FuncName;
-
-    // Find function locally
-    if (pContext->Call(pContext->GetScript(), FuncNameFull))
-        return;
-
-    // Find function globally
-    for (uint32_t i = 0; i < Scripts.size(); ++i)
-        if (pContext->Call(Scripts[i], FuncNameFull))
-            return;
-
-    NSB_ERROR("Failed to call function", FuncName);
+    CallFunction_(pContext, pContext->GetParam(0));
 }
 
 void NSBInterpreter::CallScene()
@@ -452,8 +451,6 @@ void NSBInterpreter::ScopeEnd()
 void NSBInterpreter::Return()
 {
     pContext->Return();
-    if (pContext->IsStarving())
-        Exit();
 }
 
 void NSBInterpreter::If()
@@ -539,6 +536,22 @@ void NSBInterpreter::IntBinaryOp(function<int32_t(int32_t, int32_t)> Func)
 {
     int32_t Val = PopInt();
     PushInt(Func(Val, PopInt()));
+}
+
+void NSBInterpreter::CallFunction_(NSBContext* pThread, const string& Symbol)
+{
+    string FuncNameFull = string("function.") + Symbol;
+
+    // Find function locally
+    if (pThread->Call(pContext->GetScript(), FuncNameFull))
+        return;
+
+    // Find function globally
+    for (uint32_t i = 0; i < Scripts.size(); ++i)
+        if (pThread->Call(Scripts[i], FuncNameFull))
+            return;
+
+    NSB_ERROR("Failed to call function", Symbol);
 }
 
 void NSBInterpreter::CallScriptSymbol(const string& Prefix)
@@ -687,8 +700,6 @@ void NSBInterpreter::StrStr()
 
 void NSBInterpreter::Exit()
 {
-    delete pContext;
-    pContext = nullptr;
     pWindow->Exit();
 }
 
@@ -773,4 +784,13 @@ void NSBInterpreter::VariableValue()
 
 void NSBInterpreter::CreateProcess()
 {
+    string Handle = PopString();
+    int32_t unk1 = PopInt();
+    int32_t unk2 = PopInt();
+    int32_t unk3 = PopInt();
+    string Symbol = PopString();
+
+    NSBContext* pThread = new NSBContext(Handle);
+    CallFunction_(pThread, Symbol);
+    Threads.push_back(pThread);
 }
