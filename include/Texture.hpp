@@ -34,6 +34,10 @@ public:
     void Draw();
     void SetPriority(int Priority);
     int GetPriority();
+    int GetWidth();
+    int GetHeight();
+    int GetX();
+    int GetY();
 
 private:
     void LoadPNG(uint8_t* pMem, uint32_t Size);

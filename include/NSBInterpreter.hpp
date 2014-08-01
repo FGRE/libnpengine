@@ -86,8 +86,6 @@ public:
     bool Literal;
 };
 
-
-
 class ScriptFile;
 class Line;
 class NSBContext
@@ -106,13 +104,17 @@ public:
     void Break();
     const string& GetParam(uint32_t Index);
     int GetNumParams();
+    const string& GetScriptName();
     ScriptFile* GetScript();
     Line* GetLine();
     uint32_t GetMagic();
     uint32_t Advance();
-    bool Return();
-    void PushBreak(const string& Symbol);
+    void Return();
+    void PushBreak();
     void PopBreak();
+    void Wait(int32_t ms);
+    void WaitKey(int32_t ms);
+    bool IsStarving();
 
 private:
     StackFrame* GetFrame();
@@ -140,6 +142,7 @@ public:
 };
 
 class Window;
+class Texture;
 class NSBInterpreter
 {
     typedef void (NSBInterpreter::*BuiltinFunc)();
@@ -187,6 +190,17 @@ private:
     void WriteFile();
     void ReadFile();
     void CreateTexture();
+    void ImageHorizon();
+    void ImageVertical();
+    void Time();
+    void StrStr();
+    void Exit();
+    void CursorPosition();
+    void MoveCursor();
+    void Position();
+    void Wait();
+    void WaitKey();
+    void Negative();
 
     int32_t PopInt();
     string PopString();
@@ -196,15 +210,23 @@ private:
     void PushVar(Variable* pVar);
     void Assign_(int Index);
 
-    void IntUnaryOp(function<int(int)> Func);
-    void IntBinaryOp(function<int(int, int)> Func);
+    void IntUnaryOp(function<int32_t(int32_t)> Func);
+    void IntBinaryOp(function<int32_t(int32_t, int32_t)> Func);
+
+    void SetInt(const string& Name, int32_t Val);
+    void SetVar(const string& Name, Variable* pVar);
+    string GetString(const string& Name);
+    Variable* GetVar(const string& Name);
+    Texture* GetTexture(const string& Name);
+    void CallScriptSymbol(const string& Prefix);
+    void LoadScript(const string& Filename);
+    void CallScript(const string& Filename, const string& Symbol);
 
     ScriptFile* pTest;
     Window* pWindow;
     NSBContext* pContext;
     vector<BuiltinFunc> Builtins;
     Queue<Variable*> Params;
-    map<string, Variable*> Variables;
     vector<ScriptFile*> Scripts;
 };
 
