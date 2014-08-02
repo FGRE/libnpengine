@@ -283,7 +283,7 @@ Builtins(MAGIC_UNK119 + 1, nullptr)
     Builtins[MAGIC_DECREMENT] = &NSBInterpreter::Decrement;
     Builtins[MAGIC_LITERAL] = &NSBInterpreter::Literal;
     Builtins[MAGIC_ASSIGN] = &NSBInterpreter::Assign;
-    Builtins[MAGIC_GET] = &NSBInterpreter::Get;
+    Builtins[MAGIC_VARIABLE] = &NSBInterpreter::Get;
     Builtins[MAGIC_SCOPE_BEGIN] = &NSBInterpreter::ScopeBegin;
     Builtins[MAGIC_SCOPE_END] = &NSBInterpreter::ScopeEnd;
     Builtins[MAGIC_RETURN] = &NSBInterpreter::Return;
@@ -853,9 +853,9 @@ void NSBInterpreter::VariableValue()
 void NSBInterpreter::CreateProcess()
 {
     string Handle = PopString();
-    int32_t unk1 = PopInt();
-    int32_t unk2 = PopInt();
-    int32_t unk3 = PopInt();
+    /*int32_t unk1 = */PopInt();
+    /*int32_t unk2 = */PopInt();
+    /*int32_t unk3 = */PopInt();
     string Symbol = PopString();
 
     NSBContext* pThread = new NSBContext(Handle);
