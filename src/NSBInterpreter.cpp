@@ -37,8 +37,7 @@ Variable::Variable() : Literal(true)
 
 Variable::~Variable()
 {
-    if (Tag == STRING)
-        delete Val.Str;
+    Destroy();
 }
 
 void Variable::Initialize(int32_t Int)
@@ -51,6 +50,20 @@ void Variable::Initialize(const string& Str)
 {
     Val.Str = new string(Str);
     Tag = STRING;
+}
+
+void Variable::Initialize(Variable* pVar)
+{
+    if (pVar->IsString())
+        Initialize(pVar->ToString());
+    else
+        Initialize(pVar->ToInt());
+}
+
+void Variable::Destroy()
+{
+    if (Tag == STRING)
+        delete Val.Str;
 }
 
 Variable* Variable::MakeInt(int32_t Int)
@@ -69,9 +82,9 @@ Variable* Variable::MakeString(const string& Str)
 
 Variable* Variable::MakeCopy(Variable* pVar)
 {
-    if (pVar->Tag == STRING)
-        return MakeString(pVar->ToString());
-    return MakeInt(pVar->ToInt());
+    Variable* pNew = new Variable;
+    pNew->Initialize(pVar);
+    return pNew;
 }
 
 int32_t Variable::ToInt()
@@ -104,13 +117,16 @@ bool Variable::IsString()
     return Tag == STRING;
 }
 
+void Variable::Set(Variable* pVar)
+{
+    Destroy();
+    Initialize(pVar);
+}
+
 ArrayVariable* ArrayVariable::MakeCopy(Variable* pVar)
 {
     ArrayVariable* pNew = new ArrayVariable;
-    if (pVar->IsString())
-        pNew->Initialize(pVar->ToString());
-    else
-        pNew->Initialize(pVar->ToInt());
+    pNew->Initialize(pVar);
     Variable::Destroy(pVar);
     return pNew;
 }
@@ -118,6 +134,7 @@ ArrayVariable* ArrayVariable::MakeCopy(Variable* pVar)
 ArrayVariable::ArrayVariable()
 {
     Literal = false;
+    Initialize(0);
 }
 
 ArrayVariable* ArrayVariable::Find(const string& Key)
@@ -490,7 +507,15 @@ void NSBInterpreter::Literal()
 
 void NSBInterpreter::Assign()
 {
-    Assign_(0);
+    if (pContext->GetParam(0) == "__array_variable__")
+    {
+        Variable* pVar = PopVar();
+        Variable* pLit = PopVar();
+        pVar->Set(pLit);
+        Variable::Destroy(pLit);
+    }
+    else
+        Assign_(0);
 }
 
 void NSBInterpreter::Get()
@@ -648,11 +673,7 @@ string NSBInterpreter::GetString(const string& Name)
     if (Name[0] != '$' && Name[0] != '#')
         return Name;
 
-    if (Variable* pVar = GetVar(Name))
-        return pVar->ToString();
-
-    NSB_ERROR("Failed to find string variable", Name);
-    return "";
+    return GetVar(Name)->ToString();
 }
 
 Variable* NSBInterpreter::GetVar(const string& Name)
@@ -672,16 +693,21 @@ Texture* NSBInterpreter::GetTexture(const string& Name)
 
 void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
 {
+    // Variable exists: Copy value
+    if (Variable* pVar2 = GetVar(Name))
+    {
+        pVar2->Set(pVar);
+        return;
+    }
+
+    // Variable doesnt exist: Create it
     Variable* pNew = nullptr;
-
-    if (Variable* pVar = GetVar(Name))
-        delete pVar;
-
+    // Reuse literal as new variable
     if (pVar->Literal)
         pNew = pVar;
+    // Not a literal, so make a copy
     else
         pNew = Variable::MakeCopy(pVar);
-
     pNew->Literal = false;
     CacheHolder<Variable>::Write(Name, pNew);
 }
