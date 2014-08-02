@@ -45,6 +45,8 @@ protected:
 
     void Initialize(int32_t Int);
     void Initialize(const string& Str);
+    void Initialize(Variable* pVar);
+    void Destroy();
 
 public:
     virtual ~Variable();
@@ -57,6 +59,7 @@ public:
     string ToString();
     bool IsInt();
     bool IsString();
+    void Set(Variable* pVar);
 
     Variable* IntUnaryOp(function<int32_t(int32_t)> Func)
     {
