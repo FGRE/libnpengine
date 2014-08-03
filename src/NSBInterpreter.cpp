@@ -338,6 +338,7 @@ Builtins(MAGIC_UNK119 + 1, nullptr)
     Builtins[MAGIC_ARRAY_READ] = &NSBInterpreter::ArrayRead;
     Builtins[MAGIC_ASSOC_ARRAY] = &NSBInterpreter::AssocArray;
     Builtins[MAGIC_GET_MODULE_FILE_NAME] = &NSBInterpreter::GetModuleFileName;
+    Builtins[MAGIC_REQUEST] = &NSBInterpreter::Request;
 }
 
 NSBInterpreter::~NSBInterpreter()
@@ -686,9 +687,9 @@ ArrayVariable* NSBInterpreter::GetArr(const string& Name)
     return dynamic_cast<ArrayVariable*>(GetVar(Name));
 }
 
-Texture* NSBInterpreter::GetTexture(const string& Name)
+Object* NSBInterpreter::GetObject(const string& Name)
 {
-    return CacheHolder<Texture>::Read(Name);
+    return CacheHolder<Object>::Read(Name);
 }
 
 void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
@@ -765,18 +766,18 @@ void NSBInterpreter::CreateTexture()
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
-    CacheHolder<Texture>::Write(Handle, pTexture);
+    CacheHolder<Object>::Write(Handle, pTexture);
 }
 
 void NSBInterpreter::ImageHorizon()
 {
-    Texture* pTexture = GetTexture(PopString());
+    Texture* pTexture = Get<Texture>(PopString());
     PushInt(pTexture->GetWidth());
 }
 
 void NSBInterpreter::ImageVertical()
 {
-    Texture* pTexture = GetTexture(PopString());
+    Texture* pTexture = Get<Texture>(PopString());
     PushInt(pTexture->GetHeight());
 }
 
@@ -814,7 +815,7 @@ void NSBInterpreter::MoveCursor()
 
 void NSBInterpreter::Position()
 {
-    Texture* pTexture = GetTexture(PopString());
+    Texture* pTexture = Get<Texture>(PopString());
     SetInt(PopString(), pTexture->GetX());
     SetInt(PopString(), pTexture->GetY());
 }
@@ -938,4 +939,10 @@ void NSBInterpreter::GetModuleFileName()
 {
     string Name = pContext->GetScriptName();
     PushString(Name.substr(4, Name.size() - 8)); // Remove nss/ and .nsb
+}
+
+void NSBInterpreter::Request()
+{
+    if (Object* pObj = GetObject(PopString()))
+        pObj->Request(PopString());
 }
