@@ -19,8 +19,8 @@
 #define NSB_INTERPRETER_HPP
 
 #include "ResourceMgr.hpp"
+#include "Variable.hpp"
 #include <SDL2/SDL.h>
-#include <cstdint>
 #include <stack>
 #include <deque>
 #include <list>
@@ -30,142 +30,23 @@ using namespace std;
 class Object;
 typedef CacheHolder<Object> ObjectHolder;
 
-class Variable
-{
-protected:
-    enum
-    {
-        INT,
-        STRING
-    } Tag;
-    union
-    {
-        int32_t Int;
-        string* Str;
-    } Val;
-
-    Variable();
-
-    void Initialize(int32_t Int);
-    void Initialize(const string& Str);
-    void Initialize(Variable* pVar);
-    void Destroy();
-
-public:
-    virtual ~Variable();
-
-    static Variable* MakeInt(int32_t Int);
-    static Variable* MakeString(const string& Str);
-    static Variable* MakeCopy(Variable* pVar);
-
-    int32_t ToInt();
-    string ToString();
-    bool IsInt();
-    bool IsString();
-    void Set(Variable* pVar);
-
-    Variable* IntUnaryOp(function<int32_t(int32_t)> Func)
-    {
-        Val.Int = Func(Val.Int);
-        return this;
-    }
-
-    static Variable* Add(Variable* pFirst, Variable* pSecond)
-    {
-        Variable* pThird = nullptr;
-        if (pFirst->Tag == INT && pSecond->Tag == INT)
-            pThird = MakeInt(pFirst->Val.Int + pSecond->Val.Int);
-        if (pFirst->Tag == STRING && pSecond->Tag == STRING)
-            pThird = MakeString(*pFirst->Val.Str + *pSecond->Val.Str);
-        Destroy(pFirst, pSecond);
-        return pThird;
-    };
-
-    static Variable* Equal(Variable* pFirst, Variable* pSecond)
-    {
-        Variable* pThird = nullptr;
-        if (pFirst->Tag == INT && pSecond->Tag == INT)
-            pThird = MakeInt(pFirst->Val.Int == pSecond->Val.Int);
-        else if (pFirst->Tag == STRING && pSecond->Tag == STRING)
-            pThird = MakeInt(*pFirst->Val.Str == *pSecond->Val.Str);
-        Destroy(pFirst, pSecond);
-        return pThird;
-    };
-
-    static void Destroy(Variable* pVar1, Variable* pVar2)
-    {
-        Destroy(pVar1);
-        Destroy(pVar2);
-    }
-
-    static void Destroy(Variable* pVar)
-    {
-        if (pVar->Literal)
-            delete pVar;
-    }
-
-    bool Literal;
-};
-
-class ArrayVariable;
-typedef list<pair<string, ArrayVariable*>> ArrayMembers;
 class ArrayVariable : public Variable
 {
 public:
     ArrayVariable();
-    static ArrayVariable* MakeCopy(Variable* pVar);
+
     ArrayVariable* Find(const string& Key);
     ArrayVariable* Find(int32_t Index);
     void Push(ArrayVariable* pVar);
 
-    ArrayMembers Members;
-};
+    static ArrayVariable* MakeCopy(Variable* pVar);
 
-class ScriptFile;
-class Line;
-class NSBContext
-{
-    struct StackFrame
-    {
-        ScriptFile* pScript;
-        uint32_t SourceLine;
-    };
-public:
-    NSBContext(const string& Name);
-    ~NSBContext();
-
-    bool Call(ScriptFile* pScript, const string& Symbol);
-    void Jump(const string& Symbol);
-    void Break();
-    const string& GetParam(uint32_t Index);
-    int GetNumParams();
-    const string& GetScriptName();
-    ScriptFile* GetScript();
-    Line* GetLine();
-    uint32_t GetMagic();
-    uint32_t Advance();
-    void Return();
-    void PushBreak();
-    void PopBreak();
-    void Wait(int32_t Time, bool Interrupt);
-    void Wake();
-    void TryWake();
-    bool IsStarving();
-    bool IsSleeping();
-
-private:
-    StackFrame* GetFrame();
-
-    const string Name;
-    uint64_t WaitTime;
-    uint64_t WaitStart;
-    bool WaitInterrupt;
-    stack<StackFrame> CallStack;
-    stack<string> BreakStack;
+    list<pair<string, ArrayVariable*>> Members;
 };
 
 class Window;
 class Texture;
+class NSBContext;
 class NSBInterpreter
 {
     typedef void (NSBInterpreter::*BuiltinFunc)();

@@ -50,6 +50,8 @@ add_library(npengine SHARED
     src/NSBInterpreter.cpp
     src/ResourceMgr.cpp
     src/Texture.cpp
+    src/Variable.cpp
+    src/NSBContext.cpp
 )
 
 # install headers and library
