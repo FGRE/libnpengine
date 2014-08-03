@@ -27,6 +27,9 @@
 #include <functional>
 using namespace std;
 
+class Object;
+typedef CacheHolder<Object> ObjectHolder;
+
 class Variable
 {
 protected:
@@ -233,6 +236,7 @@ private:
     void ArrayRead();
     void AssocArray();
     void GetModuleFileName();
+    void Request();
 
     int32_t PopInt();
     string PopString();
@@ -251,7 +255,8 @@ private:
     string GetString(const string& Name);
     Variable* GetVar(const string& Name);
     ArrayVariable* GetArr(const string& Name);
-    Texture* GetTexture(const string& Name);
+    Object* GetObject(const string& Name);
+    template <class T> T* Get(const string& Name);
     void CallFunction_(NSBContext* pThread, const string& Symbol);
     void CallScriptSymbol(const string& Prefix);
     void LoadScript(const string& Filename);
@@ -265,5 +270,10 @@ private:
     vector<ScriptFile*> Scripts;
     list<NSBContext*> Threads;
 };
+
+template <class T> T* NSBInterpreter::Get(const string& Name)
+{
+    return dynamic_cast<T*>(GetObject(Name));
+}
 
 #endif
