@@ -31,6 +31,12 @@ Texture::~Texture()
     glDeleteTextures(1, &GLTextureID);
 }
 
+void Texture::Request(const string& State)
+{
+    if (State == "Smoothing")
+        SetSmoothing(true);
+}
+
 void Texture::LoadFromFile(const string& Filename)
 {
     uint32_t Size;

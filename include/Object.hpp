@@ -15,39 +15,17 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef TEXTURE_HPP
-#define TEXTURE_HPP
+#ifndef OBJECT_HPP
+#define OBJECT_HPP
 
-#include "Object.hpp"
-#include <SDL2/SDL_opengl.h>
+#include <string>
+using namespace std;
 
-class Texture : public Object
+class Object
 {
 public:
-    Texture();
-    virtual ~Texture();
-
-    void Request(const string& State);
-    void LoadFromFile(const string& Filename);
-    void SetPosition(int X, int Y);
-    void Draw();
-    void SetPriority(int Priority);
-    int GetPriority();
-    int GetWidth();
-    int GetHeight();
-    int GetX();
-    int GetY();
-
-private:
-    void SetSmoothing(bool Set);
-    void LoadPNG(uint8_t* pMem, uint32_t Size);
-    void LoadJPEG(uint8_t* pMem, uint32_t Size);
-    void Create(uint8_t* Pixels);
-
-    int Priority;
-    int X, Y;
-    int Width, Height;
-    GLuint GLTextureID;
+    virtual ~Object() {}
+    virtual void Request(const string& State) = 0;
 };
 
 #endif
