@@ -103,9 +103,22 @@ private:
     void AssocArray();
     void GetModuleFileName();
     void Request();
+    void SetVertex();
+    void Zoom();
+    void Move();
+    void ApplyBlur();
+    void DrawToTexture();
+    void CreateRenderTexture();
+    void DrawTransition();
+    void CreateColor();
+    void LoadImage();
+    void Fade();
+    void Delete();
 
     int32_t PopInt();
     string PopString();
+    bool PopBool();
+    uint32_t PopColor();
     Variable* PopVar();
     ArrayVariable* PopArr();
     void PushInt(int32_t Int);
