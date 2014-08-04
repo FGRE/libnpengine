@@ -30,40 +30,6 @@
 
 #define NSB_ERROR(MSG1, MSG2) cout << __PRETTY_FUNCTION__ << ": " << MSG1 << " " << MSG2 << endl;
 
-ArrayVariable* ArrayVariable::MakeCopy(Variable* pVar)
-{
-    ArrayVariable* pNew = new ArrayVariable;
-    pNew->Initialize(pVar);
-    Variable::Destroy(pVar);
-    return pNew;
-}
-
-ArrayVariable::ArrayVariable()
-{
-    Literal = false;
-    Initialize(0);
-}
-
-ArrayVariable* ArrayVariable::Find(const string& Key)
-{
-    for (auto i = Members.begin(); i != Members.end(); ++i)
-        if (i->first == Key)
-            return i->second;
-    return nullptr;
-}
-
-ArrayVariable* ArrayVariable::Find(int32_t Index)
-{
-    auto i = Members.begin();
-    advance(i, Index);
-    return i->second;
-}
-
-void ArrayVariable::Push(ArrayVariable* pVar)
-{
-    Members.push_back(make_pair(string(), pVar));
-}
-
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
 pTest(nullptr),
 pWindow(pWindow),
