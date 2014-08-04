@@ -49,7 +49,7 @@ public:
     void Return();
     void PushBreak();
     void PopBreak();
-    void Wait(int32_t Time, bool Interrupt);
+    void Wait(int32_t Time, bool Interrupt = false);
     void Wake();
     void TryWake();
     bool IsStarving();

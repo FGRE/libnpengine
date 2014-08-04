@@ -21,6 +21,9 @@
 #include "Object.hpp"
 #include <SDL2/SDL_opengl.h>
 
+class MoveEffect;
+class ZoomEffect;
+class FadeEffect;
 class Texture : public Object
 {
 public:
@@ -28,24 +31,38 @@ public:
     virtual ~Texture();
 
     void Request(const string& State);
+    void LoadFromColor(int Width, int Height, uint32_t Color);
     void LoadFromFile(const string& Filename);
+    void Draw(int X, int Y, const string& Filename);
     void SetPosition(int X, int Y);
+    void SetVertex(int X, int Y);
     void Draw();
     void SetPriority(int Priority);
-    int GetPriority();
-    int GetWidth();
-    int GetHeight();
-    int GetX();
-    int GetY();
+    void Move(int32_t Time, int X, int Y);
+    void Zoom(int32_t Time, int X, int Y);
+    void Fade(int32_t Time, int Opacity);
+
+    int GetPriority() { return Priority; }
+    int GetWidth() { return Width; }
+    int GetHeight() { return Height; }
+    int GetX() { return X; }
+    int GetY() { return Y; }
+    int GetOX() { return OX; }
+    int GetOY() { return OY; }
 
 private:
     void SetSmoothing(bool Set);
-    void LoadPNG(uint8_t* pMem, uint32_t Size);
-    void LoadJPEG(uint8_t* pMem, uint32_t Size);
+    uint8_t* LoadPixels(const string& Filename, int& Width, int& Height);
+    uint8_t* LoadPNG(uint8_t* pMem, uint32_t Size, int& Width, int& Height);
+    uint8_t* LoadJPEG(uint8_t* pMem, uint32_t Size, int& Width, int& Height);
     void Create(uint8_t* Pixels);
 
+    MoveEffect* pMove;
+    ZoomEffect* pZoom;
+    FadeEffect* pFade;
     int Priority;
     int X, Y;
+    int OX, OY;
     int Width, Height;
     GLuint GLTextureID;
 };

@@ -15,20 +15,22 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#include "Texture.hpp"
+#include "Effect.hpp"
 #include "ResourceMgr.hpp"
 #include <jpeglib.h>
 #include <png.h>
 #include <new>
 #include <cstring>
 
-Texture::Texture() : X(0), Y(0), Width(0), Height(0), GLTextureID(GL_INVALID_VALUE)
+Texture::Texture() : pMove(nullptr), pZoom(nullptr), pFade(nullptr), X(0), Y(0), OX(0), OY(0), Width(0), Height(0), GLTextureID(GL_INVALID_VALUE)
 {
 }
 
 Texture::~Texture()
 {
     glDeleteTextures(1, &GLTextureID);
+    delete pMove;
+    delete pZoom;
 }
 
 void Texture::Request(const string& State)
@@ -39,17 +41,30 @@ void Texture::Request(const string& State)
 
 void Texture::LoadFromFile(const string& Filename)
 {
-    uint32_t Size;
-    uint8_t* pData = (uint8_t*)sResourceMgr->Read(Filename, Size);
-    if (!pData)
-        return;
+    uint8_t* pPixels = LoadPixels(Filename, Width, Height);
+    Create(pPixels);
+    delete[] pPixels;
+    OX = Width / 2;
+    OY = Height / 2;
+}
 
-    if (Filename.substr(Filename.size() - 3) == "jpg")
-        LoadJPEG(pData, Size);
-    else if (Filename.substr(Filename.size() - 3) == "png")
-        LoadPNG(pData, Size);
+void Texture::LoadFromColor(int Width, int Height, uint32_t Color)
+{
+    this->Width = Width;
+    this->Height = Height;
+    vector<uint32_t> Data(Width * Height, Color);
+    Create((uint8_t*)&Data[0]);
+    OX = Width / 2;
+    OY = Height / 2;
+}
 
-    delete[] pData;
+void Texture::Draw(int X, int Y, const string& Filename)
+{
+    int Width, Height;
+    uint8_t* pPixels = LoadPixels(Filename, Width, Height);
+    glBindTexture(GL_TEXTURE_2D, GLTextureID);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, X, Y, Width, Height, GL_BGRA, GL_UNSIGNED_BYTE, pPixels);
+    delete[] pPixels;
 }
 
 void Texture::SetPosition(int X, int Y)
@@ -58,82 +73,109 @@ void Texture::SetPosition(int X, int Y)
     this->Y = Y;
 }
 
+void Texture::SetVertex(int X, int Y)
+{
+    OX = X;
+    OY = Y;
+}
+
 void Texture::SetPriority(int Priority)
 {
     this->Priority = Priority;
 }
 
-int Texture::GetPriority()
+void Texture::Move(int32_t Time, int X, int Y)
 {
-    return Priority;
+    if (!pMove)
+        pMove = new MoveEffect(X, Y, Time);
+    else
+        pMove->Reset(X, Y, Time);
 }
 
-int Texture::GetWidth()
+void Texture::Zoom(int32_t Time, int X, int Y)
 {
-    return Width;
+    if (!pZoom)
+        pZoom = new ZoomEffect(X, Y, Time);
+    else
+        pZoom->Reset(X, Y, Time);
 }
 
-int Texture::GetHeight()
+void Texture::Fade(int32_t Time, int Opacity)
 {
-    return Height;
-}
-
-int Texture::GetX()
-{
-    return X;
-}
-
-int Texture::GetY()
-{
-    return Y;
+    if (!pFade)
+        pFade = new FadeEffect(Opacity, Time);
+    else
+        pFade->Reset(Opacity, 0, Time);
 }
 
 void Texture::Draw()
 {
-    glBindTexture(GL_TEXTURE_2D, GLTextureID);
+    float ScaleX = 1, ScaleY = 1;
+    int32_t OffsetX = 0, OffsetY = 0;
+    if (pMove) pMove->OnDraw(this, 16);
+    if (pZoom) pZoom->OnDraw(this, 16, OffsetX, OffsetY, ScaleX, ScaleY);
 
+    glBindTexture(GL_TEXTURE_2D, GLTextureID);
     glBegin(GL_QUADS);
         glTexCoord2f(0.0f, 0.0f);
-        glVertex2f(X, Y);
+        glVertex2f(X + OffsetX, Y + OffsetY);
         glTexCoord2f(1.0f, 0.0f);
-        glVertex2f(X + Width, Y);
+        glVertex2f(X + OffsetX + Width * ScaleX, Y + OffsetY);
         glTexCoord2f(1.0f, 1.0f);
-        glVertex2f(X + Width , Y + Height);
+        glVertex2f(X + OffsetX + Width * ScaleX, Y + OffsetY + Height * ScaleY);
         glTexCoord2f(0.0f, 1.0f);
-        glVertex2f(X, Y + Height);
+        glVertex2f(X + OffsetX, Y + OffsetY + Height * ScaleY);
     glEnd();
+
+    if (pFade) pFade->OnDraw(this, 16);
 }
 
-void Texture::LoadPNG(uint8_t* pMem, uint32_t Size)
+uint8_t* Texture::LoadPixels(const string& Filename, int& Width, int& Height)
+{
+    uint32_t Size;
+    uint8_t* pData = (uint8_t*)sResourceMgr->Read(Filename, Size);
+    if (!pData)
+        return nullptr;
+
+    uint8_t* pPixels = nullptr;
+    if (Filename.substr(Filename.size() - 3) == "jpg")
+        pPixels = LoadJPEG(pData, Size, Width, Height);
+    else if (Filename.substr(Filename.size() - 3) == "png")
+        pPixels = LoadPNG(pData, Size, Width, Height);
+
+    delete[] pData;
+    return pPixels;
+}
+
+uint8_t* Texture::LoadPNG(uint8_t* pMem, uint32_t Size, int& Width, int& Height)
 {
     png_image png;
     memset(&png, 0, sizeof(png_image));
     png.version = PNG_IMAGE_VERSION;
 
     if (!png_image_begin_read_from_memory(&png, pMem, Size))
-        return;
+        return nullptr;
 
     uint8_t* pData = new (nothrow) uint8_t[PNG_IMAGE_SIZE(png)];
     if (!pData)
     {
         png_image_free(&png);
-        return;
+        return nullptr;
     }
 
     png.format = PNG_FORMAT_BGRA;
     if (!png_image_finish_read(&png, NULL, pData, 0, NULL))
     {
         delete[] pData;
-        return;
+        return nullptr;
     }
 
     Width = png.width;
     Height = png.height;
-    Create(pData);
-    delete[] pData;
+    return pData;
 }
 
-void Texture::LoadJPEG(uint8_t* pMem, uint32_t Size)
+uint8_t* Texture::LoadJPEG(uint8_t* pMem, uint32_t Size, int& Width, int& Height)
 {
     struct jpeg_decompress_struct jpeg;
     struct jpeg_error_mgr err;
@@ -151,7 +193,7 @@ void Texture::LoadJPEG(uint8_t* pMem, uint32_t Size)
     {
         jpeg_abort_decompress(&jpeg);
         jpeg_destroy_decompress(&jpeg);
-        return;
+        return nullptr;
     }
 
     uint8_t* pRow = new (nothrow) uint8_t[Width * jpeg.output_components];
@@ -160,7 +202,7 @@ void Texture::LoadJPEG(uint8_t* pMem, uint32_t Size)
         delete[] pData;
         jpeg_abort_decompress(&jpeg);
         jpeg_destroy_decompress(&jpeg);
-        return;
+        return nullptr;
     }
 
     uint32_t* pPixel = (uint32_t*)pData;
@@ -171,11 +213,10 @@ void Texture::LoadJPEG(uint8_t* pMem, uint32_t Size)
             *pPixel = 0xFF << 24 | pRow[x * 3] << 16 | pRow[x * 3 + 1] << 8 | pRow[x * 3 + 2];
     }
 
-    Create(pData);
     jpeg_finish_decompress(&jpeg);
     jpeg_destroy_decompress(&jpeg);
-    delete[] pData;
     delete[] pRow;
+    return pData;
 }
 
 void Texture::Create(uint8_t* Pixels)

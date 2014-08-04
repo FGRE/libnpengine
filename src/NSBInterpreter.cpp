@@ -97,6 +97,17 @@ Builtins(MAGIC_UNK119 + 1, nullptr)
     Builtins[MAGIC_ASSOC_ARRAY] = &NSBInterpreter::AssocArray;
     Builtins[MAGIC_GET_MODULE_FILE_NAME] = &NSBInterpreter::GetModuleFileName;
     Builtins[MAGIC_REQUEST] = &NSBInterpreter::Request;
+    Builtins[MAGIC_SET_VERTEX] = &NSBInterpreter::SetVertex;
+    Builtins[MAGIC_ZOOM] = &NSBInterpreter::Zoom;
+    Builtins[MAGIC_MOVE] = &NSBInterpreter::Move;
+    Builtins[MAGIC_APPLY_BLUR] = &NSBInterpreter::ApplyBlur;
+    Builtins[MAGIC_DRAW_TO_TEXTURE] = &NSBInterpreter::DrawToTexture;
+    Builtins[MAGIC_CREATE_RENDER_TEXTURE] = &NSBInterpreter::CreateRenderTexture;
+    Builtins[MAGIC_DRAW_TRANSITION] = &NSBInterpreter::DrawTransition;
+    Builtins[MAGIC_CREATE_COLOR] = &NSBInterpreter::CreateColor;
+    Builtins[MAGIC_LOAD_IMAGE] = &NSBInterpreter::LoadImage;
+    Builtins[MAGIC_FADE] = &NSBInterpreter::Fade;
+    Builtins[MAGIC_DELETE] = &NSBInterpreter::Delete;
 }
 
 NSBInterpreter::~NSBInterpreter()
@@ -354,6 +365,32 @@ string NSBInterpreter::PopString()
     return Val;
 }
 
+bool NSBInterpreter::PopBool()
+{
+    Variable* pVar = PopVar();
+    bool Val = pVar->ToBool();
+    Variable::Destroy(pVar);
+    return Val;
+}
+
+uint32_t NSBInterpreter::PopColor()
+{
+    string ColorStr = PopString();
+    transform(ColorStr.begin(), ColorStr.end(), ColorStr.begin(), ::tolower);
+
+    if (ColorStr[0] == '#')
+        return stoi(ColorStr.c_str() + 1, nullptr, 16);
+    if (ColorStr == "black")
+        return 0;
+    if (ColorStr == "white")
+        return 0xFFFFFF;
+    if (ColorStr == "blue")
+        return 0xFF;
+
+    NSB_ERROR("Failed to transform string to color", ColorStr);
+    return 0;
+}
+
 void NSBInterpreter::PushInt(int32_t Int)
 {
     PushVar(Variable::MakeInt(Int));
@@ -580,7 +617,7 @@ void NSBInterpreter::Position()
 
 void NSBInterpreter::Wait()
 {
-    pContext->Wait(PopInt(), false);
+    pContext->Wait(PopInt());
 }
 
 void NSBInterpreter::WaitKey()
@@ -703,4 +740,146 @@ void NSBInterpreter::Request()
 {
     if (Object* pObj = GetObject(PopString()))
         pObj->Request(PopString());
+}
+
+void NSBInterpreter::SetVertex()
+{
+    Texture* pTexture = Get<Texture>(PopString());
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+
+    if (pTexture)
+        pTexture->SetVertex(X, Y);
+}
+
+void NSBInterpreter::Zoom()
+{
+    Texture* pTexture = Get<Texture>(PopString());
+    int32_t Time = PopInt();
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+    /*string Tempo = */PopString();
+    bool Wait = PopBool();
+
+    if (pTexture)
+        pTexture->Zoom(Time, X, Y);
+
+    if (Wait)
+        pContext->Wait(Time);
+}
+
+void NSBInterpreter::Move()
+{
+    Texture* pTexture = Get<Texture>(PopString());
+    int32_t Time = PopInt();
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+    /*string Tempo = */PopString();
+    bool Wait = PopBool();
+
+    if (pTexture)
+        pTexture->Move(Time, X, Y);
+
+    if (Wait)
+        pContext->Wait(Time);
+}
+
+void NSBInterpreter::ApplyBlur()
+{
+    //if (Texture* pTexture = Get<Texture>(PopString()))
+        //pTexture->ApplyBlur(PopString());
+}
+
+void NSBInterpreter::DrawToTexture()
+{
+    Texture* pTexture = Get<Texture>(PopString());
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+    string Filename = PopString();
+
+    if (pTexture)
+        pTexture->Draw(X, Y, Filename);
+}
+
+void NSBInterpreter::CreateRenderTexture()
+{
+    string Handle = PopString();
+    int32_t Width = PopInt();
+    int32_t Height = PopInt();
+    uint32_t Color = PopColor();
+
+    Texture* pTexture = new Texture;
+    pTexture->LoadFromColor(Width, Height, Color);
+    CacheHolder<Object>::Write(Handle, pTexture);
+}
+
+void NSBInterpreter::DrawTransition()
+{
+    Texture* pTexture = Get<Texture>(PopString());
+    int32_t Time = PopInt();
+    int32_t Start = PopInt();
+    int32_t End = PopInt();
+    /*int32_t unk1 = */PopInt();
+    /*string Tempo = */PopString();
+    string Filename = PopString();
+    bool Wait = PopBool();
+
+    //if (pTexture)
+        //pTexture->DrawTransition(Time, Start, End, Filename);
+
+    if (Wait)
+        pContext->Wait(Time);
+}
+
+void NSBInterpreter::CreateColor()
+{
+    string Handle = PopString();
+    int32_t Priority = PopInt();
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+    int32_t Width = PopInt();
+    int32_t Height = PopInt();
+    uint32_t Color = PopColor();
+
+    Texture* pTexture = new Texture;
+    pTexture->LoadFromColor(Width, Height, Color);
+    pTexture->SetPosition(X, Y);
+    pTexture->SetPriority(Priority);
+
+    pWindow->AddTexture(pTexture);
+    CacheHolder<Object>::Write(Handle, pTexture);
+}
+
+void NSBInterpreter::LoadImage()
+{
+    string Handle = PopString();
+    string Filename = PopString();
+
+    Texture* pTexture = new Texture;
+    pTexture->LoadFromFile(Filename);
+    CacheHolder<Object>::Write(Handle, pTexture);
+}
+
+void NSBInterpreter::Fade()
+{
+    Texture* pTexture = Get<Texture>(PopString());
+    int32_t Time = PopInt();
+    int32_t Opacity = PopInt();
+    /*string Tempo = */PopString();
+    bool Wait = PopBool();
+
+    if (pTexture)
+        pTexture->Fade(Time, Opacity);
+
+    if (Wait)
+        pContext->Wait(Time);
+}
+
+void NSBInterpreter::Delete()
+{
+    if (Texture* pTexture = Get<Texture>(PopString()))
+    {
+        pWindow->RemoveTexture(pTexture);
+        delete pTexture;
+    }
 }
