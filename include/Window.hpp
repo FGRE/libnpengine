@@ -33,6 +33,7 @@ public:
     void Run();
     void Exit();
     void AddTexture(Texture* pTexture);
+    void RemoveTexture(Texture* pTexture);
     void MoveCursor(int32_t X, int32_t Y);
 
     const int WIDTH;

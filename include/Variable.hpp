@@ -53,6 +53,7 @@ public:
 
     int32_t ToInt();
     string ToString();
+    bool ToBool();
     bool IsInt();
     bool IsString();
     void Set(Variable* pVar);
@@ -60,7 +61,6 @@ public:
 
     static Variable* Add(Variable* pFirst, Variable* pSecond);
     static Variable* Equal(Variable* pFirst, Variable* pSecond);
-    static void Destroy(Variable* pVar1, Variable* pVar2);
     static void Destroy(Variable* pVar);
 
     bool Literal;

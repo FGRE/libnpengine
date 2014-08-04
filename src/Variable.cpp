@@ -86,6 +86,13 @@ string Variable::ToString()
     return *Val.Str;
 }
 
+bool Variable::ToBool()
+{
+    if (IsInt())
+        return Val.Int;
+    return *Val.Str == "true";
+}
+
 bool Variable::IsInt()
 {
     return Tag == INT;
@@ -115,9 +122,10 @@ Variable* Variable::Add(Variable* pFirst, Variable* pSecond)
         pThird = MakeInt(pFirst->Val.Int + pSecond->Val.Int);
     if (pFirst->Tag == STRING && pSecond->Tag == STRING)
         pThird = MakeString(*pFirst->Val.Str + *pSecond->Val.Str);
-    Destroy(pFirst, pSecond);
+    Destroy(pFirst);
+    Destroy(pSecond);
     return pThird;
-};
+}
 
 Variable* Variable::Equal(Variable* pFirst, Variable* pSecond)
 {
@@ -126,14 +134,9 @@ Variable* Variable::Equal(Variable* pFirst, Variable* pSecond)
         pThird = MakeInt(pFirst->Val.Int == pSecond->Val.Int);
     else if (pFirst->Tag == STRING && pSecond->Tag == STRING)
         pThird = MakeInt(*pFirst->Val.Str == *pSecond->Val.Str);
-    Destroy(pFirst, pSecond);
+    Destroy(pFirst);
+    Destroy(pSecond);
     return pThird;
-};
-
-void Variable::Destroy(Variable* pVar1, Variable* pVar2)
-{
-    Destroy(pVar1);
-    Destroy(pVar2);
 }
 
 void Variable::Destroy(Variable* pVar)
