@@ -20,7 +20,7 @@
 #include <chrono>
 using namespace std::chrono;
 
-NSBContext::NSBContext(const string& Name) : Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false)
+NSBContext::NSBContext(const string& Name) : Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false), Active(false)
 {
 }
 
@@ -133,4 +133,20 @@ bool NSBContext::IsSleeping()
 {
     uint64_t Now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     return (Now - WaitStart) < WaitTime;
+}
+
+bool NSBContext::IsActive()
+{
+    return Active;
+}
+
+void NSBContext::Start()
+{
+    Active = true;
+}
+
+void NSBContext::Request(const string& State)
+{
+    if (State == "Start")
+        Start();
 }

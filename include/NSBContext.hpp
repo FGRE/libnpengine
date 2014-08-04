@@ -18,14 +18,13 @@
 #ifndef NSB_CONTEXT_HPP
 #define NSB_CONTEXT_HPP
 
+#include "Object.hpp"
 #include <stack>
 #include <cstdint>
-#include <string>
-using namespace std;
 
 class ScriptFile;
 class Line;
-class NSBContext
+class NSBContext : public Object
 {
     struct StackFrame
     {
@@ -54,6 +53,9 @@ public:
     void TryWake();
     bool IsStarving();
     bool IsSleeping();
+    bool IsActive();
+    void Start();
+    void Request(const string& State);
 
 private:
     StackFrame* GetFrame();
@@ -62,6 +64,7 @@ private:
     uint64_t WaitTime;
     uint64_t WaitStart;
     bool WaitInterrupt;
+    bool Active;
     stack<StackFrame> CallStack;
     stack<string> BreakStack;
 };
