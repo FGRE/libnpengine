@@ -121,6 +121,7 @@ void NSBInterpreter::ExecuteLocalNSS(const string& Filename)
     pContext = new NSBContext("__nitroscript_main__");
     pTest = new ScriptFile(Filename, ScriptFile::NSS);
     pContext->Call(pTest, "chapter.main");
+    pContext->Start();
     Threads.push_back(pContext);
 }
 
@@ -139,7 +140,7 @@ void NSBInterpreter::RunCommand()
     {
         pContext = *i;
 
-        while (!pContext->IsStarving() && !pContext->IsSleeping() && pContext->Advance() != MAGIC_CLEAR_PARAMS)
+        while (pContext->IsActive() && !pContext->IsStarving() && !pContext->IsSleeping() && pContext->Advance() != MAGIC_CLEAR_PARAMS)
             if (pContext->GetMagic() < Builtins.size())
                 if (BuiltinFunc pFunc = Builtins[pContext->GetMagic()])
                     (this->*pFunc)();
@@ -683,6 +684,7 @@ void NSBInterpreter::CreateProcess()
     NSBContext* pThread = new NSBContext(Handle);
     CallFunction_(pThread, Symbol);
     Threads.push_back(pThread);
+    CacheHolder<Object>::Write(Handle, pThread);
 }
 
 void NSBInterpreter::Count()
