@@ -414,7 +414,7 @@ void NSBInterpreter::Assign_(int Index)
 
 void NSBInterpreter::IntUnaryOp(function<int32_t(int32_t)> Func)
 {
-    PushVar(PopVar()->IntUnaryOp(Func));
+    Params.back()->IntUnaryOp(Func);
 }
 
 void NSBInterpreter::IntBinaryOp(function<int32_t(int32_t, int32_t)> Func)

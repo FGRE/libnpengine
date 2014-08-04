@@ -38,6 +38,9 @@ protected:
 
     void CompileShader(const char* String)
     {
+        if (!GLEW_ARB_fragment_shader)
+            return;
+
         GLuint Shader = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
         glShaderSourceARB(Shader, 1, &String, NULL);
         glCompileShaderARB(Shader);
