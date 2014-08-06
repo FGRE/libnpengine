@@ -31,6 +31,8 @@ configure_file(${PROJECT_SOURCE_DIR}/include/npengineversion.hpp.in
     ${PROJECT_SOURCE_DIR}/include/npengineversion.hpp)
 
 find_package(NPA REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(JPEG REQUIRED)
 include(FindPkgConfig)
 
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
