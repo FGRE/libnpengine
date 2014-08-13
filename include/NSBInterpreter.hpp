@@ -26,6 +26,45 @@
 #include <functional>
 using namespace std;
 
+class Stack
+{
+public:
+    Stack() : ReadIndex(0), WriteIndex(0)
+    {
+    }
+
+    void Push(Variable* pVar)
+    {
+        if (WriteIndex == Params.size())
+            Params.push_back(pVar);
+        else
+            Params[WriteIndex] = pVar;
+        WriteIndex++;
+    }
+
+    Variable* Pop()
+    {
+        return Params[ReadIndex++];
+    }
+
+    void Begin(size_t Size)
+    {
+        WriteIndex -= Size;
+        ReadIndex = WriteIndex;
+    }
+
+    void Reset()
+    {
+        ReadIndex = WriteIndex = 0;
+        Params.clear();
+    }
+
+private:
+    vector<Variable*> Params;
+    size_t ReadIndex;
+    size_t WriteIndex;
+};
+
 class Object;
 typedef CacheHolder<Object> ObjectHolder;
 
@@ -34,7 +73,13 @@ class Texture;
 class NSBContext;
 class NSBInterpreter
 {
-    typedef void (NSBInterpreter::*BuiltinFunc)();
+    struct NSBFunction
+    {
+        typedef void (NSBInterpreter::*BuiltinFunc)();
+        NSBFunction(BuiltinFunc Func, uint8_t NumParams) : Func(Func), NumParams(NumParams) { }
+        BuiltinFunc Func;
+        uint8_t NumParams;
+    };
 public:
     NSBInterpreter(Window* pWindow);
     virtual ~NSBInterpreter();
@@ -44,7 +89,7 @@ public:
     void Run(int NumCommands);
     void RunCommand();
 
-private:
+protected:
     void FunctionDeclaration();
     void CallFunction();
     void CallScene();
@@ -114,6 +159,7 @@ private:
     void LoadImage();
     void Fade();
     void Delete();
+    void ClearParams();
 
     int32_t PopInt();
     string PopString();
@@ -140,12 +186,13 @@ private:
     void CallScriptSymbol(const string& Prefix);
     void LoadScript(const string& Filename);
     void CallScript(const string& Filename, const string& Symbol);
+    void Call(uint16_t Magic);
 
     ScriptFile* pTest;
     Window* pWindow;
     NSBContext* pContext;
-    vector<BuiltinFunc> Builtins;
-    deque<Variable*> Params;
+    vector<NSBFunction> Builtins;
+    Stack Params;
     vector<ScriptFile*> Scripts;
     list<NSBContext*> Threads;
 };

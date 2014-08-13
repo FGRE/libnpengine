@@ -55,6 +55,7 @@ add_library(npengine SHARED
     src/Variable.cpp
     src/ArrayVariable.cpp
     src/NSBContext.cpp
+    src/GLTexture.cpp
 )
 
 # install headers and library

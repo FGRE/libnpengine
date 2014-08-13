@@ -19,12 +19,14 @@
 #define TEXTURE_HPP
 
 #include "Object.hpp"
-#include <SDL2/SDL_opengl.h>
+#include "GLTexture.hpp"
 
 class MoveEffect;
 class ZoomEffect;
 class FadeEffect;
-class Texture : public Object
+class MaskEffect;
+class BlurEffect;
+class Texture : public Object, public GLTexture
 {
 public:
     Texture();
@@ -41,6 +43,8 @@ public:
     void Move(int32_t Time, int X, int Y);
     void Zoom(int32_t Time, int X, int Y);
     void Fade(int32_t Time, int Opacity);
+    void DrawTransition(int32_t Time, int32_t Start, int32_t End, const string& Filename);
+    void ApplyBlur(const string& Heaviness);
 
     int GetPriority() { return Priority; }
     int GetWidth() { return Width; }
@@ -51,20 +55,14 @@ public:
     int GetOY() { return OY; }
 
 private:
-    void SetSmoothing(bool Set);
-    uint8_t* LoadPixels(const string& Filename, int& Width, int& Height);
-    uint8_t* LoadPNG(uint8_t* pMem, uint32_t Size, int& Width, int& Height);
-    uint8_t* LoadJPEG(uint8_t* pMem, uint32_t Size, int& Width, int& Height);
-    void Create(uint8_t* Pixels);
-
     MoveEffect* pMove;
     ZoomEffect* pZoom;
     FadeEffect* pFade;
+    MaskEffect* pMask;
+    BlurEffect* pBlur;
     int Priority;
     int X, Y;
     int OX, OY;
-    int Width, Height;
-    GLuint GLTextureID;
 };
 
 #endif
