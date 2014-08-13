@@ -15,6 +15,8 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
+#include <GL/glew.h>
+#include <iostream>
 #include "Window.hpp"
 #include "Texture.hpp"
 
@@ -23,6 +25,10 @@ Window::Window(const char* WindowTitle, const int Width, const int Height) : WID
     SDL_Init(SDL_INIT_VIDEO);
     SDLWindow = SDL_CreateWindow(WindowTitle, 0, 0, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
     GLContext = SDL_GL_CreateContext(SDLWindow);
+
+    GLenum err = glewInit();
+    if (err != GLEW_OK)
+        cout << glewGetErrorString(err) << endl;
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glViewport(0, 0, WIDTH, HEIGHT);

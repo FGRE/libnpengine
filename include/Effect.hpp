@@ -19,13 +19,14 @@
 #define EFFECT_HPP
 
 #include <GL/glew.h>
+#include <png.h>
 #include "Texture.hpp"
 
 class Effect
 {
 public:
     Effect() : Program(0) { }
-    ~Effect() { glDeleteProgram(Program); }
+    ~Effect() { glDeleteObjectARB(Program); }
 
 protected:
     int32_t Lerp(int32_t Old, int32_t New, float Progress)
@@ -58,6 +59,7 @@ protected:
 class LerpEffect : public Effect
 {
 public:
+    LerpEffect() { }
     LerpEffect(int32_t StartX, int32_t StartY) : EndX(StartX), EndY(StartY) { }
 
     void Reset(int32_t StartX, int32_t EndX, int32_t StartY, int32_t EndY, int32_t Time)
@@ -135,18 +137,79 @@ public:
 
 class FadeEffect : public LerpEffect
 {
-    const float FadeConvert = 0.255f;
+    const string MaskShader = \
+        "uniform sampler2D Texture;"
+        "uniform float Alpha;"
+        "void main()"
+        "{"
+        "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
+        "   Pixel.a = Alpha;"
+        "   gl_FragColor = Pixel;"
+        "}";
 public:
+    FadeEffect()
+    {
+    }
+
     FadeEffect(int32_t EndOpacity, int32_t Time) : LerpEffect(1000, 0)
     {
+        CompileShader(MaskShader.c_str());
         Reset(EndOpacity, 0, Time);
     }
 
-    void OnDraw(Texture* pTexture, int32_t diff)
+    void OnDraw(int32_t diff)
     {
         int32_t x, y;
         Update(diff, x, y);
-        // TODO
+
+        if (!Program)
+            return;
+
+        glUseProgramObjectARB(Program);
+        glUniform1fARB(glGetUniformLocationARB(Program, "Alpha"), x * 0.001f);
+        glUniform1iARB(glGetUniformLocationARB(Program, "Texture"), 0);
+    }
+};
+
+// TODO: Maybe apply on texture instead of drawing it separately
+class MaskEffect : public FadeEffect, GLTexture
+{
+    const string MaskShader = \
+        "uniform sampler2D Texture;"
+        "uniform float Alpha;"
+        "void main()"
+        "{"
+        "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
+        "   vec4 Black = vec4(0, 0, 0, 1.0f - Pixel.r);"
+        "   gl_FragColor = Black;"
+        "}";
+public:
+    MaskEffect(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time)
+    {
+        CompileShader(MaskShader.c_str());
+        Reset(Filename, StartOpacity, EndOpacity, Time);
+    }
+
+    void Reset(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time)
+    {
+        uint8_t* pPixels = LoadPixels(Filename, Width, Height, PNG_COLOR_TYPE_GRAY);
+        Create(pPixels, GL_LUMINANCE);
+        delete[] pPixels;
+        LerpEffect::Reset(StartOpacity, EndOpacity, 0, 0, Time);
+    }
+
+    void OnDraw(int32_t diff)
+    {
+        FadeEffect::OnDraw(diff);
+        Draw(0, 0, Width, Height);
+    }
+};
+
+class BlurEffect : public Effect
+{
+public:
+    void OnDraw()
+    {
     }
 };
 
