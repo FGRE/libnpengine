@@ -34,80 +34,81 @@ NSBInterpreter::NSBInterpreter(Window* pWindow) :
 pTest(nullptr),
 pWindow(pWindow),
 pContext(nullptr),
-Builtins(MAGIC_UNK119 + 1, nullptr)
+Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
 {
-    Builtins[MAGIC_FUNCTION_DECLARATION] = &NSBInterpreter::FunctionDeclaration;
-    Builtins[MAGIC_CALL_FUNCTION] = &NSBInterpreter::CallFunction;
-    Builtins[MAGIC_CALL_SCENE] = &NSBInterpreter::CallScene;
-    Builtins[MAGIC_CALL_CHAPTER] = &NSBInterpreter::CallChapter;
-    Builtins[MAGIC_CMP_LOGICAL_AND] = &NSBInterpreter::CmpLogicalAnd;
-    Builtins[MAGIC_CMP_LOGICAL_OR] = &NSBInterpreter::CmpLogicalOr;
-    Builtins[MAGIC_LOGICAL_GREATER_EQUAL] = &NSBInterpreter::LogicalGreaterEqual;
-    Builtins[MAGIC_LOGICAL_LESS_EQUAL] = &NSBInterpreter::LogicalLessEqual;
-    Builtins[MAGIC_CMP_GREATER] = &NSBInterpreter::CmpGreater;
-    Builtins[MAGIC_CMP_LESS] = &NSBInterpreter::CmpLess;
-    Builtins[MAGIC_CMP_EQUAL] = &NSBInterpreter::CmpEqual;
-    Builtins[MAGIC_LOGICAL_NOT_EQUAL] = &NSBInterpreter::LogicalNotEqual;
-    Builtins[MAGIC_LOGICAL_NOT] = &NSBInterpreter::LogicalNot;
-    Builtins[MAGIC_ADD_EXPRESSION] = &NSBInterpreter::AddExpression;
-    Builtins[MAGIC_SUB_EXPRESSION] = &NSBInterpreter::SubExpression;
-    Builtins[MAGIC_MUL_EXPRESSION] = &NSBInterpreter::MulExpression;
-    Builtins[MAGIC_DIV_EXPRESSION] = &NSBInterpreter::DivExpression;
-    Builtins[MAGIC_MOD_EXPRESSION] = &NSBInterpreter::ModExpression;
-    Builtins[MAGIC_INCREMENT] = &NSBInterpreter::Increment;
-    Builtins[MAGIC_DECREMENT] = &NSBInterpreter::Decrement;
-    Builtins[MAGIC_LITERAL] = &NSBInterpreter::Literal;
-    Builtins[MAGIC_ASSIGN] = &NSBInterpreter::Assign;
-    Builtins[MAGIC_VARIABLE] = &NSBInterpreter::Get;
-    Builtins[MAGIC_SCOPE_BEGIN] = &NSBInterpreter::ScopeBegin;
-    Builtins[MAGIC_SCOPE_END] = &NSBInterpreter::ScopeEnd;
-    Builtins[MAGIC_RETURN] = &NSBInterpreter::Return;
-    Builtins[MAGIC_END_FUNCTION] = &NSBInterpreter::Return;
-    Builtins[MAGIC_END_SCENE] = &NSBInterpreter::Return;
-    Builtins[MAGIC_END_CHAPTER] = &NSBInterpreter::Return;
-    Builtins[MAGIC_IF] = &NSBInterpreter::If;
-    Builtins[MAGIC_WHILE] = &NSBInterpreter::While;
-    Builtins[MAGIC_WHILE_END] = &NSBInterpreter::WhileEnd;
-    Builtins[MAGIC_SELECT] = &NSBInterpreter::Select;
-    Builtins[MAGIC_BREAK] = &NSBInterpreter::Break;
-    Builtins[MAGIC_JUMP] = &NSBInterpreter::Jump;
-    Builtins[MAGIC_ADD_ASSIGN] = &NSBInterpreter::AddAssign;
-    Builtins[MAGIC_SUB_ASSIGN] = &NSBInterpreter::SubAssign;
-    Builtins[MAGIC_WRITE_FILE] = &NSBInterpreter::WriteFile;
-    Builtins[MAGIC_READ_FILE] = &NSBInterpreter::ReadFile;
-    Builtins[MAGIC_CREATE_TEXTURE] = &NSBInterpreter::CreateTexture;
-    Builtins[MAGIC_IMAGE_HORIZON] = &NSBInterpreter::ImageHorizon;
-    Builtins[MAGIC_IMAGE_VERTICAL] = &NSBInterpreter::ImageVertical;
-    Builtins[MAGIC_TIME] = &NSBInterpreter::Time;
-    Builtins[MAGIC_STR_STR] = &NSBInterpreter::StrStr;
-    Builtins[MAGIC_EXIT] = &NSBInterpreter::Exit;
-    Builtins[MAGIC_CURSOR_POSITION] = &NSBInterpreter::CursorPosition;
-    Builtins[MAGIC_MOVE_CURSOR] = &NSBInterpreter::MoveCursor;
-    Builtins[MAGIC_POSITION] = &NSBInterpreter::Position;
-    Builtins[MAGIC_WAIT] = &NSBInterpreter::Wait;
-    Builtins[MAGIC_WAIT_KEY] = &NSBInterpreter::WaitKey;
-    Builtins[MAGIC_NEGA_EXPRESSION] = &NSBInterpreter::NegaExpression;
-    Builtins[MAGIC_SYSTEM] = &NSBInterpreter::System;
-    Builtins[MAGIC_STRING] = &NSBInterpreter::String;
-    Builtins[MAGIC_VARIABLE_VALUE] = &NSBInterpreter::VariableValue;
-    Builtins[MAGIC_CREATE_PROCESS] = &NSBInterpreter::CreateProcess;
-    Builtins[MAGIC_COUNT] = &NSBInterpreter::Count;
-    Builtins[MAGIC_ARRAY] = &NSBInterpreter::Array;
-    Builtins[MAGIC_ARRAY_READ] = &NSBInterpreter::ArrayRead;
-    Builtins[MAGIC_ASSOC_ARRAY] = &NSBInterpreter::AssocArray;
-    Builtins[MAGIC_GET_MODULE_FILE_NAME] = &NSBInterpreter::GetModuleFileName;
-    Builtins[MAGIC_REQUEST] = &NSBInterpreter::Request;
-    Builtins[MAGIC_SET_VERTEX] = &NSBInterpreter::SetVertex;
-    Builtins[MAGIC_ZOOM] = &NSBInterpreter::Zoom;
-    Builtins[MAGIC_MOVE] = &NSBInterpreter::Move;
-    Builtins[MAGIC_APPLY_BLUR] = &NSBInterpreter::ApplyBlur;
-    Builtins[MAGIC_DRAW_TO_TEXTURE] = &NSBInterpreter::DrawToTexture;
-    Builtins[MAGIC_CREATE_RENDER_TEXTURE] = &NSBInterpreter::CreateRenderTexture;
-    Builtins[MAGIC_DRAW_TRANSITION] = &NSBInterpreter::DrawTransition;
-    Builtins[MAGIC_CREATE_COLOR] = &NSBInterpreter::CreateColor;
-    Builtins[MAGIC_LOAD_IMAGE] = &NSBInterpreter::LoadImage;
-    Builtins[MAGIC_FADE] = &NSBInterpreter::Fade;
-    Builtins[MAGIC_DELETE] = &NSBInterpreter::Delete;
+    Builtins[MAGIC_FUNCTION_DECLARATION] = { &NSBInterpreter::FunctionDeclaration, 0 };
+    Builtins[MAGIC_CALL_FUNCTION] = { &NSBInterpreter::CallFunction, 0 };
+    Builtins[MAGIC_CALL_SCENE] = { &NSBInterpreter::CallScene, 0 };
+    Builtins[MAGIC_CALL_CHAPTER] = { &NSBInterpreter::CallChapter, 0 };
+    Builtins[MAGIC_CMP_LOGICAL_AND] = { &NSBInterpreter::CmpLogicalAnd, 2 };
+    Builtins[MAGIC_CMP_LOGICAL_OR] = { &NSBInterpreter::CmpLogicalOr, 2 };
+    Builtins[MAGIC_LOGICAL_GREATER_EQUAL] = { &NSBInterpreter::LogicalGreaterEqual, 2 };
+    Builtins[MAGIC_LOGICAL_LESS_EQUAL] = { &NSBInterpreter::LogicalLessEqual, 2 };
+    Builtins[MAGIC_CMP_GREATER] = { &NSBInterpreter::CmpGreater, 2 };
+    Builtins[MAGIC_CMP_LESS] = { &NSBInterpreter::CmpLess, 2 };
+    Builtins[MAGIC_CMP_EQUAL] = { &NSBInterpreter::CmpEqual, 2 };
+    Builtins[MAGIC_LOGICAL_NOT_EQUAL] = { &NSBInterpreter::LogicalNotEqual, 2 };
+    Builtins[MAGIC_LOGICAL_NOT] = { &NSBInterpreter::LogicalNot, 1 };
+    Builtins[MAGIC_ADD_EXPRESSION] = { &NSBInterpreter::AddExpression, 2 };
+    Builtins[MAGIC_SUB_EXPRESSION] = { &NSBInterpreter::SubExpression, 2 };
+    Builtins[MAGIC_MUL_EXPRESSION] = { &NSBInterpreter::MulExpression, 2 };
+    Builtins[MAGIC_DIV_EXPRESSION] = { &NSBInterpreter::DivExpression, 2 };
+    Builtins[MAGIC_MOD_EXPRESSION] = { &NSBInterpreter::ModExpression, 2 };
+    Builtins[MAGIC_INCREMENT] = { &NSBInterpreter::Increment, 1 };
+    Builtins[MAGIC_DECREMENT] = { &NSBInterpreter::Decrement, 1 };
+    Builtins[MAGIC_LITERAL] = { &NSBInterpreter::Literal, 0 };
+    Builtins[MAGIC_ASSIGN] = { &NSBInterpreter::Assign, 1 };
+    Builtins[MAGIC_VARIABLE] = { &NSBInterpreter::Get, 0 };
+    Builtins[MAGIC_SCOPE_BEGIN] = { &NSBInterpreter::ScopeBegin, 0 };
+    Builtins[MAGIC_SCOPE_END] = { &NSBInterpreter::ScopeEnd, 0 };
+    Builtins[MAGIC_RETURN] = { &NSBInterpreter::Return, 0 };
+    Builtins[MAGIC_END_FUNCTION] = { &NSBInterpreter::Return, 0 };
+    Builtins[MAGIC_END_SCENE] = { &NSBInterpreter::Return, 0 };
+    Builtins[MAGIC_END_CHAPTER] = { &NSBInterpreter::Return, 0 };
+    Builtins[MAGIC_IF] = { &NSBInterpreter::If, 1 };
+    Builtins[MAGIC_WHILE] = { &NSBInterpreter::While, 1 };
+    Builtins[MAGIC_WHILE_END] = { &NSBInterpreter::WhileEnd, 0 };
+    Builtins[MAGIC_SELECT] = { &NSBInterpreter::Select, 0 };
+    Builtins[MAGIC_BREAK] = { &NSBInterpreter::Break, 0 };
+    Builtins[MAGIC_JUMP] = { &NSBInterpreter::Jump, 0 };
+    Builtins[MAGIC_ADD_ASSIGN] = { &NSBInterpreter::AddAssign, 1 };
+    Builtins[MAGIC_SUB_ASSIGN] = { &NSBInterpreter::SubAssign, 1 };
+    Builtins[MAGIC_WRITE_FILE] = { &NSBInterpreter::WriteFile, 2 };
+    Builtins[MAGIC_READ_FILE] = { &NSBInterpreter::ReadFile, 2 };
+    Builtins[MAGIC_CREATE_TEXTURE] = { &NSBInterpreter::CreateTexture, 5 };
+    Builtins[MAGIC_IMAGE_HORIZON] = { &NSBInterpreter::ImageHorizon, 1 };
+    Builtins[MAGIC_IMAGE_VERTICAL] = { &NSBInterpreter::ImageVertical, 1 };
+    Builtins[MAGIC_TIME] = { &NSBInterpreter::Time, 0 };
+    Builtins[MAGIC_STR_STR] = { &NSBInterpreter::StrStr, 2 };
+    Builtins[MAGIC_EXIT] = { &NSBInterpreter::Exit, 0 };
+    Builtins[MAGIC_CURSOR_POSITION] = { &NSBInterpreter::CursorPosition, 2 };
+    Builtins[MAGIC_MOVE_CURSOR] = { &NSBInterpreter::MoveCursor, 2 };
+    Builtins[MAGIC_POSITION] = { &NSBInterpreter::Position, 2 };
+    Builtins[MAGIC_WAIT] = { &NSBInterpreter::Wait, 1 };
+    Builtins[MAGIC_WAIT_KEY] = { &NSBInterpreter::WaitKey, 1 };
+    Builtins[MAGIC_NEGA_EXPRESSION] = { &NSBInterpreter::NegaExpression, 1 };
+    Builtins[MAGIC_SYSTEM] = { &NSBInterpreter::System, 3 };
+    Builtins[MAGIC_STRING] = { &NSBInterpreter::String, 0 };
+    Builtins[MAGIC_VARIABLE_VALUE] = { &NSBInterpreter::VariableValue, 0 };
+    Builtins[MAGIC_CREATE_PROCESS] = { &NSBInterpreter::CreateProcess, 5 };
+    Builtins[MAGIC_COUNT] = { &NSBInterpreter::Count, 1 };
+    Builtins[MAGIC_ARRAY] = { &NSBInterpreter::Array, 0 };
+    Builtins[MAGIC_ARRAY_READ] = { &NSBInterpreter::ArrayRead, 0 };
+    Builtins[MAGIC_ASSOC_ARRAY] = { &NSBInterpreter::AssocArray, 0 };
+    Builtins[MAGIC_GET_MODULE_FILE_NAME] = { &NSBInterpreter::GetModuleFileName, 1 };
+    Builtins[MAGIC_REQUEST] = { &NSBInterpreter::Request, 2 };
+    Builtins[MAGIC_SET_VERTEX] = { &NSBInterpreter::SetVertex, 3 };
+    Builtins[MAGIC_ZOOM] = { &NSBInterpreter::Zoom, 6 };
+    Builtins[MAGIC_MOVE] = { &NSBInterpreter::Move, 6 };
+    Builtins[MAGIC_APPLY_BLUR] = { &NSBInterpreter::ApplyBlur, 2 };
+    Builtins[MAGIC_DRAW_TO_TEXTURE] = { &NSBInterpreter::DrawToTexture, 4 };
+    Builtins[MAGIC_CREATE_RENDER_TEXTURE] = { &NSBInterpreter::CreateRenderTexture, 4 };
+    Builtins[MAGIC_DRAW_TRANSITION] = { &NSBInterpreter::DrawTransition, 8 };
+    Builtins[MAGIC_CREATE_COLOR] = { &NSBInterpreter::CreateColor, 7 };
+    Builtins[MAGIC_LOAD_IMAGE] = { &NSBInterpreter::LoadImage, 2 };
+    Builtins[MAGIC_FADE] = { &NSBInterpreter::Fade, 5 };
+    Builtins[MAGIC_DELETE] = { &NSBInterpreter::Delete, 1 };
+    Builtins[MAGIC_CLEAR_PARAMS] = { &NSBInterpreter::ClearParams, 0 };
 }
 
 NSBInterpreter::~NSBInterpreter()
@@ -118,6 +119,7 @@ NSBInterpreter::~NSBInterpreter()
 
 void NSBInterpreter::ExecuteLocalNSS(const string& Filename)
 {
+
     pContext = new NSBContext("__nitroscript_main__");
     pTest = new ScriptFile(Filename, ScriptFile::NSS);
     pContext->Call(pTest, "chapter.main");
@@ -142,19 +144,15 @@ void NSBInterpreter::RunCommand()
 
         while (pContext->IsActive() && !pContext->IsStarving() && !pContext->IsSleeping() && pContext->Advance() != MAGIC_CLEAR_PARAMS)
             if (pContext->GetMagic() < Builtins.size())
-                if (BuiltinFunc pFunc = Builtins[pContext->GetMagic()])
-                    (this->*pFunc)();
+                 Call(pContext->GetMagic());
 
+        ClearParams();
         if (pContext->IsStarving())
         {
             delete pContext;
             i = Threads.erase(i);
         }
     }
-
-    // In case not all params were used (e.g. unimplemented builtin)
-    while (!Params.empty())
-        Variable::Destroy(PopVar());
 }
 
 void NSBInterpreter::HandleEvent(SDL_Event Event)
@@ -165,6 +163,7 @@ void NSBInterpreter::HandleEvent(SDL_Event Event)
 
 void NSBInterpreter::FunctionDeclaration()
 {
+    Params.Begin(pContext->GetNumParams() - 1);
     for (int i = 1; i < pContext->GetNumParams(); ++i)
         Assign_(i);
 }
@@ -222,7 +221,7 @@ void NSBInterpreter::CmpEqual()
 void NSBInterpreter::LogicalNotEqual()
 {
     CmpEqual();
-    LogicalNot();
+    Call(MAGIC_LOGICAL_NOT);
 }
 
 void NSBInterpreter::LogicalNot()
@@ -280,6 +279,7 @@ void NSBInterpreter::Assign()
 {
     if (pContext->GetParam(0) == "__array_variable__")
     {
+        Params.Begin(1);
         Variable* pVar = PopVar();
         Variable* pLit = PopVar();
         pVar->Set(pLit);
@@ -340,9 +340,7 @@ void NSBInterpreter::Jump()
 
 Variable* NSBInterpreter::PopVar()
 {
-    Variable* pVar = Params.front();
-    Params.pop_front();
-    return pVar;
+    return Params.Pop();
 }
 
 ArrayVariable* NSBInterpreter::PopArr()
@@ -404,7 +402,7 @@ void NSBInterpreter::PushString(string Str)
 
 void NSBInterpreter::PushVar(Variable* pVar)
 {
-    Params.push_back(pVar);
+    Params.Push(pVar);
 }
 
 void NSBInterpreter::Assign_(int Index)
@@ -414,7 +412,7 @@ void NSBInterpreter::Assign_(int Index)
 
 void NSBInterpreter::IntUnaryOp(function<int32_t(int32_t)> Func)
 {
-    Params.back()->IntUnaryOp(Func);
+    PushVar(PopVar()->IntUnaryOp(Func));
 }
 
 void NSBInterpreter::IntBinaryOp(function<int32_t(int32_t, int32_t)> Func)
@@ -465,11 +463,17 @@ void NSBInterpreter::CallScript(const string& Filename, const string& Symbol)
         pContext->Call(pScript, Symbol);
 }
 
+void NSBInterpreter::Call(uint16_t Magic)
+{
+    Params.Begin(Builtins[Magic].NumParams);
+    if (Builtins[Magic].Func)
+        (this->*Builtins[Magic].Func)();
+}
+
 string NSBInterpreter::GetString(const string& Name)
 {
     if (Name[0] != '$' && Name[0] != '#')
         return Name;
-
     return GetVar(Name)->ToString();
 }
 
@@ -516,18 +520,18 @@ void NSBInterpreter::SetInt(const string& Name, int32_t Val)
 
 void NSBInterpreter::AddAssign()
 {
-    Get();
-    AddExpression();
-    Assign();
+    Variable* pVar = GetVar(pContext->GetParam(0));
+    Variable* pNew = Variable::Add(pVar, PopVar());
+    pVar->Set(pNew);
+    Variable::Destroy(pNew);
 }
 
 void NSBInterpreter::SubAssign()
 {
-    int32_t Val = PopInt();
-    Get();
-    PushInt(Val);
-    SubExpression();
-    Assign();
+    Variable* pVar = GetVar(pContext->GetParam(0));
+    Variable* pNew = Variable::MakeInt(pVar->ToInt() + PopInt());
+    pVar->Set(pNew);
+    Variable::Destroy(pNew);
 }
 
 void NSBInterpreter::WriteFile()
@@ -648,6 +652,7 @@ void NSBInterpreter::System()
 
 void NSBInterpreter::String()
 {
+    Params.Begin(pContext->GetNumParams());
     boost::format Fmt(PopString());
     for (int i = 1; i < pContext->GetNumParams(); ++i)
     {
@@ -663,6 +668,7 @@ void NSBInterpreter::String()
 
 void NSBInterpreter::VariableValue()
 {
+    Params.Begin(pContext->GetNumParams());
     string Type = PopString();
     string Name = PopString();
     if (pContext->GetNumParams() == 3)
@@ -694,6 +700,7 @@ void NSBInterpreter::Count()
 
 void NSBInterpreter::Array()
 {
+    Params.Begin(pContext->GetNumParams());
     ArrayVariable* pArr = PopArr();
     if (!pArr)
     {
@@ -709,24 +716,22 @@ void NSBInterpreter::ArrayRead()
 {
     ArrayVariable* pArr = GetArr(pContext->GetParam(0));
     int32_t Depth = stoi(pContext->GetParam(1));
-    int32_t Depth2 = Depth;
-    int32_t Iter = Params.size() - Depth;
+    Params.Begin(Depth);
     while (Depth --> 0)
     {
-        Variable* pVar = Params[Iter++];
+        Variable* pVar = PopVar();
         if (pVar->IsInt())
             pArr = pArr->Find(pVar->ToInt());
         else
             pArr = pArr->Find(pVar->ToString());
         Variable::Destroy(pVar);
     }
-    for (int i = 0; i < Depth2; ++i)
-        Params.pop_back();
     PushVar(pArr);
 }
 
 void NSBInterpreter::AssocArray()
 {
+    Params.Begin(pContext->GetNumParams());
     ArrayVariable* pArr = PopArr();
     for (auto i = pArr->Members.begin(); i != pArr->Members.end(); ++i)
         i->first = PopString();
@@ -788,8 +793,8 @@ void NSBInterpreter::Move()
 
 void NSBInterpreter::ApplyBlur()
 {
-    //if (Texture* pTexture = Get<Texture>(PopString()))
-        //pTexture->ApplyBlur(PopString());
+    if (Texture* pTexture = Get<Texture>(PopString()))
+        pTexture->ApplyBlur(PopString());
 }
 
 void NSBInterpreter::DrawToTexture()
@@ -826,8 +831,8 @@ void NSBInterpreter::DrawTransition()
     string Filename = PopString();
     bool Wait = PopBool();
 
-    //if (pTexture)
-        //pTexture->DrawTransition(Time, Start, End, Filename);
+    if (pTexture)
+        pTexture->DrawTransition(Time, Start, End, Filename);
 
     if (Wait)
         pContext->Wait(Time);
@@ -884,4 +889,9 @@ void NSBInterpreter::Delete()
         pWindow->RemoveTexture(pTexture);
         delete pTexture;
     }
+}
+
+void NSBInterpreter::ClearParams()
+{
+    Params.Reset();
 }
