@@ -171,17 +171,18 @@ public:
     }
 };
 
-// TODO: Maybe apply on texture instead of drawing it separately
 class MaskEffect : public FadeEffect, GLTexture
 {
     const string MaskShader = \
         "uniform sampler2D Texture;"
+        "uniform sampler2D Mask;"
         "uniform float Alpha;"
         "void main()"
         "{"
         "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
-        "   vec4 Black = vec4(0, 0, 0, 1.0f - Pixel.r);"
-        "   gl_FragColor = Black;"
+        "   vec4 MaskPixel = texture2D(Mask, gl_TexCoord[0].xy);"
+        "   Pixel.a = clamp(1.0f - MaskPixel.r + Alpha, 0, 1);"
+        "   gl_FragColor = Pixel;"
         "}";
 public:
     MaskEffect(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time)
@@ -196,20 +197,69 @@ public:
         Create(pPixels, GL_LUMINANCE);
         delete[] pPixels;
         LerpEffect::Reset(StartOpacity, EndOpacity, 0, 0, Time);
-    }
 
-    void OnDraw(int32_t diff)
-    {
-        FadeEffect::OnDraw(diff);
-        Draw(0, 0, Width, Height);
+        if (!Program)
+            return;
+
+        glUseProgramObjectARB(Program);
+        glActiveTextureARB(GL_TEXTURE1_ARB);
+        glBindTexture(GL_TEXTURE_2D, GLTextureID);
+        glUniform1iARB(glGetUniformLocationARB(Program, "Mask"), 1);
+        glActiveTextureARB(GL_TEXTURE0_ARB);
     }
 };
 
 class BlurEffect : public Effect
 {
+    const string BlurShader = \
+        "uniform float Sigma;"
+        "uniform sampler2D Texture;"
+        "uniform vec2 Pass;"
+        "uniform float BlurSize;"
+        "const float NumSamples = 4.0f;"
+        "const float PI = 3.14159265f;"
+        "void main()"
+        "{"
+        "   vec3 Gaussian = vec3(1.0f / (sqrt(2.0f * PI) * Sigma), exp(-0.5f / (Sigma * Sigma)), 0.0f);"
+        "   Gaussian.z = Gaussian.y * Gaussian.y;"
+        "   vec4 Average = texture2D(Texture, gl_TexCoord[0].xy) * Gaussian.x;"
+        "   float CoeffSum = Gaussian.x;"
+        "   Gaussian.xy *= Gaussian.yz;"
+        "   for (float i = 1.0f; i <= NumSamples; ++i)"
+        "   {"
+        "       Average += texture2D(Texture, gl_TexCoord[0].xy + i * BlurSize * Pass) * Gaussian.x;"
+        "       Average += texture2D(Texture, gl_TexCoord[0].xy - i * BlurSize * Pass) * Gaussian.x;"
+        "       CoeffSum += 2.0f * Gaussian.x;"
+        "       Gaussian.xy *= Gaussian.yz;"
+        "   }"
+        "   gl_FragColor = Average / CoeffSum;"
+        "}";
 public:
-    void OnDraw()
+    BlurEffect(const string& Heaviness)
     {
+        CompileShader(BlurShader.c_str());
+
+        if (!Program)
+            return;
+
+        glUseProgramObjectARB(Program);
+        glUniform1fARB(glGetUniformLocationARB(Program, "Sigma"), 3.0f); // Guess for SEMIHEAVY
+        glUniform1iARB(glGetUniformLocationARB(Program, "Texture"), 0);
+    }
+
+    void OnDraw(GLTexture* pTexture, float X, float Y, float Width, float Height)
+    {
+        if (!Program)
+            return;
+
+        glUseProgramObjectARB(Program);
+
+        glUniform1fARB(glGetUniformLocationARB(Program, "BlurSize"), 1.0f / Width);
+        glUniform2fARB(glGetUniformLocationARB(Program, "Pass"), 1.0f, 0.0f);
+        pTexture->Draw(X, Y, Width, Height);
+        glUniform1fARB(glGetUniformLocationARB(Program, "BlurSize"), 1.0f / Height);
+        glUniform2fARB(glGetUniformLocationARB(Program, "Pass"), 0.0f, 1.0f);
+        pTexture->Draw(X, Y, Width, Height);
     }
 };
 

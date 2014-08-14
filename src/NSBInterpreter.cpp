@@ -119,7 +119,6 @@ NSBInterpreter::~NSBInterpreter()
 
 void NSBInterpreter::ExecuteLocalNSS(const string& Filename)
 {
-
     pContext = new NSBContext("__nitroscript_main__");
     pTest = new ScriptFile(Filename, ScriptFile::NSS);
     pContext->Call(pTest, "chapter.main");

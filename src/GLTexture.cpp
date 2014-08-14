@@ -139,6 +139,7 @@ uint8_t* GLTexture::LoadJPEG(uint8_t* pMem, uint32_t Size, int& Width, int& Heig
 
 void GLTexture::Create(uint8_t* Pixels, GLenum Format)
 {
+    glDeleteTextures(1, &GLTextureID);
     glGenTextures(1, &GLTextureID);
     glBindTexture(GL_TEXTURE_2D, GLTextureID);
     SetSmoothing(false);
