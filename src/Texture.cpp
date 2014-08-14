@@ -123,7 +123,7 @@ void Texture::DrawTransition(int32_t Time, int32_t Start, int32_t End, const str
 void Texture::ApplyBlur(const string& Heaviness)
 {
     if (!pBlur)
-        pBlur = new BlurEffect;
+        pBlur = new BlurEffect(Heaviness);
 }
 
 void Texture::Draw()
@@ -134,11 +134,11 @@ void Texture::Draw()
     if (pMove) pMove->OnDraw(this, 16);
     if (pZoom) pZoom->OnDraw(this, 16, OffsetX, OffsetY, ScaleX, ScaleY);
     if (pFade) pFade->OnDraw(16);
+    if (pMask) pMask->OnDraw(16);
 
     GLTexture::Draw(X + OffsetX, Y + OffsetY, Width * ScaleX, Height * ScaleY);
 
-    if (pMask) pMask->OnDraw(16);
-    if (pBlur) pBlur->OnDraw();
+    if (pBlur) pBlur->OnDraw(this, X + OffsetX, Y + OffsetY, Width * ScaleX, Height * ScaleY);
 
     if (glUseProgramObjectARB)
         glUseProgramObjectARB(0);
