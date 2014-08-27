@@ -109,6 +109,15 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_FADE] = { &NSBInterpreter::Fade, 5 };
     Builtins[MAGIC_DELETE] = { &NSBInterpreter::Delete, 1 };
     Builtins[MAGIC_CLEAR_PARAMS] = { &NSBInterpreter::ClearParams, 0 };
+    Builtins[MAGIC_SET_LOOP] = { &NSBInterpreter::SetLoop, 2 };
+    Builtins[MAGIC_SET_VOLUME] = { &NSBInterpreter::SetVolume, 4 };
+    Builtins[MAGIC_SET_LOOP_POINT] = { &NSBInterpreter::SetLoopPoint, 3 };
+    Builtins[MAGIC_CREATE_SOUND] = { &NSBInterpreter::CreateSound, 3 };
+    Builtins[MAGIC_REMAIN_TIME] = { &NSBInterpreter::RemainTime, 1 };
+    Builtins[MAGIC_CREATE_MOVIE] = { &NSBInterpreter::CreateMovie, 8 };
+    Builtins[MAGIC_DURATION_TIME] = { &NSBInterpreter::DurationTime, 1 };
+    Builtins[MAGIC_SET_FREQUENCY] = { &NSBInterpreter::SetFrequency, 4 };
+    Builtins[MAGIC_SET_PAN] = { &NSBInterpreter::SetPan, 4 };
 }
 
 NSBInterpreter::~NSBInterpreter()
@@ -893,4 +902,70 @@ void NSBInterpreter::Delete()
 void NSBInterpreter::ClearParams()
 {
     Params.Reset();
+}
+
+void NSBInterpreter::SetLoop()
+{
+    string Handle = PopString();
+    bool Loop = PopBool();
+}
+
+void NSBInterpreter::SetVolume()
+{
+    string Handle = PopString();
+    int32_t Time = PopInt();
+    int32_t Volume = PopInt();
+    string Tempo = PopString();
+}
+
+void NSBInterpreter::SetLoopPoint()
+{
+    string Handle = PopString();
+    int32_t Begin = PopInt();
+    int32_t End = PopInt();
+}
+
+void NSBInterpreter::CreateSound()
+{
+    string Handle = PopString();
+    string Type = PopString();
+    string File = PopString();
+}
+
+void NSBInterpreter::RemainTime()
+{
+    string Handle = PopString();
+}
+
+void NSBInterpreter::CreateMovie()
+{
+    string Handle = PopString();
+    int32_t Priority = PopInt();
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+    bool Loop = PopBool();
+    bool Alpha = PopBool();
+    string File = PopString();
+    bool Audio = PopBool();
+}
+
+void NSBInterpreter::DurationTime()
+{
+    string Handle = PopString();
+}
+
+void NSBInterpreter::SetFrequency()
+{
+    string Handle = PopString();
+    int32_t Time = PopInt();
+    int32_t Frequency = PopInt();
+    string Tempo = PopString();
+}
+
+void NSBInterpreter::SetPan()
+{
+    string Handle = PopString();
+    int32_t Time = PopInt();
+    int32_t Pan = PopInt();
+    string Tempo = PopString();
 }

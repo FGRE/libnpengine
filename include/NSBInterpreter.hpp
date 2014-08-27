@@ -160,6 +160,15 @@ protected:
     void Fade();
     void Delete();
     void ClearParams();
+    void SetLoop();
+    void SetVolume();
+    void SetLoopPoint();
+    void CreateSound();
+    void RemainTime();
+    void CreateMovie();
+    void DurationTime();
+    void SetFrequency();
+    void SetPan();
 
     int32_t PopInt();
     string PopString();
