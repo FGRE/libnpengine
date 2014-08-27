@@ -173,6 +173,7 @@ public:
 
 class MaskEffect : public FadeEffect, GLTexture
 {
+    // TODO: This shader is incorrect
     const string MaskShader = \
         "uniform sampler2D Texture;"
         "uniform sampler2D Mask;"
@@ -257,6 +258,7 @@ public:
         glUniform1fARB(glGetUniformLocationARB(Program, "BlurSize"), 1.0f / Width);
         glUniform2fARB(glGetUniformLocationARB(Program, "Pass"), 1.0f, 0.0f);
         pTexture->Draw(X, Y, Width, Height);
+        // TODO: Multipass doesn't work
         glUniform1fARB(glGetUniformLocationARB(Program, "BlurSize"), 1.0f / Height);
         glUniform2fARB(glGetUniformLocationARB(Program, "Pass"), 0.0f, 1.0f);
         pTexture->Draw(X, Y, Width, Height);
