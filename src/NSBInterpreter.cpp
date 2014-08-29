@@ -19,6 +19,7 @@
 #include "NSBContext.hpp"
 #include "Texture.hpp"
 #include "Window.hpp"
+#include "Movie.hpp"
 #include "nsbmagic.hpp"
 #include "scriptfile.hpp"
 #include "npafile.hpp"
@@ -30,12 +31,16 @@
 
 #define NSB_ERROR(MSG1, MSG2) cout << __PRETTY_FUNCTION__ << ": " << MSG1 << " " << MSG2 << endl;
 
+extern "C" { void gst_init(int* argc, char** argv[]); }
+
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
 pTest(nullptr),
 pWindow(pWindow),
 pContext(nullptr),
 Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
 {
+    gst_init(nullptr, nullptr);
+
     Builtins[MAGIC_FUNCTION_DECLARATION] = { &NSBInterpreter::FunctionDeclaration, 0 };
     Builtins[MAGIC_CALL_FUNCTION] = { &NSBInterpreter::CallFunction, 0 };
     Builtins[MAGIC_CALL_SCENE] = { &NSBInterpreter::CallScene, 0 };
@@ -892,10 +897,10 @@ void NSBInterpreter::Fade()
 
 void NSBInterpreter::Delete()
 {
-    if (Texture* pTexture = Get<Texture>(PopString()))
+    if (Object* pObj = GetObject(PopString()))
     {
-        pWindow->RemoveTexture(pTexture);
-        delete pTexture;
+        pObj->Delete(pWindow);
+        delete pObj;
     }
 }
 
@@ -906,8 +911,8 @@ void NSBInterpreter::ClearParams()
 
 void NSBInterpreter::SetLoop()
 {
-    string Handle = PopString();
-    bool Loop = PopBool();
+    if (Playable* pPlayable = Get<Playable>(PopString()))
+        pPlayable->SetLoop(PopBool());
 }
 
 void NSBInterpreter::SetVolume()
@@ -916,6 +921,9 @@ void NSBInterpreter::SetVolume()
     int32_t Time = PopInt();
     int32_t Volume = PopInt();
     string Tempo = PopString();
+
+    if (Playable* pPlayable = Get<Playable>(Handle))
+        pPlayable->SetVolume(Volume);
 }
 
 void NSBInterpreter::SetLoopPoint()
@@ -923,35 +931,48 @@ void NSBInterpreter::SetLoopPoint()
     string Handle = PopString();
     int32_t Begin = PopInt();
     int32_t End = PopInt();
+
+    if (Playable* pPlayable = Get<Playable>(Handle))
+        pPlayable->SetLoopPoint(Begin, End);
 }
 
 void NSBInterpreter::CreateSound()
 {
     string Handle = PopString();
-    string Type = PopString();
+    /*string Type = */PopString();
     string File = PopString();
+
+    Resource Res = sResourceMgr->GetResource(File);
+    if (Res.IsValid())
+        CacheHolder<Object>::Write(Handle, new Playable(Res));
 }
 
 void NSBInterpreter::RemainTime()
 {
-    string Handle = PopString();
+    if (Playable* pPlayable = Get<Playable>(PopString()))
+        PushInt(pPlayable->RemainTime());
 }
 
 void NSBInterpreter::CreateMovie()
 {
     string Handle = PopString();
     int32_t Priority = PopInt();
-    int32_t X = PopInt();
-    int32_t Y = PopInt();
+    /*int32_t X = */PopInt();
+    /*int32_t Y = */PopInt();
     bool Loop = PopBool();
     bool Alpha = PopBool();
     string File = PopString();
     bool Audio = PopBool();
+
+    Movie* pMovie = new Movie(File, pWindow, Priority, Alpha, Audio);
+    pMovie->SetLoop(Loop);
+    CacheHolder<Object>::Write(Handle, pMovie);
 }
 
 void NSBInterpreter::DurationTime()
 {
-    string Handle = PopString();
+    if (Playable* pPlayable = Get<Playable>(PopString()))
+        PushInt(pPlayable->DurationTime());
 }
 
 void NSBInterpreter::SetFrequency()

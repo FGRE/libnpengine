@@ -17,7 +17,13 @@
  * */
 #include "ResourceMgr.hpp"
 #include "scriptfile.hpp"
+#include <glib.h>
 #include <memory>
+
+char* Resource::ReadData(uint32_t Offset, uint32_t Size)
+{
+    return pArchive->ReadData(File, Offset, Size, g_malloc);
+}
 
 ResourceMgr* sResourceMgr;
 
@@ -29,6 +35,18 @@ ResourceMgr::~ResourceMgr()
 {
     for_each(Archives.begin(), Archives.end(), default_delete<INpaFile>());
     CacheHolder<ScriptFile>::Clear();
+}
+
+Resource ResourceMgr::GetResource(string Path)
+{
+    std::transform(Path.begin(), Path.end(), Path.begin(), ::tolower);
+    for (uint32_t i = 0; i < Archives.size(); ++i)
+    {
+        auto File = Archives[i]->FindFile(Path);
+        if (File != Archives[i]->End())
+            return Resource(Archives[i], File);
+    }
+    return Resource(nullptr, Archives[0]->End());
 }
 
 char* ResourceMgr::Read(string Path, uint32_t& Size)

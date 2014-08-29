@@ -58,12 +58,27 @@ struct CacheHolder
 
 template <class T> map<string, T*> CacheHolder<T>::Cache;
 
+class Resource
+{
+public:
+    Resource(INpaFile* pArchive, INpaFile::NpaIterator File) : pArchive(pArchive), File(File) { }
+
+    bool IsValid() { return pArchive != nullptr; }
+    uint32_t GetSize() { return pArchive->GetFileSize(File); }
+    char* ReadData(uint32_t Offset, uint32_t Size);
+
+private:
+    INpaFile* pArchive;
+    INpaFile::NpaIterator File;
+};
+
 class ResourceMgr
 {
 public:
     ResourceMgr();
     virtual ~ResourceMgr();
 
+    virtual Resource GetResource(string Path);
     virtual char* Read(string Path, uint32_t& Size);
     ScriptFile* GetScriptFile(const string& Path);
 

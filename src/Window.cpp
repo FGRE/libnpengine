@@ -107,3 +107,12 @@ void Window::MoveCursor(int32_t X, int32_t Y)
 {
     SDL_WarpMouseInWindow(SDLWindow, X, Y);
 }
+
+X11::SDL_SysWMinfo Window::GetWindowInfo()
+{
+    X11::SDL_SysWMinfo Info;
+    SDL_VERSION(&Info.version);
+    if (!X11::SDL_GetWindowWMInfo(SDLWindow, &Info) || Info.subsystem != X11::SDL_SYSWM_X11)
+        cout << "Failed to detect X11!" << endl;
+    return Info;
+}
