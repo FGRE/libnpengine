@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "Effect.hpp"
+#include "Window.hpp"
 #include <vector>
 
 Texture::Texture() :
@@ -35,6 +36,11 @@ Texture::~Texture()
     delete pFade;
     delete pMask;
     delete pBlur;
+}
+
+void Texture::Delete(Window* pWindow)
+{
+    pWindow->RemoveTexture(this);
 }
 
 void Texture::Request(const string& State)
