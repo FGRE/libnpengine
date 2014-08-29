@@ -1,6 +1,6 @@
 /* 
  * libnpengine: Nitroplus script interpreter
- * Copyright (C) 2014 Mislav Blažević <krofnica996@gmail.com>
+ * Copyright (C) 2013-2014 Mislav Blažević <krofnica996@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
@@ -15,19 +15,26 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef OBJECT_HPP
-#define OBJECT_HPP
+#ifndef MOVIE_HPP
+#define MOVIE_HPP
 
-#include <string>
-using namespace std;
+#include "Playable.hpp"
 
-class Window;
-class Object
+class Movie : public Playable
 {
+    friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
 public:
-    virtual ~Object() {}
-    virtual void Request(const string& State) = 0;
-    virtual void Delete(Window* pWindow) { }
+    Movie(const string& FileName, Window* pWindow, int32_t Priority, bool Alpha, bool Audio);
+    ~Movie();
+
+    void Delete(Window* pWindow);
+    int32_t GetPriority() { return Priority; }
+private:
+    void InitVideo(Window* pWindow);
+
+    int32_t Priority;
+    GstElement* VideoBin;
+    unsigned long XWin;
 };
 
 #endif

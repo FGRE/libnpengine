@@ -32,6 +32,7 @@ public:
     Texture();
     virtual ~Texture();
 
+    void Delete(Window* pWindow);
     void Request(const string& State);
     void LoadFromColor(int Width, int Height, uint32_t Color);
     void LoadFromFile(const string& Filename);

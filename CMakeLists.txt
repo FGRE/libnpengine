@@ -33,6 +33,8 @@ configure_file(${PROJECT_SOURCE_DIR}/include/npengineversion.hpp.in
 find_package(NPA REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(JPEG REQUIRED)
+find_package(GLIB REQUIRED)
+find_package(GStreamer REQUIRED)
 include(FindPkgConfig)
 
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
@@ -41,6 +43,9 @@ PKG_SEARCH_MODULE(libpng REQUIRED libpng)
 include_directories(
     ${SDL2_INCLUDE_DIRS}
     ${NPA_INCLUDE_DIR}
+    ${GLIB_INCLUDE_DIRS}
+    ${GSTREAMER_INCLUDE_DIRS}
+    ${GSTREAMER_VIDEO_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/include
 )
 
@@ -56,6 +61,8 @@ add_library(npengine SHARED
     src/ArrayVariable.cpp
     src/NSBContext.cpp
     src/GLTexture.cpp
+    src/Playable.cpp
+    src/Movie.cpp
 )
 
 # install headers and library
