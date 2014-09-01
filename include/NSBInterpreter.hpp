@@ -18,7 +18,7 @@
 #ifndef NSB_INTERPRETER_HPP
 #define NSB_INTERPRETER_HPP
 
-#include "ResourceMgr.hpp"
+#include "Object.hpp"
 #include "ArrayVariable.hpp"
 #include <SDL2/SDL.h>
 #include <stack>
@@ -64,9 +64,6 @@ private:
     size_t ReadIndex;
     size_t WriteIndex;
 };
-
-class Object;
-typedef CacheHolder<Object> ObjectHolder;
 
 class Window;
 class Texture;
@@ -169,6 +166,7 @@ protected:
     void DurationTime();
     void SetFrequency();
     void SetPan();
+    void SetAlias();
 
     int32_t PopInt();
     string PopString();

@@ -31,6 +31,8 @@
 
 #define NSB_ERROR(MSG1, MSG2) cout << __PRETTY_FUNCTION__ << ": " << MSG1 << " " << MSG2 << endl;
 
+map<string, string> ObjectHolder::Aliases;
+
 extern "C" { void gst_init(int* argc, char** argv[]); }
 
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
@@ -123,6 +125,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_DURATION_TIME] = { &NSBInterpreter::DurationTime, 1 };
     Builtins[MAGIC_SET_FREQUENCY] = { &NSBInterpreter::SetFrequency, 4 };
     Builtins[MAGIC_SET_PAN] = { &NSBInterpreter::SetPan, 4 };
+    Builtins[MAGIC_SET_ALIAS] = { &NSBInterpreter::SetAlias, 2 };
 }
 
 NSBInterpreter::~NSBInterpreter()
@@ -502,7 +505,7 @@ ArrayVariable* NSBInterpreter::GetArr(const string& Name)
 
 Object* NSBInterpreter::GetObject(const string& Name)
 {
-    return CacheHolder<Object>::Read(Name);
+    return ObjectHolder::Read(Name);
 }
 
 void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
@@ -579,7 +582,7 @@ void NSBInterpreter::CreateTexture()
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
-    CacheHolder<Object>::Write(Handle, pTexture);
+    ObjectHolder::Write(Handle, pTexture);
 }
 
 void NSBInterpreter::ImageHorizon()
@@ -703,7 +706,7 @@ void NSBInterpreter::CreateProcess()
     NSBContext* pThread = new NSBContext(Handle);
     CallFunction_(pThread, Symbol);
     Threads.push_back(pThread);
-    CacheHolder<Object>::Write(Handle, pThread);
+    ObjectHolder::Write(Handle, pThread);
 }
 
 void NSBInterpreter::Count()
@@ -830,7 +833,7 @@ void NSBInterpreter::CreateRenderTexture()
 
     Texture* pTexture = new Texture;
     pTexture->LoadFromColor(Width, Height, Color);
-    CacheHolder<Object>::Write(Handle, pTexture);
+    ObjectHolder::Write(Handle, pTexture);
 }
 
 void NSBInterpreter::DrawTransition()
@@ -867,7 +870,7 @@ void NSBInterpreter::CreateColor()
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
-    CacheHolder<Object>::Write(Handle, pTexture);
+    ObjectHolder::Write(Handle, pTexture);
 }
 
 void NSBInterpreter::LoadImage()
@@ -877,7 +880,7 @@ void NSBInterpreter::LoadImage()
 
     Texture* pTexture = new Texture;
     pTexture->LoadFromFile(Filename);
-    CacheHolder<Object>::Write(Handle, pTexture);
+    ObjectHolder::Write(Handle, pTexture);
 }
 
 void NSBInterpreter::Fade()
@@ -944,7 +947,7 @@ void NSBInterpreter::CreateSound()
 
     Resource Res = sResourceMgr->GetResource(File);
     if (Res.IsValid())
-        CacheHolder<Object>::Write(Handle, new Playable(Res));
+        ObjectHolder::Write(Handle, new Playable(Res));
 }
 
 void NSBInterpreter::RemainTime()
@@ -966,7 +969,7 @@ void NSBInterpreter::CreateMovie()
 
     Movie* pMovie = new Movie(File, pWindow, Priority, Alpha, Audio);
     pMovie->SetLoop(Loop);
-    CacheHolder<Object>::Write(Handle, pMovie);
+    ObjectHolder::Write(Handle, pMovie);
 }
 
 void NSBInterpreter::DurationTime()
@@ -989,4 +992,10 @@ void NSBInterpreter::SetPan()
     int32_t Time = PopInt();
     int32_t Pan = PopInt();
     string Tempo = PopString();
+}
+
+void NSBInterpreter::SetAlias()
+{
+    string Handle = PopString();
+    ObjectHolder::WriteAlias(Handle, PopString());
 }
