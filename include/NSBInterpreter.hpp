@@ -65,6 +65,8 @@ private:
     size_t WriteIndex;
 };
 
+typedef function<int32_t(int32_t)> PosFunc;
+
 class Window;
 class Texture;
 class NSBContext;
@@ -171,6 +173,7 @@ protected:
     int32_t PopInt();
     string PopString();
     bool PopBool();
+    PosFunc PopPos();
     uint32_t PopColor();
     Variable* PopVar();
     ArrayVariable* PopArr();

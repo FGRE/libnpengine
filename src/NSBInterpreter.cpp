@@ -388,6 +388,48 @@ bool NSBInterpreter::PopBool()
     return Val;
 }
 
+PosFunc NSBInterpreter::PopPos()
+{
+    const int32_t WIDTH = pWindow->WIDTH;
+    const int32_t HEIGHT = pWindow->HEIGHT;
+    static const size_t SPECIAL_POS_NUM = 7;
+    static const PosFunc SpecialPosTable[SPECIAL_POS_NUM] =
+    {
+        [WIDTH] (int32_t x) { return WIDTH / 2 - x / 2; },
+        [HEIGHT] (int32_t y) { return HEIGHT - y; },
+        [HEIGHT] (int32_t y) { return HEIGHT / 2 - y / 2; },
+        [] (int32_t x) { return 0; },
+        [] (int32_t y) { return 0; },
+        [] (int32_t y) { return 0; },
+        [] (int32_t x) { return 0; }
+    };
+    static const string SpecialPos[SPECIAL_POS_NUM] =
+    {
+        "center", "inbottom", "middle",
+        "onleft", "outtop", "intop",
+        "outright"
+    };
+
+    PosFunc Func = nullptr;
+    Variable* pVar = PopVar();
+    if (pVar->IsString())
+    {
+        string Str = pVar->ToString();
+        transform(Str.begin(), Str.end(), Str.begin(), ::tolower);
+        size_t i = -1;
+        while (++i < SPECIAL_POS_NUM)
+            if (Str == SpecialPos[i])
+                Func = SpecialPosTable[i];
+    }
+    else
+    {
+        int32_t Val = pVar->ToInt();
+        Func = [Val] (int32_t) { return Val; };
+    }
+    Variable::Destroy(pVar);
+    return Func;
+}
+
 uint32_t NSBInterpreter::PopColor()
 {
     string ColorStr = PopString();
@@ -572,13 +614,13 @@ void NSBInterpreter::CreateTexture()
 {
     string Handle = PopString();
     int32_t Priority = PopInt();
-    int32_t X = PopInt();
-    int32_t Y = PopInt();
+    PosFunc X = PopPos();
+    PosFunc Y = PopPos();
     string Filename = PopString();
 
     Texture* pTexture = new Texture;
     pTexture->LoadFromFile(Filename);
-    pTexture->SetPosition(X, Y);
+    pTexture->SetPosition(X(pTexture->GetWidth()), Y(pTexture->GetHeight()));
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
