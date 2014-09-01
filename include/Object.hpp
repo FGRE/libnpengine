@@ -18,16 +18,37 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
-#include <string>
-using namespace std;
+#include "ResourceMgr.hpp"
 
 class Window;
 class Object
 {
 public:
     virtual ~Object() {}
-    virtual void Request(const string& State) = 0;
+    virtual void Request(const string& State) { }
     virtual void Delete(Window* pWindow) { }
+};
+
+struct ObjectHolder : private CacheHolder<Object>
+{
+    static Object* Read(const string& Handle)
+    {
+        if (Handle.front() == '@')
+            return CacheHolder::Read(Aliases[Handle.substr(1)]);
+        return CacheHolder::Read(Handle);
+    }
+
+    static void Write(const string& Handle, Object* pObject)
+    {
+        CacheHolder::Write(Handle, pObject);
+    }
+
+    static void WriteAlias(const string& Handle, const string& Alias)
+    {
+        Aliases[Alias] = Handle;
+    }
+
+    static map<string, string> Aliases;
 };
 
 #endif
