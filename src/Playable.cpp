@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "Movie.hpp"
-#include <thread>
 
 void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
 {
