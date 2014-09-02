@@ -18,7 +18,7 @@
 #ifndef NSB_INTERPRETER_HPP
 #define NSB_INTERPRETER_HPP
 
-#include "Object.hpp"
+#include "Name.hpp"
 #include "ArrayVariable.hpp"
 #include <SDL2/SDL.h>
 #include <stack>
@@ -169,6 +169,9 @@ protected:
     void SetFrequency();
     void SetPan();
     void SetAlias();
+    void CreateName();
+    void CreateWindow();
+    void CreateChoice();
 
     int32_t PopInt();
     string PopString();
@@ -205,6 +208,8 @@ protected:
     Stack Params;
     vector<ScriptFile*> Scripts;
     list<NSBContext*> Threads;
+    Holder<Variable> VariableHolder;
+    ObjectHolder_t ObjectHolder;
 };
 
 template <class T> T* NSBInterpreter::Get(const string& Name)

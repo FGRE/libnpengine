@@ -146,9 +146,17 @@ void Playable::Play()
         gst_element_seek_simple(Pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, Begin);
 }
 
-void Playable::SetVolume(int32_t Volume)
+void Playable::SetVolume(int32_t Time, int32_t Volume)
 {
     g_object_set(G_OBJECT(VolumeFilter), "volume", Volume / 1000.0, NULL);
+}
+
+void Playable::SetFrequency(int32_t Time, int32_t Frequency)
+{
+}
+
+void Playable::SetPan(int32_t Time, int32_t Pan)
+{
 }
 
 void Playable::SetLoopPoint(int32_t Begin, int32_t End)
