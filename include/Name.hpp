@@ -15,40 +15,23 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef OBJECT_HPP
-#define OBJECT_HPP
+#ifndef NAME_HPP
+#define NAME_HPP
 
-#include "ResourceMgr.hpp"
+#include "Object.hpp"
 
-class Window;
-class Object
+struct Name : public Object
 {
-public:
-    virtual ~Object() {}
-    virtual void Request(const string& State) { }
-    virtual void Delete(Window* pWindow) { }
+    ObjectHolder_t Members;
 };
 
-struct ObjectHolder_t : private Holder<Object>
+struct Window_t : public Name
 {
-    Object* Read(const string& Handle)
-    {
-        if (Handle.front() == '@')
-            return Holder::Read(Aliases[Handle.substr(1)]);
-        return Holder::Read(Handle);
-    }
+    int32_t X, Y, Width, Height;
+};
 
-    void Write(const string& Handle, Object* pObject)
-    {
-        Holder::Write(Handle, pObject);
-    }
-
-    void WriteAlias(const string& Handle, const string& Alias)
-    {
-        Aliases[Alias] = Handle;
-    }
-
-    map<string, string> Aliases;
+struct Choice : public Name
+{
 };
 
 #endif
