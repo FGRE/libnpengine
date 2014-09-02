@@ -34,7 +34,7 @@ ResourceMgr::ResourceMgr()
 ResourceMgr::~ResourceMgr()
 {
     for_each(Archives.begin(), Archives.end(), default_delete<INpaFile>());
-    CacheHolder<ScriptFile>::Clear();
+    CacheHolder.Clear();
 }
 
 Resource ResourceMgr::GetResource(string Path)
@@ -61,13 +61,13 @@ char* ResourceMgr::Read(string Path, uint32_t& Size)
 
 ScriptFile* ResourceMgr::GetScriptFile(const string& Path)
 {
-    if (ScriptFile* pCache = CacheHolder<ScriptFile>::Read(Path))
+    if (ScriptFile* pCache = CacheHolder.Read(Path))
         return pCache;
 
     ScriptFile* pScript = ReadScriptFile(Path);
     if (!pScript)
         return nullptr;
 
-    CacheHolder<ScriptFile>::Write(Path, pScript);
+    CacheHolder.Write(Path, pScript);
     return pScript;
 }

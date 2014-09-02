@@ -32,15 +32,15 @@ struct MapDeleter
 };
 
 template <class T>
-struct CacheHolder
+struct Holder
 {
-    static void Clear()
+    void Clear()
     {
         for_each(Cache.begin(), Cache.end(), MapDeleter());
         Cache.clear();
     }
 
-    static T* Read(const string& Path)
+    T* Read(const string& Path)
     {
         auto iter = Cache.find(Path);
         if (iter != Cache.end())
@@ -48,15 +48,13 @@ struct CacheHolder
         return nullptr;
     }
 
-    static void Write(const string& Path, T* Data)
+    void Write(const string& Path, T* Data)
     {
         Cache[Path] = Data;
     }
 
-    static map<string, T*> Cache;
+    map<string, T*> Cache;
 };
-
-template <class T> map<string, T*> CacheHolder<T>::Cache;
 
 class Resource
 {
@@ -84,6 +82,7 @@ public:
 
 protected:
     virtual ScriptFile* ReadScriptFile(const string& Path) = 0;
+    Holder<ScriptFile> CacheHolder;
     vector<INpaFile*> Archives;
 };
 

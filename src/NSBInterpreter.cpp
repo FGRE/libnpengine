@@ -30,8 +30,7 @@
 #include <algorithm>
 
 #define NSB_ERROR(MSG1, MSG2) cout << __PRETTY_FUNCTION__ << ": " << MSG1 << " " << MSG2 << endl;
-
-map<string, string> ObjectHolder::Aliases;
+#define NSB_VARARGS 0xFF
 
 extern "C" { void gst_init(int* argc, char** argv[]); }
 
@@ -95,13 +94,13 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_WAIT_KEY] = { &NSBInterpreter::WaitKey, 1 };
     Builtins[MAGIC_NEGA_EXPRESSION] = { &NSBInterpreter::NegaExpression, 1 };
     Builtins[MAGIC_SYSTEM] = { &NSBInterpreter::System, 3 };
-    Builtins[MAGIC_STRING] = { &NSBInterpreter::String, 0 };
-    Builtins[MAGIC_VARIABLE_VALUE] = { &NSBInterpreter::VariableValue, 0 };
+    Builtins[MAGIC_STRING] = { &NSBInterpreter::String, NSB_VARARGS };
+    Builtins[MAGIC_VARIABLE_VALUE] = { &NSBInterpreter::VariableValue, NSB_VARARGS };
     Builtins[MAGIC_CREATE_PROCESS] = { &NSBInterpreter::CreateProcess, 5 };
     Builtins[MAGIC_COUNT] = { &NSBInterpreter::Count, 1 };
-    Builtins[MAGIC_ARRAY] = { &NSBInterpreter::Array, 0 };
+    Builtins[MAGIC_ARRAY] = { &NSBInterpreter::Array, NSB_VARARGS };
     Builtins[MAGIC_ARRAY_READ] = { &NSBInterpreter::ArrayRead, 0 };
-    Builtins[MAGIC_ASSOC_ARRAY] = { &NSBInterpreter::AssocArray, 0 };
+    Builtins[MAGIC_ASSOC_ARRAY] = { &NSBInterpreter::AssocArray, NSB_VARARGS };
     Builtins[MAGIC_GET_MODULE_FILE_NAME] = { &NSBInterpreter::GetModuleFileName, 1 };
     Builtins[MAGIC_REQUEST] = { &NSBInterpreter::Request, 2 };
     Builtins[MAGIC_SET_VERTEX] = { &NSBInterpreter::SetVertex, 3 };
@@ -126,12 +125,15 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_FREQUENCY] = { &NSBInterpreter::SetFrequency, 4 };
     Builtins[MAGIC_SET_PAN] = { &NSBInterpreter::SetPan, 4 };
     Builtins[MAGIC_SET_ALIAS] = { &NSBInterpreter::SetAlias, 2 };
+    Builtins[MAGIC_CREATE_NAME] = { &NSBInterpreter::CreateName, 1 };
+    Builtins[MAGIC_CREATE_WINDOW] = { &NSBInterpreter::CreateWindow, 6 };
+    Builtins[MAGIC_CREATE_CHOICE] = { &NSBInterpreter::CreateChoice, NSB_VARARGS };
 }
 
 NSBInterpreter::~NSBInterpreter()
 {
     delete pTest;
-    CacheHolder<Variable>::Clear();
+    VariableHolder.Clear();
 }
 
 void NSBInterpreter::ExecuteLocalNSS(const string& Filename)
@@ -523,7 +525,9 @@ void NSBInterpreter::CallScript(const string& Filename, const string& Symbol)
 
 void NSBInterpreter::Call(uint16_t Magic)
 {
-    Params.Begin(Builtins[Magic].NumParams);
+    uint8_t NumParams = Builtins[Magic].NumParams;
+    Params.Begin(NumParams == NSB_VARARGS ? pContext->GetNumParams() : NumParams);
+
     if (Builtins[Magic].Func)
         (this->*Builtins[Magic].Func)();
 }
@@ -537,7 +541,7 @@ string NSBInterpreter::GetString(const string& Name)
 
 Variable* NSBInterpreter::GetVar(const string& Name)
 {
-    return CacheHolder<Variable>::Read(Name);
+    return VariableHolder.Read(Name);
 }
 
 ArrayVariable* NSBInterpreter::GetArr(const string& Name)
@@ -547,7 +551,7 @@ ArrayVariable* NSBInterpreter::GetArr(const string& Name)
 
 Object* NSBInterpreter::GetObject(const string& Name)
 {
-    return ObjectHolder::Read(Name);
+    return ObjectHolder.Read(Name);
 }
 
 void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
@@ -568,7 +572,7 @@ void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
     else
         pNew = Variable::MakeCopy(pVar);
     pNew->Literal = false;
-    CacheHolder<Variable>::Write(Name, pNew);
+    VariableHolder.Write(Name, pNew);
 }
 
 void NSBInterpreter::SetInt(const string& Name, int32_t Val)
@@ -624,7 +628,7 @@ void NSBInterpreter::CreateTexture()
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
-    ObjectHolder::Write(Handle, pTexture);
+    ObjectHolder.Write(Handle, pTexture);
 }
 
 void NSBInterpreter::ImageHorizon()
@@ -710,7 +714,6 @@ void NSBInterpreter::System()
 
 void NSBInterpreter::String()
 {
-    Params.Begin(pContext->GetNumParams());
     boost::format Fmt(PopString());
     for (int i = 1; i < pContext->GetNumParams(); ++i)
     {
@@ -726,7 +729,6 @@ void NSBInterpreter::String()
 
 void NSBInterpreter::VariableValue()
 {
-    Params.Begin(pContext->GetNumParams());
     string Type = PopString();
     string Name = PopString();
     if (pContext->GetNumParams() == 3)
@@ -748,7 +750,7 @@ void NSBInterpreter::CreateProcess()
     NSBContext* pThread = new NSBContext(Handle);
     CallFunction_(pThread, Symbol);
     Threads.push_back(pThread);
-    ObjectHolder::Write(Handle, pThread);
+    ObjectHolder.Write(Handle, pThread);
 }
 
 void NSBInterpreter::Count()
@@ -758,12 +760,11 @@ void NSBInterpreter::Count()
 
 void NSBInterpreter::Array()
 {
-    Params.Begin(pContext->GetNumParams());
     ArrayVariable* pArr = PopArr();
     if (!pArr)
     {
         pArr = new ArrayVariable;
-        CacheHolder<Variable>::Write(pContext->GetParam(0), pArr);
+        VariableHolder.Write(pContext->GetParam(0), pArr);
     }
 
     for (int i = 1; i < pContext->GetNumParams(); ++i)
@@ -789,7 +790,6 @@ void NSBInterpreter::ArrayRead()
 
 void NSBInterpreter::AssocArray()
 {
-    Params.Begin(pContext->GetNumParams());
     ArrayVariable* pArr = PopArr();
     for (auto i = pArr->Members.begin(); i != pArr->Members.end(); ++i)
         i->first = PopString();
@@ -875,7 +875,7 @@ void NSBInterpreter::CreateRenderTexture()
 
     Texture* pTexture = new Texture;
     pTexture->LoadFromColor(Width, Height, Color);
-    ObjectHolder::Write(Handle, pTexture);
+    ObjectHolder.Write(Handle, pTexture);
 }
 
 void NSBInterpreter::DrawTransition()
@@ -912,7 +912,7 @@ void NSBInterpreter::CreateColor()
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
-    ObjectHolder::Write(Handle, pTexture);
+    ObjectHolder.Write(Handle, pTexture);
 }
 
 void NSBInterpreter::LoadImage()
@@ -922,7 +922,7 @@ void NSBInterpreter::LoadImage()
 
     Texture* pTexture = new Texture;
     pTexture->LoadFromFile(Filename);
-    ObjectHolder::Write(Handle, pTexture);
+    ObjectHolder.Write(Handle, pTexture);
 }
 
 void NSBInterpreter::Fade()
@@ -968,7 +968,7 @@ void NSBInterpreter::SetVolume()
     string Tempo = PopString();
 
     if (Playable* pPlayable = Get<Playable>(Handle))
-        pPlayable->SetVolume(Volume);
+        pPlayable->SetVolume(Time, Volume);
 }
 
 void NSBInterpreter::SetLoopPoint()
@@ -989,7 +989,7 @@ void NSBInterpreter::CreateSound()
 
     Resource Res = sResourceMgr->GetResource(File);
     if (Res.IsValid())
-        ObjectHolder::Write(Handle, new Playable(Res));
+        ObjectHolder.Write(Handle, new Playable(Res));
 }
 
 void NSBInterpreter::RemainTime()
@@ -1011,7 +1011,7 @@ void NSBInterpreter::CreateMovie()
 
     Movie* pMovie = new Movie(File, pWindow, Priority, Alpha, Audio);
     pMovie->SetLoop(Loop);
-    ObjectHolder::Write(Handle, pMovie);
+    ObjectHolder.Write(Handle, pMovie);
 }
 
 void NSBInterpreter::DurationTime()
@@ -1025,7 +1025,10 @@ void NSBInterpreter::SetFrequency()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Frequency = PopInt();
-    string Tempo = PopString();
+    /*string Tempo = */PopString();
+
+    if (Playable* pPlayable = Get<Playable>(Handle))
+        pPlayable->SetFrequency(Time, Frequency);
 }
 
 void NSBInterpreter::SetPan()
@@ -1033,11 +1036,35 @@ void NSBInterpreter::SetPan()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Pan = PopInt();
-    string Tempo = PopString();
+    /*string Tempo = */PopString();
+
+    if (Playable* pPlayable = Get<Playable>(Handle))
+        pPlayable->SetPan(Time, Pan);
 }
 
 void NSBInterpreter::SetAlias()
 {
     string Handle = PopString();
-    ObjectHolder::WriteAlias(Handle, PopString());
+    ObjectHolder.WriteAlias(Handle, PopString());
+}
+
+void NSBInterpreter::CreateName()
+{
+    ObjectHolder.Write(PopString(), new Name);
+}
+
+void NSBInterpreter::CreateWindow()
+{
+    Window_t* pWindow = new Window_t;
+    pWindow->X = PopInt();
+    pWindow->Y = PopInt();
+    pWindow->Width = PopInt();
+    pWindow->Height = PopInt();
+    /*bool unk = */PopBool();
+    ObjectHolder.Write(PopString(), pWindow);
+}
+
+void NSBInterpreter::CreateChoice()
+{
+    ObjectHolder.Write(PopString(), new Choice);
 }
