@@ -20,17 +20,16 @@
 
 #include "Object.hpp"
 
-struct Name : public Object
+struct Name : Object, ObjectHolder_t
 {
-    ObjectHolder_t Members;
 };
 
-struct Window_t : public Name
+struct Window_t : Name
 {
     int32_t X, Y, Width, Height;
 };
 
-struct Choice : public Name
+struct Choice : Name
 {
 };
 

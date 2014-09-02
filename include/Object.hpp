@@ -33,19 +33,50 @@ struct ObjectHolder_t : private Holder<Object>
 {
     Object* Read(const string& Handle)
     {
-        if (Handle.front() == '@')
-            return Holder::Read(Aliases[Handle.substr(1)]);
-        return Holder::Read(Handle);
+        string Leftover = Handle;
+        string ObjHandle = ExtractObjHandle(Leftover);
+        if (ObjHandle.front() == '@')
+            ObjHandle = Aliases[ObjHandle.substr(1)];
+        if (Leftover.empty())
+            return Holder::Read(ObjHandle);
+        return GetHolder(ObjHandle)->Read(Leftover);
     }
 
     void Write(const string& Handle, Object* pObject)
     {
-        Holder::Write(Handle, pObject);
+        string Leftover = Handle;
+        string ObjHandle = ExtractObjHandle(Leftover);
+        if (Leftover.empty())
+            Holder::Write(ObjHandle, pObject);
+        else
+            GetHolder(ObjHandle)->Write(Leftover, pObject);
     }
 
     void WriteAlias(const string& Handle, const string& Alias)
     {
         Aliases[Alias] = Handle;
+    }
+
+    string ExtractObjHandle(string& Handle)
+    {
+        string ObjHandle;
+        size_t Index = Handle.find('/');
+        if (Index != string::npos)
+        {
+            ObjHandle = Handle.substr(0, Index);
+            Handle = Handle.substr(Index + 1);
+        }
+        else
+        {
+            ObjHandle = Handle;
+            Handle.clear();
+        }
+        return ObjHandle;
+    }
+
+    ObjectHolder_t* GetHolder(const string& Handle)
+    {
+        return dynamic_cast<ObjectHolder_t*>(Holder::Read(Handle));
     }
 
     map<string, string> Aliases;
