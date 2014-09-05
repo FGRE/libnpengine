@@ -631,7 +631,7 @@ void NSBInterpreter::AddAssign()
 void NSBInterpreter::SubAssign()
 {
     Variable* pVar = GetVar(pContext->GetParam(0));
-    Variable* pNew = Variable::MakeInt(pVar->ToInt() + PopInt());
+    Variable* pNew = Variable::MakeInt(pVar->ToInt() - PopInt());
     pVar->Set(pNew);
     Variable::Destroy(pNew);
 }
