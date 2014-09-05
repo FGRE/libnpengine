@@ -342,7 +342,7 @@ void NSBInterpreter::Return()
 
 void NSBInterpreter::If()
 {
-    if (!PopInt())
+    if (!PopBool())
         Jump();
 }
 
