@@ -45,6 +45,7 @@ public:
     Line* GetLine();
     uint32_t GetMagic();
     uint32_t Advance();
+    void Rewind();
     void Return();
     void PushBreak();
     void PopBreak();

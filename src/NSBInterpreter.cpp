@@ -75,6 +75,8 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_WHILE] = { &NSBInterpreter::While, 1 };
     Builtins[MAGIC_WHILE_END] = { &NSBInterpreter::WhileEnd, 0 };
     Builtins[MAGIC_SELECT] = { &NSBInterpreter::Select, 0 };
+    Builtins[MAGIC_SELECT_END] = { &NSBInterpreter::SelectEnd, 0 };
+    Builtins[MAGIC_SELECT_BREAK_END] = { &NSBInterpreter::SelectBreakEnd, 0 };
     Builtins[MAGIC_BREAK] = { &NSBInterpreter::Break, 0 };
     Builtins[MAGIC_JUMP] = { &NSBInterpreter::Jump, 0 };
     Builtins[MAGIC_ADD_ASSIGN] = { &NSBInterpreter::AddAssign, 1 };
@@ -128,6 +130,13 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_CREATE_NAME] = { &NSBInterpreter::CreateName, 1 };
     Builtins[MAGIC_CREATE_WINDOW] = { &NSBInterpreter::CreateWindow, 6 };
     Builtins[MAGIC_CREATE_CHOICE] = { &NSBInterpreter::CreateChoice, NSB_VARARGS };
+    Builtins[MAGIC_CASE] = { &NSBInterpreter::Case, 0 };
+    Builtins[MAGIC_CASE_END] = { &NSBInterpreter::CaseEnd, 0 };
+    Builtins[MAGIC_SET_NEXT_FOCUS] = { &NSBInterpreter::SetNextFocus, 3 };
+
+    pContext = new NSBContext("__nitroscript_main__");
+    pContext->Start();
+    Threads.push_back(pContext);
 }
 
 NSBInterpreter::~NSBInterpreter()
@@ -136,13 +145,14 @@ NSBInterpreter::~NSBInterpreter()
     VariableHolder.Clear();
 }
 
-void NSBInterpreter::ExecuteLocalNSS(const string& Filename)
+void NSBInterpreter::ExecuteLocalScript(const string& Filename)
 {
-    pContext = new NSBContext("__nitroscript_main__");
-    pTest = new ScriptFile(Filename, ScriptFile::NSS);
-    pContext->Call(pTest, "chapter.main");
-    pContext->Start();
-    Threads.push_back(pContext);
+    pContext->Call(new ScriptFile(Filename, ScriptFile::NSS), "chapter.main");
+}
+
+void NSBInterpreter::ExecuteScript(const string& Filename)
+{
+    CallScript(Filename, "chapter.main");
 }
 
 void NSBInterpreter::Run(int NumCommands)
@@ -173,7 +183,12 @@ void NSBInterpreter::RunCommand()
     }
 }
 
-void NSBInterpreter::HandleEvent(SDL_Event Event)
+void NSBInterpreter::PushEvent(const SDL_Event& Event)
+{
+    Events.push(Event);
+}
+
+void NSBInterpreter::HandleEvent(const SDL_Event& Event)
 {
     if (Event.type == SDL_MOUSEBUTTONDOWN)
         pContext->TryWake();
@@ -342,8 +357,33 @@ void NSBInterpreter::WhileEnd()
     pContext->PopBreak();
 }
 
+/*
+ * Select an event for next iteration of event loop. (see: Case)
+ * Valid events are: Mouse Up/Down/Wheel, Arrow Up/Down/Right/Left
+ * */
 void NSBInterpreter::Select()
 {
+    pWindow->Select(true);
+    if (!Events.empty())
+    {
+        Event = Events.front();
+        Events.pop();
+        pContext->PushBreak();
+    }
+    else
+        pContext->Rewind();
+}
+
+void NSBInterpreter::SelectEnd()
+{
+    pContext->PopBreak();
+}
+
+void NSBInterpreter::SelectBreakEnd()
+{
+    SelectEnd();
+    pWindow->Select(false);
+    Events = queue<SDL_Event>();
 }
 
 void NSBInterpreter::Break()
@@ -965,7 +1005,7 @@ void NSBInterpreter::SetVolume()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Volume = PopInt();
-    string Tempo = PopString();
+    /*string Tempo = */PopString();
 
     if (Playable* pPlayable = Get<Playable>(Handle))
         pPlayable->SetVolume(Time, Volume);
@@ -1067,4 +1107,37 @@ void NSBInterpreter::CreateWindow()
 void NSBInterpreter::CreateChoice()
 {
     ObjectHolder.Write(PopString(), new Choice);
+}
+
+/*
+ * Check if selected (see: Select) mouse event satisfies a case.
+ * In practise, this checks if button was clicked, and if so, jumps to
+ * beginning of case code block. Otherwise, jump over the case block.
+ * After the code block is executed, no other cases will be checked.
+ *
+ * NOTE: For unknown reason, MAGIC_CASE's last parameter is label which
+ * points to beginning of the case, even though case code block always
+ * begins on the next line of code.
+ * */
+void NSBInterpreter::Case()
+{
+    bool Choose = false;
+    if (Choice* pChoice = Get<Choice>(pContext->GetParam(0)))
+        Choose = pChoice->IsSelected(Event);
+
+    pContext->Jump(Choose ? pContext->GetParam(2) : pContext->GetParam(1));
+}
+
+void NSBInterpreter::CaseEnd()
+{
+}
+
+void NSBInterpreter::SetNextFocus()
+{
+    Choice* pFirst = Get<Choice>(PopString());
+    Choice* pSecond = Get<Choice>(PopString());
+    string Key = PopString();
+
+    if (pFirst && pSecond)
+        pFirst->SetNextFocus(pSecond, Key);
 }

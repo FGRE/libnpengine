@@ -63,6 +63,7 @@ add_library(npengine SHARED
     src/GLTexture.cpp
     src/Playable.cpp
     src/Movie.cpp
+    src/Choice.cpp
 )
 
 # install headers and library

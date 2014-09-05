@@ -91,6 +91,11 @@ uint32_t NSBContext::Advance()
     return GetMagic();
 }
 
+void NSBContext::Rewind()
+{
+    GetFrame()->SourceLine--;
+}
+
 void NSBContext::Return()
 {
     CallStack.pop();

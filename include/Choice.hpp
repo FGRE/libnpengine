@@ -15,18 +15,42 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef NAME_HPP
-#define NAME_HPP
+#ifndef CHOICE_HPP
+#define CHOICE_HPP
 
-#include "Object.hpp"
+#include "Texture.hpp"
+#include "Name.hpp"
+#include <SDL2/SDL_events.h>
 
-struct Name : Object, ObjectHolder_t
+extern uint32_t SDL_NSB_MOVECURSOR;
+
+class Choice : public Name
 {
-};
+    enum
+    {
+        FOCUS_UP,
+        FOCUS_DOWN,
+        FOCUS_RIGHT,
+        FOCUS_LEFT
+    };
 
-struct Window_t : Name
-{
-    int32_t X, Y, Width, Height;
+public:
+    Choice();
+
+    bool IsSelected(const SDL_Event& Event);
+    void SetNextFocus(Choice* pNext, const string& Key);
+
+private:
+    void Cursor(int x, int y, bool& Flag);
+    void Wheel(int x, int y);
+    void Arrow(SDL_Keycode sym);
+    void ChangeFocus(int Index);
+    int KeyToIndex(const string& Key);
+
+    bool MouseOver;
+    bool ButtonDown;
+    bool ButtonUp;
+    Choice* pNextFocus[4];
 };
 
 #endif
