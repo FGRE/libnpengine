@@ -29,6 +29,7 @@ namespace X11
 }
 
 class Texture;
+class NSBInterpreter;
 class Window
 {
 public:
@@ -37,6 +38,7 @@ public:
 
     void Run();
     void Exit();
+    void Select(bool Enable);
     void AddTexture(Texture* pTexture);
     void RemoveTexture(Texture* pTexture);
     void MoveCursor(int32_t X, int32_t Y);
@@ -48,10 +50,12 @@ protected:
     virtual void HandleEvent(SDL_Event Event);
     virtual void RunInterpreter() = 0;
 
+    NSBInterpreter* pInterpreter;
 private:
     void Draw();
 
     bool IsRunning;
+    bool EventLoop;
     SDL_Window* SDLWindow;
     SDL_GLContext GLContext;
     list<Texture*> Textures;

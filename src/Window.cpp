@@ -17,14 +17,18 @@
  * */
 #include <GL/glew.h>
 #include <iostream>
+#include "NSBInterpreter.hpp"
 #include "Window.hpp"
 #include "Texture.hpp"
 
-Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), IsRunning(true)
+uint32_t SDL_NSB_MOVECURSOR;
+
+Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), pInterpreter(nullptr), IsRunning(true), EventLoop(false)
 {
     SDL_Init(SDL_INIT_VIDEO);
     SDLWindow = SDL_CreateWindow(WindowTitle, 0, 0, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
     GLContext = SDL_GL_CreateContext(SDLWindow);
+    SDL_NSB_MOVECURSOR = SDL_RegisterEvents(1);
 
     GLenum err = glewInit();
     if (err != GLEW_OK)
@@ -66,6 +70,11 @@ void Window::Exit()
     IsRunning = false;
 }
 
+void Window::Select(bool Enable)
+{
+    EventLoop = Enable;
+}
+
 void Window::HandleEvent(SDL_Event Event)
 {
     switch (Event.type)
@@ -74,8 +83,13 @@ void Window::HandleEvent(SDL_Event Event)
         IsRunning = false;
         break;
     default:
+        if (Event.type == SDL_NSB_MOVECURSOR)
+            MoveCursor((int64_t)Event.user.data1, (int64_t)Event.user.data2);
+        else if (EventLoop)
+            pInterpreter->PushEvent(Event);
         break;
     }
+    pInterpreter->HandleEvent(Event);
 }
 
 void Window::Draw()
