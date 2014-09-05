@@ -18,12 +18,13 @@
 #ifndef NSB_INTERPRETER_HPP
 #define NSB_INTERPRETER_HPP
 
-#include "Name.hpp"
+#include "Choice.hpp"
 #include "ArrayVariable.hpp"
 #include <SDL2/SDL.h>
 #include <stack>
 #include <deque>
 #include <functional>
+#include <queue>
 using namespace std;
 
 class Stack
@@ -83,8 +84,11 @@ public:
     NSBInterpreter(Window* pWindow);
     virtual ~NSBInterpreter();
 
-    void ExecuteLocalNSS(const string& Filename);
-    void HandleEvent(SDL_Event Event);
+    void ExecuteLocalScript(const string& Filename);
+    void ExecuteScript(const string& Filename);
+
+    void PushEvent(const SDL_Event& Event);
+    void HandleEvent(const SDL_Event& Event);
     void Run(int NumCommands);
     void RunCommand();
 
@@ -119,6 +123,8 @@ protected:
     void While();
     void WhileEnd();
     void Select();
+    void SelectEnd();
+    void SelectBreakEnd();
     void Break();
     void Jump();
     void AddAssign();
@@ -172,6 +178,9 @@ protected:
     void CreateName();
     void CreateWindow();
     void CreateChoice();
+    void Case();
+    void CaseEnd();
+    void SetNextFocus();
 
     int32_t PopInt();
     string PopString();
@@ -180,6 +189,7 @@ protected:
     uint32_t PopColor();
     Variable* PopVar();
     ArrayVariable* PopArr();
+
     void PushInt(int32_t Int);
     void PushString(string Str);
     void PushVar(Variable* pVar);
@@ -201,6 +211,8 @@ protected:
     void CallScript(const string& Filename, const string& Symbol);
     void Call(uint16_t Magic);
 
+    SDL_Event Event;
+    queue<SDL_Event> Events;
     ScriptFile* pTest;
     Window* pWindow;
     NSBContext* pContext;
