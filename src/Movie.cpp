@@ -17,17 +17,6 @@
  * */
 #include "Movie.hpp"
 #include "Window.hpp"
-#include <gst/video/videooverlay.h>
-
-static GstBusSyncReply CreateWindow(GstBus* bus, GstMessage* msg, gpointer Handle)
-{
-    if (!gst_is_video_overlay_prepare_window_handle_message(msg))
-        return GST_BUS_PASS;
-
-    gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(GST_MESSAGE_SRC(msg)), (guintptr)Handle);
-    gst_message_unref(msg);
-    return GST_BUS_DROP;
-}
 
 Movie::Movie(const string& FileName, Window* pWindow, int32_t Priority, bool Alpha, bool Audio) :
 Playable(FileName),
@@ -65,10 +54,6 @@ void Movie::InitVideo(Window* pWindow)
     }
 
     X11::XSelectInput(WindowInfo.info.x11.display, XWin, NoEventMask);
-
-    GstBus* Bus = gst_pipeline_get_bus(GST_PIPELINE(Pipeline));
-    gst_bus_set_sync_handler(Bus, (GstBusSyncHandler)CreateWindow, (gpointer)XWin, NULL);
-    gst_object_unref(Bus);
 
     VideoBin = gst_bin_new("videobin");
     GstElement* VideoConv = gst_element_factory_make("videoconvert", "vconv");

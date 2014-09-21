@@ -16,6 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "Movie.hpp"
+#include <gst/video/videooverlay.h>
+#include <thread>
+
+GstBusSyncReply SyncHandler(GstBus* bus, GstMessage* msg, gpointer Handle)
+{
+    if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_EOS)
+        thread([Handle](){((Playable*)Handle)->Play();}).detach();
+    else if (gst_is_video_overlay_prepare_window_handle_message(msg))
+        gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(GST_MESSAGE_SRC(msg)), (guintptr)((Movie*)Handle)->XWin);
+    else
+        return GST_BUS_PASS;
+
+    gst_message_unref(msg);
+    return GST_BUS_DROP;
+}
 
 void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
 {
@@ -96,6 +111,11 @@ void Playable::InitPipeline(GstElement* Source)
     g_signal_connect(Decodebin, "pad-added", G_CALLBACK(LinkPad), this);
     gst_bin_add_many(GST_BIN(Pipeline), Source, Decodebin, NULL);
     gst_element_link(Source, Decodebin);
+
+    // Set sync handler
+    GstBus* Bus = gst_pipeline_get_bus(GST_PIPELINE(Pipeline));
+    gst_bus_set_sync_handler(Bus, (GstBusSyncHandler)SyncHandler, this, NULL);
+    gst_object_unref(Bus);
 }
 
 void Playable::InitAudio()
