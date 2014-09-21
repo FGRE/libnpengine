@@ -1054,6 +1054,9 @@ void NSBInterpreter::CreateSound()
     /*string Type = */PopString();
     string File = PopString();
 
+    if (File.substr(File.size() - 4) != ".ogg")
+        File += ".ogg";
+
     Resource Res = sResourceMgr->GetResource(File);
     if (Res.IsValid())
         ObjectHolder.Write(Handle, new Playable(Res));
