@@ -60,7 +60,7 @@ void Window::Run()
             HandleEvent(Event);
 
         Draw();
-        RunInterpreter();
+        pInterpreter->Run(100);
         SDL_Delay(16);
     }
 }

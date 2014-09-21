@@ -43,6 +43,7 @@ public:
     const string& GetScriptName();
     ScriptFile* GetScript();
     Line* GetLine();
+    uint32_t GetLineNumber();
     uint32_t GetMagic();
     uint32_t Advance();
     void Rewind();
