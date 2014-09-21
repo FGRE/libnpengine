@@ -133,6 +133,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_CASE] = { &NSBInterpreter::Case, 0 };
     Builtins[MAGIC_CASE_END] = { &NSBInterpreter::CaseEnd, 0 };
     Builtins[MAGIC_SET_NEXT_FOCUS] = { &NSBInterpreter::SetNextFocus, 3 };
+    Builtins[MAGIC_PASSAGE_TIME] = { &NSBInterpreter::PassageTime, 1 };
 
     pContext = new NSBContext("__nitroscript_main__");
     pContext->Start();
@@ -1158,4 +1159,9 @@ void NSBInterpreter::SetNextFocus()
 
     if (pFirst && pSecond)
         pFirst->SetNextFocus(pSecond, Key);
+}
+
+void NSBInterpreter::PassageTime()
+{
+    PushInt(0);
 }
