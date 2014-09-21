@@ -35,8 +35,6 @@ struct ObjectHolder_t : private Holder<Object>
     {
         string Leftover = Handle;
         string ObjHandle = ExtractObjHandle(Leftover);
-        if (ObjHandle.front() == '@')
-            ObjHandle = Aliases[ObjHandle.substr(1)];
         if (Leftover.empty())
             return Holder::Read(ObjHandle);
         return GetHolder(ObjHandle)->Read(Leftover);
@@ -59,6 +57,7 @@ struct ObjectHolder_t : private Holder<Object>
 
     string ExtractObjHandle(string& Handle)
     {
+        // Name
         string ObjHandle;
         size_t Index = Handle.find('/');
         if (Index != string::npos)
@@ -70,6 +69,12 @@ struct ObjectHolder_t : private Holder<Object>
         {
             ObjHandle = Handle;
             Handle.clear();
+        }
+        // Alias
+        if (ObjHandle.front() == '@')
+        {
+            Handle = Aliases[ObjHandle.substr(1)] + "/" + Handle;
+            ObjHandle = ExtractObjHandle(Handle);
         }
         return ObjHandle;
     }
