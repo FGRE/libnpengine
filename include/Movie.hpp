@@ -23,6 +23,7 @@
 class Movie : public Playable
 {
     friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
+    friend GstBusSyncReply SyncHandler(GstBus* bus, GstMessage* msg, gpointer Handle);
 public:
     Movie(const string& FileName, Window* pWindow, int32_t Priority, bool Alpha, bool Audio);
     ~Movie();
