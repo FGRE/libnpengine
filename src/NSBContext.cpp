@@ -31,9 +31,24 @@ NSBContext::~NSBContext()
 bool NSBContext::Call(ScriptFile* pScript, const string& Symbol)
 {
     uint32_t CodeLine = pScript->GetSymbol(Symbol);
+    // Symbol not found: check includes
     if (CodeLine == NSB_INVALIDE_LINE)
+    {
+        for (const string& i : pScript->GetIncludes())
+        {
+            if (ScriptFile* pInclude = sResourceMgr->GetScriptFile(i))
+            {
+                CodeLine = pInclude->GetSymbol(Symbol);
+                if (CodeLine != NSB_INVALIDE_LINE)
+                {
+                    CallStack.push({pInclude, CodeLine - 1});
+                    return true;
+                }
+            }
+        }
+        // Symbol not found in includes
         return false;
-
+    }
     CallStack.push({pScript, CodeLine - 1});
     return true;
 }
@@ -62,7 +77,7 @@ ScriptFile* NSBContext::GetScript()
 
 Line* NSBContext::GetLine()
 {
-    return GetScript()->GetLine(GetFrame()->SourceLine);
+    return GetScript()->GetLine(GetLineNumber());
 }
 
 const string& NSBContext::GetParam(uint32_t Index)
@@ -73,6 +88,11 @@ const string& NSBContext::GetParam(uint32_t Index)
 int NSBContext::GetNumParams()
 {
     return GetLine()->Params.size();
+}
+
+uint32_t NSBContext::GetLineNumber()
+{
+    return GetFrame()->SourceLine;
 }
 
 uint32_t NSBContext::GetMagic()
