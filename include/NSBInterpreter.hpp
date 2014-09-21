@@ -181,6 +181,7 @@ protected:
     void Case();
     void CaseEnd();
     void SetNextFocus();
+    void PassageTime();
 
     int32_t PopInt();
     string PopString();
