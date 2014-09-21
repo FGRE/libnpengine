@@ -965,15 +965,15 @@ void NSBInterpreter::CreateColor()
 {
     string Handle = PopString();
     int32_t Priority = PopInt();
-    int32_t X = PopInt();
-    int32_t Y = PopInt();
+    PosFunc X = PopPos();
+    PosFunc Y = PopPos();
     int32_t Width = PopInt();
     int32_t Height = PopInt();
     uint32_t Color = PopColor();
 
     Texture* pTexture = new Texture;
     pTexture->LoadFromColor(Width, Height, Color);
-    pTexture->SetPosition(X, Y);
+    pTexture->SetPosition(X(Width), Y(Height));
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
