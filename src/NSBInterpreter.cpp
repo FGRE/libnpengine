@@ -143,7 +143,6 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
 NSBInterpreter::~NSBInterpreter()
 {
     delete pTest;
-    VariableHolder.Clear();
 }
 
 void NSBInterpreter::ExecuteLocalScript(const string& Filename)

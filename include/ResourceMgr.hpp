@@ -34,7 +34,7 @@ struct MapDeleter
 template <class T>
 struct Holder
 {
-    void Clear()
+    ~Holder()
     {
         for_each(Cache.begin(), Cache.end(), MapDeleter());
         Cache.clear();
