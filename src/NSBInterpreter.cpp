@@ -103,7 +103,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_ARRAY] = { &NSBInterpreter::Array, NSB_VARARGS };
     Builtins[MAGIC_ARRAY_READ] = { &NSBInterpreter::ArrayRead, 0 };
     Builtins[MAGIC_ASSOC_ARRAY] = { &NSBInterpreter::AssocArray, NSB_VARARGS };
-    Builtins[MAGIC_GET_MODULE_FILE_NAME] = { &NSBInterpreter::GetModuleFileName, 1 };
+    Builtins[MAGIC_GET_MODULE_FILE_NAME] = { &NSBInterpreter::GetModuleFileName, 0 };
     Builtins[MAGIC_REQUEST] = { &NSBInterpreter::Request, 2 };
     Builtins[MAGIC_SET_VERTEX] = { &NSBInterpreter::SetVertex, 3 };
     Builtins[MAGIC_ZOOM] = { &NSBInterpreter::Zoom, 6 };
@@ -157,6 +157,8 @@ void NSBInterpreter::ExecuteScript(const string& Filename)
 
 void NSBInterpreter::Run(int NumCommands)
 {
+    sResourceMgr->GetScriptFile("nss/0_boot.nsb")->GetLine(626)->Magic = MAGIC_CLEAR_PARAMS;
+    sResourceMgr->GetScriptFile("nss/0_boot.nsb")->GetLine(633)->Magic = MAGIC_CLEAR_PARAMS;
     for (int i = 0; i < NumCommands; ++i)
         RunCommand();
 }
@@ -180,6 +182,7 @@ void NSBInterpreter::RunCommand()
             delete pContext;
             i = Threads.erase(i);
         }
+        break;
     }
 }
 
@@ -218,12 +221,12 @@ void NSBInterpreter::CallChapter()
 
 void NSBInterpreter::CmpLogicalAnd()
 {
-    IntBinaryOp(logical_and<int32_t>());
+    BoolBinaryOp(logical_and<bool>());
 }
 
 void NSBInterpreter::CmpLogicalOr()
 {
-    IntBinaryOp(logical_or<int32_t>());
+    BoolBinaryOp(logical_or<bool>());
 }
 
 void NSBInterpreter::LogicalGreaterEqual()
@@ -259,7 +262,7 @@ void NSBInterpreter::LogicalNotEqual()
 
 void NSBInterpreter::LogicalNot()
 {
-    IntUnaryOp(logical_not<int32_t>());
+    PushVar(Variable::MakeInt(!PopVar()->ToBool()));
 }
 
 void NSBInterpreter::AddExpression()
@@ -303,7 +306,12 @@ void NSBInterpreter::Literal()
     const string& Type = pContext->GetParam(0);
     const string& Val = pContext->GetParam(1);
     if (Type == "STRING")
-        PushString(Val);
+    {
+        if (Variable* pVar = LocalVariableHolder.Read(Val))
+            PushVar(pVar);
+        else
+            PushString(Val);
+    }
     else if (Type == "INT")
         PushInt(stoi(Val));
 }
@@ -315,7 +323,8 @@ void NSBInterpreter::Assign()
         Params.Begin(1);
         Variable* pVar = PopVar();
         Variable* pLit = PopVar();
-        pVar->Set(pLit);
+        if (pVar)
+            pVar->Set(pLit);
         Variable::Destroy(pLit);
     }
     else
@@ -364,6 +373,7 @@ void NSBInterpreter::WhileEnd()
 void NSBInterpreter::Select()
 {
     pWindow->Select(true);
+    pContext->Wait(20);
     if (!Events.empty())
     {
         Event = Events.front();
@@ -376,7 +386,7 @@ void NSBInterpreter::Select()
 
 void NSBInterpreter::SelectEnd()
 {
-    pContext->PopBreak();
+    //pContext->PopBreak();
 }
 
 void NSBInterpreter::SelectBreakEnd()
@@ -398,7 +408,11 @@ void NSBInterpreter::Jump()
 
 Variable* NSBInterpreter::PopVar()
 {
-    return Params.Pop();
+    // TODO: This is a nasty hack (see: ArrayVariable::Find(int32_t))
+    Variable* pVar = Params.Pop();
+    if (!pVar)
+        return Variable::MakeInt(0);
+    return pVar;
 }
 
 ArrayVariable* NSBInterpreter::PopArr()
@@ -425,6 +439,8 @@ string NSBInterpreter::PopString()
 bool NSBInterpreter::PopBool()
 {
     Variable* pVar = PopVar();
+    if (!pVar)
+        return false;
     bool Val = pVar->ToBool();
     Variable::Destroy(pVar);
     return Val;
@@ -507,7 +523,12 @@ void NSBInterpreter::PushVar(Variable* pVar)
 
 void NSBInterpreter::Assign_(int Index)
 {
-    SetVar(pContext->GetParam(Index), PopVar());
+    string Name = pContext->GetParam(Index);
+    Variable* pVar = PopVar();
+    if (Name[0] == '$')
+        SetVar(Name, pVar);
+    else
+        LocalVariableHolder.Write(Name, pVar);
 }
 
 void NSBInterpreter::IntUnaryOp(function<int32_t(int32_t)> Func)
@@ -521,20 +542,16 @@ void NSBInterpreter::IntBinaryOp(function<int32_t(int32_t, int32_t)> Func)
     PushInt(Func(Val, PopInt()));
 }
 
+void NSBInterpreter::BoolBinaryOp(function<bool(bool, bool)> Func)
+{
+    bool Val = PopBool();
+    PushInt(Func(Val, PopBool()));
+}
+
 void NSBInterpreter::CallFunction_(NSBContext* pThread, const string& Symbol)
 {
-    string FuncNameFull = string("function.") + Symbol;
-
-    // Find function locally
-    if (pThread->Call(pContext->GetScript(), FuncNameFull))
-        return;
-
-    // Find function globally
-    for (uint32_t i = 0; i < Scripts.size(); ++i)
-        if (pThread->Call(Scripts[i], FuncNameFull))
-            return;
-
-    NSB_ERROR("Failed to call function", Symbol);
+    if (!pThread->Call(pContext->GetScript(), string("function.") + Symbol))
+        NSB_ERROR("Failed to call function", Symbol);
 }
 
 void NSBInterpreter::CallScriptSymbol(const string& Prefix)
@@ -549,12 +566,6 @@ void NSBInterpreter::CallScriptSymbol(const string& Prefix)
     else
         Symbol = "main";
     CallScript(ScriptName == "@" ? pContext->GetScriptName() : ScriptName, Prefix + Symbol);
-}
-
-void NSBInterpreter::LoadScript(const string& Filename)
-{
-    if (ScriptFile* pScript = sResourceMgr->GetScriptFile(Filename))
-        Scripts.push_back(pScript);
 }
 
 void NSBInterpreter::CallScript(const string& Filename, const string& Symbol)
@@ -623,9 +634,14 @@ void NSBInterpreter::SetInt(const string& Name, int32_t Val)
 void NSBInterpreter::AddAssign()
 {
     Variable* pVar = GetVar(pContext->GetParam(0));
-    Variable* pNew = Variable::Add(pVar, PopVar());
-    pVar->Set(pNew);
-    Variable::Destroy(pNew);
+    if (pVar)
+    {
+        Variable* pNew = Variable::Add(pVar, PopVar());
+        pVar->Set(pNew);
+        Variable::Destroy(pNew);
+    }
+    else
+        SetVar(pContext->GetParam(0), PopVar());
 }
 
 void NSBInterpreter::SubAssign()
@@ -816,7 +832,7 @@ void NSBInterpreter::ArrayRead()
     ArrayVariable* pArr = GetArr(pContext->GetParam(0));
     int32_t Depth = stoi(pContext->GetParam(1));
     Params.Begin(Depth);
-    while (Depth --> 0)
+    while (Depth --> 0 && pArr)
     {
         Variable* pVar = PopVar();
         if (pVar->IsInt())
@@ -982,10 +998,12 @@ void NSBInterpreter::Fade()
 
 void NSBInterpreter::Delete()
 {
-    if (Object* pObj = GetObject(PopString()))
+    string Handle = PopString();
+    if (Object* pObj = GetObject(Handle))
     {
         pObj->Delete(pWindow);
         delete pObj;
+        ObjectHolder.Write(Handle, nullptr);
     }
 }
 
@@ -1110,7 +1128,7 @@ void NSBInterpreter::CreateChoice()
 }
 
 /*
- * Check if selected (see: Select) mouse event satisfies a case.
+ * Check if selected (see: Select) event satisfies a case.
  * In practise, this checks if button was clicked, and if so, jumps to
  * beginning of case code block. Otherwise, jump over the case block.
  * After the code block is executed, no other cases will be checked.
