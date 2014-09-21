@@ -211,6 +211,7 @@ protected:
     void CallScriptSymbol(const string& Prefix);
     void CallScript(const string& Filename, const string& Symbol);
     void Call(uint16_t Magic);
+    bool SelectEvent();
 
     SDL_Event Event;
     queue<SDL_Event> Events;

@@ -373,25 +373,18 @@ void NSBInterpreter::WhileEnd()
 void NSBInterpreter::Select()
 {
     pWindow->Select(true);
-    pContext->Wait(20);
-    if (!Events.empty())
-    {
-        Event = Events.front();
-        Events.pop();
+    if (SelectEvent())
         pContext->PushBreak();
-    }
-    else
-        pContext->Rewind();
 }
 
 void NSBInterpreter::SelectEnd()
 {
-    //pContext->PopBreak();
+    SelectEvent();
 }
 
 void NSBInterpreter::SelectBreakEnd()
 {
-    SelectEnd();
+    pContext->PopBreak();
     pWindow->Select(false);
     Events = queue<SDL_Event>();
 }
@@ -581,6 +574,22 @@ void NSBInterpreter::Call(uint16_t Magic)
 
     if (Builtins[Magic].Func)
         (this->*Builtins[Magic].Func)();
+}
+
+bool NSBInterpreter::SelectEvent()
+{
+    if (!Events.empty())
+    {
+        Event = Events.front();
+        Events.pop();
+        return true;
+    }
+    else
+    {
+        pContext->Rewind();
+        pContext->Wait(20);
+        return false;
+    }
 }
 
 string NSBInterpreter::GetString(const string& Name)
