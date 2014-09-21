@@ -34,7 +34,6 @@ ResourceMgr::ResourceMgr()
 ResourceMgr::~ResourceMgr()
 {
     for_each(Archives.begin(), Archives.end(), default_delete<INpaFile>());
-    CacheHolder.Clear();
 }
 
 Resource ResourceMgr::GetResource(string Path)
