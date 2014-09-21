@@ -197,6 +197,7 @@ protected:
 
     void IntUnaryOp(function<int32_t(int32_t)> Func);
     void IntBinaryOp(function<int32_t(int32_t, int32_t)> Func);
+    void BoolBinaryOp(function<bool(bool, bool)> Func);
 
     void SetInt(const string& Name, int32_t Val);
     void SetVar(const string& Name, Variable* pVar);
@@ -207,7 +208,6 @@ protected:
     template <class T> T* Get(const string& Name);
     void CallFunction_(NSBContext* pThread, const string& Symbol);
     void CallScriptSymbol(const string& Prefix);
-    void LoadScript(const string& Filename);
     void CallScript(const string& Filename, const string& Symbol);
     void Call(uint16_t Magic);
 
@@ -221,6 +221,7 @@ protected:
     vector<ScriptFile*> Scripts;
     list<NSBContext*> Threads;
     Holder<Variable> VariableHolder;
+    Holder<Variable> LocalVariableHolder;
     ObjectHolder_t ObjectHolder;
 };
 

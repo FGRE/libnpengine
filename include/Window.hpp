@@ -47,8 +47,7 @@ public:
     const int WIDTH;
     const int HEIGHT;
 protected:
-    virtual void HandleEvent(SDL_Event Event);
-    virtual void RunInterpreter() = 0;
+    void HandleEvent(SDL_Event Event);
 
     NSBInterpreter* pInterpreter;
 private:
