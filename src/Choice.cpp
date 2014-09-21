@@ -19,6 +19,9 @@
 
 Choice::Choice() : MouseOver(false), ButtonDown(false), ButtonUp(false)
 {
+    Write("MouseUsual", new Name);
+    Write("MouseOver", new Name);
+    Write("MouseClick", new Name);
     for (int i = 0; i < 4; ++i)
         pNextFocus[i] = nullptr;
 }
