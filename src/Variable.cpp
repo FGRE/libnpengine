@@ -129,11 +129,13 @@ Variable* Variable::Add(Variable* pFirst, Variable* pSecond)
 
 Variable* Variable::Equal(Variable* pFirst, Variable* pSecond)
 {
-    Variable* pThird = nullptr;
+    Variable* pThird;
     if (pFirst->Tag == INT && pSecond->Tag == INT)
         pThird = MakeInt(pFirst->Val.Int == pSecond->Val.Int);
     else if (pFirst->Tag == STRING && pSecond->Tag == STRING)
         pThird = MakeInt(*pFirst->Val.Str == *pSecond->Val.Str);
+    else
+        pThird = MakeInt(pFirst->ToBool() == pSecond->ToBool());
     Destroy(pFirst);
     Destroy(pSecond);
     return pThird;
