@@ -39,6 +39,10 @@ ArrayVariable* ArrayVariable::Find(const string& Key)
 
 ArrayVariable* ArrayVariable::Find(int32_t Index)
 {
+    // TODO: This should never happen, but it does
+    if (Index >= Members.size())
+        return nullptr;
+
     auto i = Members.begin();
     advance(i, Index);
     return i->second;
