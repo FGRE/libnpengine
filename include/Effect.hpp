@@ -143,7 +143,7 @@ class FadeEffect : public LerpEffect
         "void main()"
         "{"
         "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
-        "   Pixel.a = Alpha;"
+        "   Pixel.a *= Alpha;"
         "   gl_FragColor = Pixel;"
         "}";
 public:
