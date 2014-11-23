@@ -15,31 +15,48 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef GL_TEXTURE_HPP
-#define GL_TEXTURE_HPP
+#ifndef TEXT_PARSER_HPP
+#define TEXT_PARSER_HPP
 
-#include <SDL2/SDL_opengl.h>
+#include <vector>
 #include <string>
 using namespace std;
 
-class GLTexture
+namespace TextParser
 {
-public:
-    GLTexture();
-    virtual ~GLTexture();
 
-    void Draw(float X, float Y, float Width, float Height);
+class Line;
+class StringSegment;
+typedef vector<Line> LinesList;
+typedef vector<StringSegment> String;
+typedef vector<string> ArgumentList;
+typedef ArgumentList Voice;
 
-protected:
-    uint8_t* LoadPixels(const string& Filename, int& Width, int& Height, uint8_t Format);
-    uint8_t* LoadPNG(uint8_t* pMem, uint32_t Size, int& Width, int& Height, uint8_t Format);
-    uint8_t* LoadJPEG(uint8_t* pMem, uint32_t Size, int& Width, int& Height);
-
-    void Create(uint8_t* Pixels, GLenum Format);
-    void SetSmoothing(bool Set);
-
-    int Width, Height;
-    GLuint GLTextureID;
+enum VoiceAttr
+{
+    ATTR_NAME,
+    ATTR_CLASS,
+    ATTR_SRC,
+    ATTR_MODE
 };
+
+struct StringSegment
+{
+    string Segment, Ruby;
+    string InColor, OutColor;
+};
+
+struct Line
+{
+    String StringSegs;
+    Voice VoiceAttrs;
+};
+
+struct Text
+{
+    LinesList Lines;
+};
+
+}
 
 #endif

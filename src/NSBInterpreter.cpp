@@ -20,6 +20,7 @@
 #include "Texture.hpp"
 #include "Window.hpp"
 #include "Movie.hpp"
+#include "Text.hpp"
 #include "nsbmagic.hpp"
 #include "scriptfile.hpp"
 #include "npafile.hpp"
@@ -128,12 +129,13 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_PAN] = { &NSBInterpreter::SetPan, 4 };
     Builtins[MAGIC_SET_ALIAS] = { &NSBInterpreter::SetAlias, 2 };
     Builtins[MAGIC_CREATE_NAME] = { &NSBInterpreter::CreateName, 1 };
-    Builtins[MAGIC_CREATE_WINDOW] = { &NSBInterpreter::CreateWindow, 6 };
+    Builtins[MAGIC_CREATE_WINDOW] = { &NSBInterpreter::CreateWindow, 7 };
     Builtins[MAGIC_CREATE_CHOICE] = { &NSBInterpreter::CreateChoice, NSB_VARARGS };
     Builtins[MAGIC_CASE] = { &NSBInterpreter::Case, 0 };
     Builtins[MAGIC_CASE_END] = { &NSBInterpreter::CaseEnd, 0 };
     Builtins[MAGIC_SET_NEXT_FOCUS] = { &NSBInterpreter::SetNextFocus, 3 };
     Builtins[MAGIC_PASSAGE_TIME] = { &NSBInterpreter::PassageTime, 1 };
+    Builtins[MAGIC_PARSE_TEXT] = { &NSBInterpreter::ParseText, 0 };
 
     pContext = new NSBContext("__nitroscript_main__");
     pContext->Start();
@@ -620,6 +622,7 @@ void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
     if (Variable* pVar2 = GetVar(Name))
     {
         pVar2->Set(pVar);
+        Variable::Destroy(pVar);
         return;
     }
 
@@ -1125,13 +1128,17 @@ void NSBInterpreter::CreateName()
 
 void NSBInterpreter::CreateWindow()
 {
+    string Handle = PopString();
+    /*int32_t unk = */PopInt();
+
     Window_t* pWindow = new Window_t;
     pWindow->X = PopInt();
     pWindow->Y = PopInt();
     pWindow->Width = PopInt();
     pWindow->Height = PopInt();
     /*bool unk = */PopBool();
-    ObjectHolder.Write(PopString(), pWindow);
+
+    ObjectHolder.Write(Handle, pWindow);
 }
 
 void NSBInterpreter::CreateChoice()
@@ -1175,4 +1182,16 @@ void NSBInterpreter::SetNextFocus()
 void NSBInterpreter::PassageTime()
 {
     PushInt(0);
+}
+
+void NSBInterpreter::ParseText()
+{
+    string Handle = pContext->GetParam(0);
+    string Box = pContext->GetParam(1);
+    string XML = pContext->GetParam(2);
+
+    Text* pText = new Text(XML);
+    Handle = Box + "/" + Handle;
+    SetVar("$SYSTEM_present_text", Variable::MakeString(Handle));
+    ObjectHolder.Write(Handle, pText);
 }
