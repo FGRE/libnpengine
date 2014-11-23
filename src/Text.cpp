@@ -15,31 +15,23 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef GL_TEXTURE_HPP
-#define GL_TEXTURE_HPP
+#include "Text.hpp"
+#define yyparse xmlparse
+#define yy_scan_bytes xml_scan_bytes
+#define yy_delete_buffer xml_delete_buffer
+#include "flex.hpp"
+#include <pango/pangocairo.h>
 
-#include <SDL2/SDL_opengl.h>
-#include <string>
-using namespace std;
+TextParser::Text* pText;
 
-class GLTexture
+Text::Text(const string& XML)
 {
-public:
-    GLTexture();
-    virtual ~GLTexture();
+    ::pText = this;
+    YY_BUFFER_STATE buffer = yy_scan_bytes(XML.c_str(), XML.size());
+    yyparse();
+    yy_delete_buffer(buffer);
+}
 
-    void Draw(float X, float Y, float Width, float Height);
-
-protected:
-    uint8_t* LoadPixels(const string& Filename, int& Width, int& Height, uint8_t Format);
-    uint8_t* LoadPNG(uint8_t* pMem, uint32_t Size, int& Width, int& Height, uint8_t Format);
-    uint8_t* LoadJPEG(uint8_t* pMem, uint32_t Size, int& Width, int& Height);
-
-    void Create(uint8_t* Pixels, GLenum Format);
-    void SetSmoothing(bool Set);
-
-    int Width, Height;
-    GLuint GLTextureID;
-};
-
-#endif
+Text::~Text()
+{
+}
