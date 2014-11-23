@@ -15,31 +15,18 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef GL_TEXTURE_HPP
-#define GL_TEXTURE_HPP
+#ifndef TEXT_HPP
+#define TEXT_HPP
 
-#include <SDL2/SDL_opengl.h>
-#include <string>
-using namespace std;
+#include "Texture.hpp"
+#include "TextParser.hpp"
 
-class GLTexture
+class Text : public Texture, private TextParser::Text
 {
 public:
-    GLTexture();
-    virtual ~GLTexture();
-
-    void Draw(float X, float Y, float Width, float Height);
-
-protected:
-    uint8_t* LoadPixels(const string& Filename, int& Width, int& Height, uint8_t Format);
-    uint8_t* LoadPNG(uint8_t* pMem, uint32_t Size, int& Width, int& Height, uint8_t Format);
-    uint8_t* LoadJPEG(uint8_t* pMem, uint32_t Size, int& Width, int& Height);
-
-    void Create(uint8_t* Pixels, GLenum Format);
-    void SetSmoothing(bool Set);
-
-    int Width, Height;
-    GLuint GLTextureID;
+    Text(const string& XML);
+    ~Text();
 };
+
 
 #endif
