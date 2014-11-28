@@ -19,6 +19,8 @@
 #define OBJECT_HPP
 
 #include "ResourceMgr.hpp"
+#include <boost/algorithm/string/replace.hpp>
+#include <regex>
 
 class Window;
 class Object
@@ -48,6 +50,40 @@ struct ObjectHolder_t : private Holder<Object>
             Holder::Write(ObjHandle, pObject);
         else
             GetHolder(ObjHandle)->Write(Leftover, pObject);
+    }
+
+    std::string Regexify(const string& Wildcard)
+    {
+        string Regex("^" + Wildcard);
+        boost::replace_all(Regex, "*", ".*");
+        return Regex;
+    }
+
+    template <class F>
+    void ExecuteSafe(const string& HolderHandle, const string& Handle, F Func)
+    {
+        if (ObjectHolder_t* pHolder = GetHolder(HolderHandle))
+            pHolder->Execute(Handle, Func);
+    }
+
+    template <class F>
+    void Wildcard(const string& Leftover, const string& ObjHandle, F Func)
+    {
+        std::regex Regex(Regexify(ObjHandle));
+        for(auto i = Cache.begin(); i != Cache.end(); ++i)
+            if (std::regex_match(i->first, Regex))
+                Leftover.empty() ? Func(i) : ExecuteSafe(i->first, Leftover, Func);
+    }
+
+    template <class F>
+    void Execute(const string& Handle, F Func)
+    {
+        string Leftover = Handle;
+        string ObjHandle = ExtractObjHandle(Leftover);
+        if (ObjHandle.find('*') != string::npos)
+            Wildcard(Leftover, ObjHandle, Func);
+        else
+            Leftover.empty() ? Func(Cache.find(ObjHandle)) : GetHolder(ObjHandle)->Execute(Leftover, Func);
     }
 
     void WriteAlias(const string& Handle, const string& Alias)
