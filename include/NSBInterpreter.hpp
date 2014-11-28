@@ -183,6 +183,7 @@ protected:
     void SetNextFocus();
     void PassageTime();
     void ParseText();
+    void LoadText();
 
     int32_t PopInt();
     string PopString();
