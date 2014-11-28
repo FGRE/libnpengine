@@ -136,6 +136,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_NEXT_FOCUS] = { &NSBInterpreter::SetNextFocus, 3 };
     Builtins[MAGIC_PASSAGE_TIME] = { &NSBInterpreter::PassageTime, 1 };
     Builtins[MAGIC_PARSE_TEXT] = { &NSBInterpreter::ParseText, 0 };
+    Builtins[MAGIC_LOAD_TEXT] = { &NSBInterpreter::LoadText, 7 };
 
     pContext = new NSBContext("__nitroscript_main__");
     pContext->Start();
@@ -1211,4 +1212,18 @@ void NSBInterpreter::ParseText()
     Handle = Box + "/" + Handle;
     SetVar("$SYSTEM_present_text", Variable::MakeString(Handle));
     ObjectHolder.Write(Handle, pText);
+}
+
+void NSBInterpreter::LoadText()
+{
+    /*string unk = */PopString();
+    /*string unk = */PopString();
+    string TextHandle = PopString();
+    int32_t Width = PopInt();
+    /*int32_t unk = */PopInt();
+    /*int32_t unk = */PopInt();
+    /*int32_t unk = */PopInt();
+
+    if (Text* pText = Get<Text>(TextHandle))
+        pText->SetWrap(Width);
 }

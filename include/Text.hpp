@@ -26,6 +26,11 @@ class Text : public Texture, private TextParser::Text
 public:
     Text(const string& XML);
     ~Text();
+
+    void SetWrap(int32_t Width);
+
+private:
+    void SetString(const string& String);
 };
 
 
