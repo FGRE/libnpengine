@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "Text.hpp"
+#include "Playable.hpp"
 #define yyparse xmlparse
 #define yy_scan_bytes xml_scan_bytes
 #define yy_delete_buffer xml_delete_buffer
@@ -24,7 +25,7 @@
 
 TextParser::Text* pText;
 
-Text::Text(const string& XML)
+Text::Text(const string& XML) : Index(0), pVoice(nullptr)
 {
     ::pText = this;
     YY_BUFFER_STATE buffer = yy_scan_bytes(XML.c_str(), XML.size());
@@ -34,10 +35,33 @@ Text::Text(const string& XML)
 
 Text::~Text()
 {
+    delete pVoice;
 }
 
 void Text::SetWrap(int32_t Width)
 {
+}
+
+bool Text::Advance()
+{
+    if (Index == Lines.size())
+        return false;
+
+    TextParser::Line& CurrLine = Lines[Index];
+
+    // [HACK]
+    string String;
+    for (size_t i = 0; i < CurrLine.StringSegs.size(); ++i)
+        String += CurrLine.StringSegs[i].Segment;
+    SetString(String);
+
+    if (!CurrLine.VoiceAttrs.empty())
+    {
+        pVoice = new Playable(sResourceMgr->GetResource(CurrLine.VoiceAttrs[TextParser::ATTR_SRC] + ".ogg"));
+        pVoice->Play();
+    }
+    Index++;
+    return true;
 }
 
 void Text::SetString(const string& String)
