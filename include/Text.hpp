@@ -21,6 +21,7 @@
 #include "Texture.hpp"
 #include "TextParser.hpp"
 
+class Playable;
 class Text : public Texture, private TextParser::Text
 {
 public:
@@ -28,9 +29,13 @@ public:
     ~Text();
 
     void SetWrap(int32_t Width);
+    bool Advance();
 
 private:
     void SetString(const string& String);
+
+    size_t Index;
+    Playable* pVoice;
 };
 
 

@@ -70,7 +70,7 @@ struct ObjectHolder_t : private Holder<Object>
     void Wildcard(const string& Leftover, const string& ObjHandle, F Func)
     {
         std::regex Regex(Regexify(ObjHandle));
-        for(auto i = Cache.begin(); i != Cache.end(); ++i)
+        for (auto i = Cache.begin(); i != Cache.end(); ++i)
             if (std::regex_match(i->first, Regex))
                 Leftover.empty() ? Func(i) : ExecuteSafe(i->first, Leftover, Func);
     }

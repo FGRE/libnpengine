@@ -24,6 +24,7 @@
 
 class ScriptFile;
 class Line;
+class Text;
 class NSBContext : public Object
 {
     struct StackFrame
@@ -50,6 +51,7 @@ public:
     void Return();
     void PushBreak();
     void PopBreak();
+    void WaitText(Text* pText);
     void Wait(int32_t Time, bool Interrupt = false);
     void Wake();
     void TryWake();
@@ -62,6 +64,7 @@ public:
 private:
     StackFrame* GetFrame();
 
+    Text* pText;
     const string Name;
     uint64_t WaitTime;
     uint64_t WaitStart;
