@@ -874,9 +874,13 @@ void NSBInterpreter::GetModuleFileName()
 
 void NSBInterpreter::Request()
 {
-    ObjectHolder.Execute(PopString(), [this] (map<string, Object*>::iterator i)
+    string Handle = PopString();
+    string Request = PopString();
+
+    ObjectHolder.Execute(Handle, [Request] (map<string, Object*>::iterator i)
     {
-        if (i->second) i->second->Request(PopString());
+        if (i->second)
+            i->second->Request(Request);
     });
 }
 
@@ -892,40 +896,40 @@ void NSBInterpreter::SetVertex()
 
 void NSBInterpreter::Zoom()
 {
-    ObjectHolder.Execute(PopString(), [this] (map<string, Object*>::iterator i)
+    string Handle = PopString();
+    int32_t Time = PopInt();
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+    /*string Tempo = */PopString();
+    bool Wait = PopBool();
+
+    ObjectHolder.Execute(Handle, [Time, X, Y] (map<string, Object*>::iterator i)
     {
-        Texture* pTexture = dynamic_cast<Texture*>(i->second);
-        int32_t Time = PopInt();
-        int32_t X = PopInt();
-        int32_t Y = PopInt();
-        /*string Tempo = */PopString();
-        bool Wait = PopBool();
-
-        if (pTexture)
+        if (Texture* pTexture = dynamic_cast<Texture*>(i->second))
             pTexture->Zoom(Time, X, Y);
-
-        if (Wait)
-            pContext->Wait(Time);
     });
+
+    if (Wait)
+        pContext->Wait(Time);
 }
 
 void NSBInterpreter::Move()
 {
-    ObjectHolder.Execute(PopString(), [this] (map<string, Object*>::iterator i)
+    string Handle = PopString();
+    int32_t Time = PopInt();
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+    /*string Tempo = */PopString();
+    bool Wait = PopBool();
+
+    ObjectHolder.Execute(Handle, [Time, X, Y] (map<string, Object*>::iterator i)
     {
-        Texture* pTexture = dynamic_cast<Texture*>(i->second);
-        int32_t Time = PopInt();
-        int32_t X = PopInt();
-        int32_t Y = PopInt();
-        /*string Tempo = */PopString();
-        bool Wait = PopBool();
-
-        if (pTexture)
+        if (Texture* pTexture = dynamic_cast<Texture*>(i->second))
             pTexture->Move(Time, X, Y);
-
-        if (Wait)
-            pContext->Wait(Time);
     });
+
+    if (Wait)
+        pContext->Wait(Time);
 }
 
 void NSBInterpreter::ApplyBlur()
@@ -1006,25 +1010,26 @@ void NSBInterpreter::LoadImage()
 
 void NSBInterpreter::Fade()
 {
-    ObjectHolder.Execute(PopString(), [this] (map<string, Object*>::iterator i)
+    string Handle = PopString();
+    int32_t Time = PopInt();
+    int32_t Opacity = PopInt();
+    /*string Tempo = */PopString();
+    bool Wait = PopBool();
+
+    ObjectHolder.Execute(Handle, [Time, Opacity] (map<string, Object*>::iterator i)
     {
-        Texture* pTexture = dynamic_cast<Texture*>(i->second);
-        int32_t Time = PopInt();
-        int32_t Opacity = PopInt();
-        /*string Tempo = */PopString();
-        bool Wait = PopBool();
-
-        if (pTexture)
+        if (Texture* pTexture = dynamic_cast<Texture*>(i->second))
             pTexture->Fade(Time, Opacity);
-
-        if (Wait)
-            pContext->Wait(Time);
     });
+
+    if (Wait)
+        pContext->Wait(Time);
 }
 
 void NSBInterpreter::Delete()
 {
     string Handle = PopString();
+
     ObjectHolder.Execute(Handle, [this] (map<string, Object*>::iterator i)
     {
         if (i->second)
@@ -1049,14 +1054,14 @@ void NSBInterpreter::SetLoop()
 
 void NSBInterpreter::SetVolume()
 {
-    ObjectHolder.Execute(PopString(), [this] (map<string, Object*>::iterator i)
-    {
-        Playable* pPlayable = dynamic_cast<Playable*>(i->second);
-        int32_t Time = PopInt();
-        int32_t Volume = PopInt();
-        /*string Tempo = */PopString();
+    string Handle = PopString();
+    int32_t Time = PopInt();
+    int32_t Volume = PopInt();
+    /*string Tempo = */PopString();
 
-        if (pPlayable)
+    ObjectHolder.Execute(Handle, [Time, Volume] (map<string, Object*>::iterator i)
+    {
+        if (Playable* pPlayable = dynamic_cast<Playable*>(i->second))
             pPlayable->SetVolume(Time, Volume);
     });
 }
