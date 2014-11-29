@@ -184,6 +184,7 @@ protected:
     void PassageTime();
     void ParseText();
     void LoadText();
+    void WaitText();
 
     int32_t PopInt();
     string PopString();

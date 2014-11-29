@@ -23,7 +23,7 @@
 
 uint32_t SDL_NSB_MOVECURSOR;
 
-Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), pInterpreter(nullptr), IsRunning(true), EventLoop(false)
+Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), pInterpreter(nullptr), IsRunning(true), EventLoop(false), pText(nullptr)
 {
     SDL_Init(SDL_INIT_VIDEO);
     SDLWindow = SDL_CreateWindow(WindowTitle, 0, 0, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
@@ -97,7 +97,14 @@ void Window::Draw()
     glClear(GL_COLOR_BUFFER_BIT);
     for (auto i = Textures.begin(); i != Textures.end(); ++i)
         (*i)->Draw();
+    if (pText)
+        pText->Draw();
     SDL_GL_SwapWindow(SDLWindow);
+}
+
+void Window::SetText(Texture* pText)
+{
+    this->pText = pText;
 }
 
 void Window::AddTexture(Texture* pTexture)

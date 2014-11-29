@@ -16,11 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "NSBContext.hpp"
+#include "Text.hpp"
 #include "scriptfile.hpp"
 #include <chrono>
 using namespace std::chrono;
 
-NSBContext::NSBContext(const string& Name) : Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false), Active(false)
+NSBContext::NSBContext(const string& Name) : pText(nullptr), Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false), Active(false)
 {
 }
 
@@ -131,6 +132,11 @@ void NSBContext::PopBreak()
     BreakStack.pop();
 }
 
+void NSBContext::WaitText(Text* pText)
+{
+    this->pText = pText;
+}
+
 void NSBContext::Wait(int32_t Time, bool Interrupt)
 {
     WaitInterrupt = Interrupt;
@@ -145,6 +151,10 @@ void NSBContext::Wake()
 
 void NSBContext::TryWake()
 {
+    if (pText)
+        if (!pText->Advance())
+            pText = nullptr;
+
     if (WaitInterrupt)
         Wake();
 }
@@ -157,7 +167,7 @@ bool NSBContext::IsStarving()
 bool NSBContext::IsSleeping()
 {
     uint64_t Now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    return (Now - WaitStart) < WaitTime;
+    return pText || ((Now - WaitStart) < WaitTime);
 }
 
 bool NSBContext::IsActive()

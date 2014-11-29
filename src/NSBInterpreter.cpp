@@ -137,6 +137,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_PASSAGE_TIME] = { &NSBInterpreter::PassageTime, 1 };
     Builtins[MAGIC_PARSE_TEXT] = { &NSBInterpreter::ParseText, 0 };
     Builtins[MAGIC_LOAD_TEXT] = { &NSBInterpreter::LoadText, 7 };
+    Builtins[MAGIC_WAIT_TEXT] = { &NSBInterpreter::WaitText, 2 };
 
     pContext = new NSBContext("__nitroscript_main__");
     pContext->Start();
@@ -196,8 +197,9 @@ void NSBInterpreter::PushEvent(const SDL_Event& Event)
 
 void NSBInterpreter::HandleEvent(const SDL_Event& Event)
 {
-    if (Event.type == SDL_MOUSEBUTTONDOWN)
-        pContext->TryWake();
+    for (auto pContext : Threads)
+        if (Event.type == SDL_MOUSEBUTTONDOWN)
+            pContext->TryWake();
 }
 
 void NSBInterpreter::FunctionDeclaration()
@@ -1208,10 +1210,23 @@ void NSBInterpreter::ParseText()
     string Box = pContext->GetParam(1);
     string XML = pContext->GetParam(2);
 
+    if (Variable* pVar = GetVar("$SYSTEM_present_text"))
+    {
+        string OldHandle = pVar->ToString();
+        if (Text* pText = Get<Text>(OldHandle))
+        {
+            ObjectHolder.Write(OldHandle, nullptr);
+            delete pText;
+        }
+    }
+
     Text* pText = new Text(XML);
     Handle = Box + "/" + Handle;
     SetVar("$SYSTEM_present_text", Variable::MakeString(Handle));
     ObjectHolder.Write(Handle, pText);
+
+    // [HACK]
+    pWindow->SetText(pText);
 }
 
 void NSBInterpreter::LoadText()
@@ -1226,4 +1241,16 @@ void NSBInterpreter::LoadText()
 
     if (Text* pText = Get<Text>(TextHandle))
         pText->SetWrap(Width);
+}
+
+void NSBInterpreter::WaitText()
+{
+    string Handle = PopString();
+    /*string unk = */PopString();
+
+    if (Text* pText = Get<Text>(Handle))
+    {
+        pText->Advance();
+        pContext->WaitText(pText);
+    }
 }
