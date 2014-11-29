@@ -94,7 +94,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_MOVE_CURSOR] = { &NSBInterpreter::MoveCursor, 2 };
     Builtins[MAGIC_POSITION] = { &NSBInterpreter::Position, 2 };
     Builtins[MAGIC_WAIT] = { &NSBInterpreter::Wait, 1 };
-    Builtins[MAGIC_WAIT_KEY] = { &NSBInterpreter::WaitKey, 1 };
+    Builtins[MAGIC_WAIT_KEY] = { &NSBInterpreter::WaitKey, NSB_VARARGS };
     Builtins[MAGIC_NEGA_EXPRESSION] = { &NSBInterpreter::NegaExpression, 1 };
     Builtins[MAGIC_SYSTEM] = { &NSBInterpreter::System, 3 };
     Builtins[MAGIC_STRING] = { &NSBInterpreter::String, NSB_VARARGS };
@@ -758,7 +758,7 @@ void NSBInterpreter::Wait()
 
 void NSBInterpreter::WaitKey()
 {
-    pContext->Wait(PopInt(), true);
+    pContext->Wait(pContext->GetNumParams() == 1 ? PopInt() : ~0, true);
 }
 
 void NSBInterpreter::NegaExpression()
