@@ -1296,6 +1296,9 @@ void NSBInterpreter::Conquest()
     /*string unk = */PopString();
     /*string unk = */PopString();
     /*string unk = */PopString();
+
+    // [HACK]
+    PushString("false");
 }
 
 void NSBInterpreter::ClearScore()
