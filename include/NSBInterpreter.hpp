@@ -185,6 +185,16 @@ protected:
     void ParseText();
     void LoadText();
     void WaitText();
+    void LockVideo();
+    void Save();
+    void DeleteSaveFile();
+    void Conquest();
+    void ClearScore();
+    void ClearBacklog();
+    void SetFont();
+    void SetShortcut();
+    void CreateClipTexture();
+    void ExistSave();
 
     int32_t PopInt();
     string PopString();
