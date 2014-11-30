@@ -36,7 +36,6 @@
 extern "C" { void gst_init(int* argc, char** argv[]); }
 
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
-pTest(nullptr),
 pWindow(pWindow),
 pContext(nullptr),
 Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
@@ -156,7 +155,6 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
 
 NSBInterpreter::~NSBInterpreter()
 {
-    delete pTest;
 }
 
 void NSBInterpreter::ExecuteLocalScript(const string& Filename)
@@ -328,7 +326,10 @@ void NSBInterpreter::Literal()
     if (Type == "STRING")
     {
         if (Variable* pVar = LocalVariableHolder.Read(Val))
+        {
             PushVar(pVar);
+            LocalVariableHolder.Write(Val, nullptr);
+        }
         else
             PushString(Val);
     }
