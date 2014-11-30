@@ -138,6 +138,16 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_PARSE_TEXT] = { &NSBInterpreter::ParseText, 0 };
     Builtins[MAGIC_LOAD_TEXT] = { &NSBInterpreter::LoadText, 7 };
     Builtins[MAGIC_WAIT_TEXT] = { &NSBInterpreter::WaitText, 2 };
+    Builtins[MAGIC_LOCK_VIDEO] = { &NSBInterpreter::LockVideo, 1 };
+    Builtins[MAGIC_SAVE] = { &NSBInterpreter::Save, 1 };
+    Builtins[MAGIC_DELETE_SAVE_FILE] = { &NSBInterpreter::DeleteSaveFile, 1};
+    Builtins[MAGIC_CONQUEST] = { &NSBInterpreter::Conquest, 3 };
+    Builtins[MAGIC_CLEAR_SCORE] = { &NSBInterpreter::ClearScore, 2 };
+    Builtins[MAGIC_CLEAR_BACKLOG] = { &NSBInterpreter::ClearBacklog, 0 };
+    Builtins[MAGIC_SET_FONT] = { &NSBInterpreter::SetFont, 6 };
+    Builtins[MAGIC_SET_SHORTCUT] = { &NSBInterpreter::SetShortcut, 2 };
+    Builtins[MAGIC_CREATE_CLIP_TEXTURE] = { &NSBInterpreter::CreateClipTexture, 9 };
+    Builtins[MAGIC_EXIST_SAVE] = { &NSBInterpreter::ExistSave, 1 };
 
     pContext = new NSBContext("__nitroscript_main__");
     pContext->Start();
@@ -691,10 +701,10 @@ void NSBInterpreter::CreateTexture()
     int32_t Priority = PopInt();
     PosFunc X = PopPos();
     PosFunc Y = PopPos();
-    string Filename = PopString();
+    string Source = PopString();
 
     Texture* pTexture = new Texture;
-    pTexture->LoadFromFile(Filename);
+    pTexture->LoadFromFile(Source);
     pTexture->SetPosition(X(pTexture->GetWidth()), Y(pTexture->GetHeight()));
     pTexture->SetPriority(Priority);
 
@@ -1258,4 +1268,69 @@ void NSBInterpreter::WaitText()
         pText->Advance();
         pContext->WaitText(pText);
     }
+}
+
+void NSBInterpreter::LockVideo()
+{
+    bool Lock = PopBool();
+}
+
+void NSBInterpreter::Save()
+{
+    int32_t Slot = PopInt();
+}
+
+void NSBInterpreter::DeleteSaveFile()
+{
+    int32_t Slot = PopInt();
+}
+
+void NSBInterpreter::Conquest()
+{
+    /*string unk = */PopString();
+    /*string unk = */PopString();
+    /*string unk = */PopString();
+}
+
+void NSBInterpreter::ClearScore()
+{
+    /*string unk = */PopString();
+}
+
+void NSBInterpreter::ClearBacklog()
+{
+}
+
+void NSBInterpreter::SetFont()
+{
+    string Font = PopString();
+    /*int32_t unk = */PopInt();
+    /*uint32_t unk = */PopColor();
+    /*uint32_t unk = */PopColor();
+    /*int32_t unk = */PopInt();
+    /*string unk = */PopString();
+}
+
+void NSBInterpreter::SetShortcut()
+{
+    string Key = PopString();
+    string Script = PopString();
+}
+
+void NSBInterpreter::CreateClipTexture()
+{
+    string Handle = PopString();
+    int32_t Priority = PopInt();
+    PosFunc X1 = PopPos();
+    PosFunc Y1 = PopPos();
+    PosFunc X2 = PopPos();
+    PosFunc Y2 = PopPos();
+    int32_t Width = PopInt();
+    int32_t Height = PopInt();
+    string Source = PopString();
+}
+
+void NSBInterpreter::ExistSave()
+{
+    int32_t Slot = PopInt();
 }
