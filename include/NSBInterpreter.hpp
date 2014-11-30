@@ -80,6 +80,11 @@ class NSBInterpreter
         BuiltinFunc Func;
         uint8_t NumParams;
     };
+    struct NSBShortcut
+    {
+        SDL_Keycode Key;
+        const string Script;
+    };
 public:
     NSBInterpreter(Window* pWindow);
     virtual ~NSBInterpreter();
@@ -233,6 +238,7 @@ protected:
     NSBContext* pContext;
     vector<NSBFunction> Builtins;
     Stack Params;
+    vector<NSBShortcut> Shortcuts;
     vector<ScriptFile*> Scripts;
     list<NSBContext*> Threads;
     Holder<Variable> VariableHolder;
