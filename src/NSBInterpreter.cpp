@@ -207,9 +207,14 @@ void NSBInterpreter::PushEvent(const SDL_Event& Event)
 
 void NSBInterpreter::HandleEvent(const SDL_Event& Event)
 {
-    for (auto pContext : Threads)
-        if (Event.type == SDL_MOUSEBUTTONDOWN)
+    if (Event.type == SDL_MOUSEBUTTONDOWN)
+        for (auto pContext : Threads)
             pContext->TryWake();
+
+    if (Event.type == SDL_KEYDOWN)
+        for (NSBShortcut& Shortcut : Shortcuts)
+            if (Shortcut.Key == Event.key.keysym.sym)
+                CallScript(Shortcut.Script, "chapter.main");
 }
 
 void NSBInterpreter::FunctionDeclaration()
@@ -1315,6 +1320,7 @@ void NSBInterpreter::SetShortcut()
 {
     string Key = PopString();
     string Script = PopString();
+    Shortcuts.push_back({SDLK_a + Key[0] - 'A', Script});
 }
 
 void NSBInterpreter::CreateClipTexture()
