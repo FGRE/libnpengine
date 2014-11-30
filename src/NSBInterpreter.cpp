@@ -1108,8 +1108,8 @@ void NSBInterpreter::CreateSound()
 
 void NSBInterpreter::RemainTime()
 {
-    if (Playable* pPlayable = Get<Playable>(PopString()))
-        PushInt(pPlayable->RemainTime());
+    Playable* pPlayable = Get<Playable>(PopString());
+    PushInt(pPlayable ? pPlayable->RemainTime() : 0);
 }
 
 void NSBInterpreter::CreateMovie()
@@ -1130,8 +1130,8 @@ void NSBInterpreter::CreateMovie()
 
 void NSBInterpreter::DurationTime()
 {
-    if (Playable* pPlayable = Get<Playable>(PopString()))
-        PushInt(pPlayable->DurationTime());
+    Playable* pPlayable = Get<Playable>(PopString());
+    PushInt(pPlayable ? pPlayable->DurationTime() : 0);
 }
 
 void NSBInterpreter::SetFrequency()
