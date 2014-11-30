@@ -38,7 +38,7 @@ ResourceMgr::~ResourceMgr()
 
 Resource ResourceMgr::GetResource(string Path)
 {
-    std::transform(Path.begin(), Path.end(), Path.begin(), ::tolower);
+    transform(Path.begin(), Path.end(), Path.begin(), ::tolower);
     for (uint32_t i = 0; i < Archives.size(); ++i)
     {
         auto File = Archives[i]->FindFile(Path);
