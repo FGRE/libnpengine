@@ -141,7 +141,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SAVE] = { &NSBInterpreter::Save, 1 };
     Builtins[MAGIC_DELETE_SAVE_FILE] = { &NSBInterpreter::DeleteSaveFile, 1};
     Builtins[MAGIC_CONQUEST] = { &NSBInterpreter::Conquest, 3 };
-    Builtins[MAGIC_CLEAR_SCORE] = { &NSBInterpreter::ClearScore, 2 };
+    Builtins[MAGIC_CLEAR_SCORE] = { &NSBInterpreter::ClearScore, 1 };
     Builtins[MAGIC_CLEAR_BACKLOG] = { &NSBInterpreter::ClearBacklog, 0 };
     Builtins[MAGIC_SET_FONT] = { &NSBInterpreter::SetFont, 6 };
     Builtins[MAGIC_SET_SHORTCUT] = { &NSBInterpreter::SetShortcut, 2 };
