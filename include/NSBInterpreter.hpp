@@ -233,7 +233,6 @@ protected:
 
     SDL_Event Event;
     queue<SDL_Event> Events;
-    ScriptFile* pTest;
     Window* pWindow;
     NSBContext* pContext;
     vector<NSBFunction> Builtins;

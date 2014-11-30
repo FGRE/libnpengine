@@ -37,7 +37,6 @@ struct Holder
     ~Holder()
     {
         for_each(Cache.begin(), Cache.end(), MapDeleter());
-        Cache.clear();
     }
 
     T* Read(const string& Path)
