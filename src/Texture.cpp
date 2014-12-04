@@ -17,6 +17,7 @@
  * */
 #include "Effect.hpp"
 #include "Window.hpp"
+#include "nsbconstants.hpp"
 #include <vector>
 
 Texture::Texture() :
@@ -43,9 +44,9 @@ void Texture::Delete(Window* pWindow)
     pWindow->RemoveTexture(this);
 }
 
-void Texture::Request(const string& State)
+void Texture::Request(int32_t State)
 {
-    if (State == "Smoothing")
+    if (State == Nsb::SMOOTHING)
         SetSmoothing(true);
 }
 

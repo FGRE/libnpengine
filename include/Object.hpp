@@ -27,7 +27,7 @@ class Object
 {
 public:
     virtual ~Object() {}
-    virtual void Request(const string& State) { }
+    virtual void Request(int32_t State) { }
     virtual void Delete(Window* pWindow) { }
 };
 
