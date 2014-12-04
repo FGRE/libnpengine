@@ -22,6 +22,7 @@
 #include "Movie.hpp"
 #include "Text.hpp"
 #include "nsbmagic.hpp"
+#include "nsbconstants.hpp"
 #include "scriptfile.hpp"
 #include "npafile.hpp"
 #include "fscommon.hpp"
@@ -330,6 +331,8 @@ void NSBInterpreter::Literal()
             PushVar(pVar);
             LocalVariableHolder.Write(Val, nullptr);
         }
+        else if (Nsb::IsValidConstant(Val))
+            PushInt(Nsb::ConstantToValue(Val));
         else
             PushString(Val);
     }
@@ -891,7 +894,7 @@ void NSBInterpreter::GetModuleFileName()
 void NSBInterpreter::Request()
 {
     string Handle = PopString();
-    string Request = PopString();
+    int32_t Request = PopInt();
 
     ObjectHolder.Execute(Handle, [Request] (map<string, Object*>::iterator i)
     {
@@ -916,7 +919,7 @@ void NSBInterpreter::Zoom()
     int32_t Time = PopInt();
     int32_t X = PopInt();
     int32_t Y = PopInt();
-    /*string Tempo = */PopString();
+    /*int32_t Tempo = */PopInt();
     bool Wait = PopBool();
 
     ObjectHolder.Execute(Handle, [Time, X, Y] (map<string, Object*>::iterator i)
@@ -935,7 +938,7 @@ void NSBInterpreter::Move()
     int32_t Time = PopInt();
     int32_t X = PopInt();
     int32_t Y = PopInt();
-    /*string Tempo = */PopString();
+    /*int32_t Tempo = */PopInt();
     bool Wait = PopBool();
 
     ObjectHolder.Execute(Handle, [Time, X, Y] (map<string, Object*>::iterator i)
@@ -984,7 +987,7 @@ void NSBInterpreter::DrawTransition()
     int32_t Start = PopInt();
     int32_t End = PopInt();
     /*int32_t unk1 = */PopInt();
-    /*string Tempo = */PopString();
+    /*int32_t Tempo = */PopInt();
     string Filename = PopString();
     bool Wait = PopBool();
 
@@ -1029,7 +1032,7 @@ void NSBInterpreter::Fade()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Opacity = PopInt();
-    /*string Tempo = */PopString();
+    /*int32_t Tempo = */PopInt();
     bool Wait = PopBool();
 
     ObjectHolder.Execute(Handle, [Time, Opacity] (map<string, Object*>::iterator i)
@@ -1073,7 +1076,7 @@ void NSBInterpreter::SetVolume()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Volume = PopInt();
-    /*string Tempo = */PopString();
+    /*int32_t Tempo = */PopInt();
 
     ObjectHolder.Execute(Handle, [Time, Volume] (map<string, Object*>::iterator i)
     {
@@ -1139,7 +1142,7 @@ void NSBInterpreter::SetFrequency()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Frequency = PopInt();
-    /*string Tempo = */PopString();
+    /*int32_t Tempo = */PopInt();
 
     if (Playable* pPlayable = Get<Playable>(Handle))
         pPlayable->SetFrequency(Time, Frequency);
@@ -1150,7 +1153,7 @@ void NSBInterpreter::SetPan()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Pan = PopInt();
-    /*string Tempo = */PopString();
+    /*int32_t Tempo = */PopInt();
 
     if (Playable* pPlayable = Get<Playable>(Handle))
         pPlayable->SetPan(Time, Pan);

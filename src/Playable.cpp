@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "Movie.hpp"
+#include "nsbconstants.hpp"
 #include <gst/video/videooverlay.h>
 #include <thread>
 
@@ -185,9 +186,9 @@ void Playable::SetLoopPoint(int32_t Begin, int32_t End)
     this->End = GST_TIME_AS_MSECONDS(End);
 }
 
-void Playable::Request(const string& State)
+void Playable::Request(int32_t State)
 {
-    if (State == "Play")
+    if (State == Nsb::PLAY)
         Play();
 }
 

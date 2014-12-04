@@ -48,7 +48,7 @@ public:
     void Play();
     int32_t RemainTime();
     int32_t DurationTime();
-    void Request(const string& State);
+    void Request(int32_t State);
     virtual void Delete(Window* pWindow);
 
     AppSrc* Appsrc;
