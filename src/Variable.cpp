@@ -86,11 +86,6 @@ string Variable::ToString()
     return *Val.Str;
 }
 
-bool Variable::ToBool()
-{
-    return static_cast<bool>(ToInt());
-}
-
 bool Variable::IsInt()
 {
     return Tag == INT;
@@ -116,9 +111,9 @@ Variable* Variable::IntUnaryOp(function<int32_t(int32_t)> Func)
 Variable* Variable::Add(Variable* pFirst, Variable* pSecond)
 {
     Variable* pThird = nullptr;
-    if (pFirst->Tag == INT && pSecond->Tag == INT)
+    if (pFirst->IsInt() && pSecond->IsInt())
         pThird = MakeInt(pFirst->Val.Int + pSecond->Val.Int);
-    if (pFirst->Tag == STRING && pSecond->Tag == STRING)
+    else if (pFirst->IsString() && pSecond->IsString())
         pThird = MakeString(*pFirst->Val.Str + *pSecond->Val.Str);
     Destroy(pFirst);
     Destroy(pSecond);
@@ -127,13 +122,11 @@ Variable* Variable::Add(Variable* pFirst, Variable* pSecond)
 
 Variable* Variable::Equal(Variable* pFirst, Variable* pSecond)
 {
-    Variable* pThird;
-    if (pFirst->Tag == INT && pSecond->Tag == INT)
+    Variable* pThird = nullptr;
+    if (pFirst->IsInt() && pSecond->IsInt())
         pThird = MakeInt(pFirst->Val.Int == pSecond->Val.Int);
     else if (pFirst->Tag == STRING && pSecond->Tag == STRING)
         pThird = MakeInt(*pFirst->Val.Str == *pSecond->Val.Str);
-    else
-        pThird = MakeInt(pFirst->ToBool() == pSecond->ToBool());
     Destroy(pFirst);
     Destroy(pSecond);
     return pThird;
