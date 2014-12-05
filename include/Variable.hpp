@@ -53,7 +53,6 @@ public:
 
     int32_t ToInt();
     string ToString();
-    bool ToBool();
     bool IsInt();
     bool IsString();
     void Set(Variable* pVar);

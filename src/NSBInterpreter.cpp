@@ -195,7 +195,6 @@ void NSBInterpreter::RunCommand()
             delete pContext;
             i = Threads.erase(i);
         }
-        break;
     }
 }
 
@@ -281,7 +280,7 @@ void NSBInterpreter::LogicalNotEqual()
 
 void NSBInterpreter::LogicalNot()
 {
-    PushVar(Variable::MakeInt(!PopVar()->ToBool()));
+    PushVar(Variable::MakeInt(!PopBool()));
 }
 
 void NSBInterpreter::AddExpression()
@@ -457,10 +456,7 @@ string NSBInterpreter::PopString()
 
 bool NSBInterpreter::PopBool()
 {
-    Variable* pVar = PopVar();
-    bool Val = pVar->ToBool();
-    Variable::Destroy(pVar);
-    return Val;
+    return static_cast<bool>(PopInt());
 }
 
 PosFunc NSBInterpreter::PopPos()
@@ -507,20 +503,16 @@ PosFunc NSBInterpreter::PopPos()
 
 uint32_t NSBInterpreter::PopColor()
 {
-    string ColorStr = PopString();
-    transform(ColorStr.begin(), ColorStr.end(), ColorStr.begin(), ::tolower);
+    uint32_t Color;
 
-    if (ColorStr[0] == '#')
-        return stoi(ColorStr.c_str() + 1, nullptr, 16);
-    if (ColorStr == "black")
-        return 0;
-    if (ColorStr == "white")
-        return 0xFFFFFF;
-    if (ColorStr == "blue")
-        return 0xFF;
+    Variable* pVar = PopVar();
+    if (pVar->IsString())
+        Color = stoi(pVar->ToString().c_str() + 1, nullptr, 16) | (0xFF << 24);
+    else
+        Color = pVar->ToInt();
 
-    NSB_ERROR("Failed to transform string to color", ColorStr);
-    return 0;
+    Variable::Destroy(pVar);
+    return Color;
 }
 
 void NSBInterpreter::PushInt(int32_t Int)
