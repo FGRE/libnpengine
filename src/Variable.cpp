@@ -49,7 +49,7 @@ void Variable::Initialize(Variable* pVar)
 
 void Variable::Destroy()
 {
-    if (Tag == STRING)
+    if (IsString())
         delete Val.Str;
 }
 
@@ -88,9 +88,7 @@ string Variable::ToString()
 
 bool Variable::ToBool()
 {
-    if (IsInt())
-        return Val.Int;
-    return *Val.Str == "true";
+    return static_cast<bool>(ToInt());
 }
 
 bool Variable::IsInt()

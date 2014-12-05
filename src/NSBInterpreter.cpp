@@ -448,7 +448,9 @@ int32_t NSBInterpreter::PopInt()
 string NSBInterpreter::PopString()
 {
     Variable* pVar = PopVar();
-    string Val = pVar->ToString();
+    string Val;
+    if (!pVar->IsInt())
+        Val = pVar->ToString();
     Variable::Destroy(pVar);
     return Val;
 }
@@ -456,8 +458,6 @@ string NSBInterpreter::PopString()
 bool NSBInterpreter::PopBool()
 {
     Variable* pVar = PopVar();
-    if (!pVar)
-        return false;
     bool Val = pVar->ToBool();
     Variable::Destroy(pVar);
     return Val;
@@ -1298,7 +1298,7 @@ void NSBInterpreter::Conquest()
 {
     /*string unk = */PopString();
     /*string unk = */PopString();
-    /*string unk = */PopString();
+    /*string unk = */PopBool();
 
     // [HACK]
     PushString("false");
