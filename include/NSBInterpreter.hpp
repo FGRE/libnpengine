@@ -200,6 +200,7 @@ protected:
     void SetShortcut();
     void CreateClipTexture();
     void ExistSave();
+    void WaitAction();
 
     int32_t PopInt();
     string PopString();

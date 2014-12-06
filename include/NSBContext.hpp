@@ -51,8 +51,10 @@ public:
     void Return();
     void PushBreak();
     void PopBreak();
-    void WaitText(Text* pText);
-    void Wait(int32_t Time, bool Interrupt = false);
+    void WaitText(Text* pText, int32_t Time);
+    void WaitAction(Object* pObject, int32_t Time);
+    void WaitKey(int32_t Time);
+    void Wait(int32_t Time);
     void Wake();
     void TryWake();
     bool IsStarving();
@@ -65,6 +67,7 @@ private:
     StackFrame* GetFrame();
 
     Text* pText;
+    Object* pObject;
     const string Name;
     uint64_t WaitTime;
     uint64_t WaitStart;

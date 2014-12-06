@@ -48,7 +48,9 @@ public:
     void Play();
     int32_t RemainTime();
     int32_t DurationTime();
+    void OnEOS();
     void Request(int32_t State);
+    bool Action();
     virtual void Delete(Window* pWindow);
 
     AppSrc* Appsrc;

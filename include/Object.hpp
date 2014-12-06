@@ -29,6 +29,7 @@ public:
     virtual ~Object() {}
     virtual void Request(int32_t State) { }
     virtual void Delete(Window* pWindow) { }
+    virtual bool Action() { return false; }
 };
 
 struct ObjectHolder_t : private Holder<Object>
