@@ -67,6 +67,20 @@ ScriptFile* ResourceMgr::GetScriptFile(const string& Path)
     if (!pScript)
         return nullptr;
 
+    for (const string& i : pScript->GetIncludes())
+        GetScriptFile(i);
+
     CacheHolder.Write(Path, pScript);
     return pScript;
+}
+
+ScriptFile* ResourceMgr::ResolveSymbol(const string& Symbol, uint32_t& CodeLine)
+{
+    for (auto& i : CacheHolder.Cache)
+    {
+        CodeLine = i.second->GetSymbol(Symbol);
+        if (CodeLine != NSB_INVALIDE_LINE)
+            return i.second;
+    }
+    return nullptr;
 }

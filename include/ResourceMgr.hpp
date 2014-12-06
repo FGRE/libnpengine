@@ -78,6 +78,7 @@ public:
     virtual Resource GetResource(string Path);
     virtual char* Read(string Path, uint32_t& Size);
     ScriptFile* GetScriptFile(const string& Path);
+    ScriptFile* ResolveSymbol(const string& Symbol, uint32_t& CodeLine);
 
 protected:
     virtual ScriptFile* ReadScriptFile(const string& Path) = 0;
