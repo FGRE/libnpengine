@@ -148,6 +148,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_SHORTCUT] = { &NSBInterpreter::SetShortcut, 2 };
     Builtins[MAGIC_CREATE_CLIP_TEXTURE] = { &NSBInterpreter::CreateClipTexture, 9 };
     Builtins[MAGIC_EXIST_SAVE] = { &NSBInterpreter::ExistSave, 1 };
+    Builtins[MAGIC_WAIT_ACTION] = { &NSBInterpreter::WaitAction, NSB_VARARGS };
 
     pContext = new NSBContext("__nitroscript_main__");
     pContext->Start();
@@ -773,7 +774,7 @@ void NSBInterpreter::Wait()
 
 void NSBInterpreter::WaitKey()
 {
-    pContext->Wait(pContext->GetNumParams() == 1 ? PopInt() : ~0, true);
+    pContext->WaitKey(pContext->GetNumParams() == 1 ? PopInt() : -1);
 }
 
 void NSBInterpreter::NegaExpression()
@@ -1242,9 +1243,6 @@ void NSBInterpreter::ParseText()
     Handle = Box + "/" + Handle;
     SetVar("$SYSTEM_present_text", Variable::MakeString(Handle));
     ObjectHolder.Write(Handle, pText);
-
-    // [HACK]
-    pWindow->SetText(pText);
 }
 
 void NSBInterpreter::LoadText()
@@ -1253,24 +1251,25 @@ void NSBInterpreter::LoadText()
     /*string unk = */PopString();
     string TextHandle = PopString();
     int32_t Width = PopInt();
-    /*int32_t unk = */PopInt();
+    int32_t Height = PopInt();
     /*int32_t unk = */PopInt();
     /*int32_t unk = */PopInt();
 
     if (Text* pText = Get<Text>(TextHandle))
+    {
         pText->SetWrap(Width);
+        pText->Advance();
+        pWindow->SetText(pText);
+    }
 }
 
 void NSBInterpreter::WaitText()
 {
     string Handle = PopString();
-    /*string unk = */PopString();
+    int32_t Time = PopInt();
 
     if (Text* pText = Get<Text>(Handle))
-    {
-        pText->Advance();
-        pContext->WaitText(pText);
-    }
+        pContext->WaitText(pText, Time);
 }
 
 void NSBInterpreter::LockVideo()
@@ -1340,4 +1339,13 @@ void NSBInterpreter::CreateClipTexture()
 void NSBInterpreter::ExistSave()
 {
     int32_t Slot = PopInt();
+}
+
+void NSBInterpreter::WaitAction()
+{
+    string Handle = PopString();
+    int32_t Time = pContext->GetNumParams() == 2 ? PopInt() : -1;
+
+    if (Object* pObject = GetObject(Handle))
+        pContext->WaitAction(pObject, Time);
 }
