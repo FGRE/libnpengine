@@ -33,13 +33,8 @@ bool NSBContext::Call(ScriptFile* pScript, const string& Symbol)
 {
     uint32_t CodeLine = pScript->GetSymbol(Symbol);
     if (CodeLine == NSB_INVALIDE_LINE && Symbol.substr(0, 8) == "function")
-    {
-        for (const string& i : pScript->GetIncludes())
-            if (ScriptFile* pInclude = sResourceMgr->GetScriptFile(i))
-                if (Call(pInclude, Symbol))
-                    return true;
-        return false;
-    }
+        if (!(pScript = sResourceMgr->ResolveSymbol(Symbol, CodeLine)))
+            return false;
     CallStack.push({pScript, CodeLine - 1});
     return true;
 }
