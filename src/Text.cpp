@@ -25,7 +25,7 @@
 
 TextParser::Text* pText;
 
-Text::Text(const string& XML) : Index(0), pVoice(nullptr)
+Text::Text(const string& XML) : Index(0), LayoutWidth(-1), pVoice(nullptr)
 {
     ::pText = this;
     YY_BUFFER_STATE buffer = yy_scan_bytes(XML.c_str(), XML.size());
@@ -40,6 +40,7 @@ Text::~Text()
 
 void Text::SetWrap(int32_t Width)
 {
+    LayoutWidth = Width;
 }
 
 bool Text::Advance()
@@ -71,7 +72,7 @@ void Text::SetString(const string& String)
     cairo_surface_destroy(TempSurface);
 
     PangoLayout* Layout = pango_cairo_create_layout(LayoutContext);
-    pango_layout_set_width(Layout, 760 * PANGO_SCALE);
+    pango_layout_set_width(Layout, LayoutWidth * PANGO_SCALE);
     pango_layout_set_wrap(Layout, PANGO_WRAP_WORD_CHAR);
     pango_layout_set_text(Layout, String.c_str(), -1);
 
