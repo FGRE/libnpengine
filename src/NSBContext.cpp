@@ -21,7 +21,7 @@
 #include <chrono>
 using namespace std::chrono;
 
-NSBContext::NSBContext(const string& Name) : pText(nullptr), Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false), Active(false)
+NSBContext::NSBContext(const string& Name) : pText(nullptr), pObject(nullptr), Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false), Active(false)
 {
 }
 
@@ -117,30 +117,41 @@ void NSBContext::PopBreak()
     BreakStack.pop();
 }
 
-void NSBContext::WaitText(Text* pText)
+void NSBContext::WaitText(Text* pText, int32_t Time)
 {
     this->pText = pText;
+    Wait(Time);
 }
 
-void NSBContext::Wait(int32_t Time, bool Interrupt)
+void NSBContext::WaitAction(Object* pObject, int32_t Time)
 {
-    WaitInterrupt = Interrupt;
+    this->pObject = pObject;
+    Wait(Time);
+}
+
+void NSBContext::WaitKey(int32_t Time)
+{
+    WaitInterrupt = true;
+    Wait(Time);
+}
+
+void NSBContext::Wait(int32_t Time)
+{
     WaitTime = Time;
     WaitStart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
 void NSBContext::Wake()
 {
+    pObject = nullptr;
+    pText = nullptr;
+    WaitInterrupt = false;
     WaitTime = 0;
 }
 
 void NSBContext::TryWake()
 {
-    if (pText)
-        if (!pText->Advance())
-            pText = nullptr;
-
-    if (WaitInterrupt)
+    if (WaitInterrupt || (pText && !pText->Advance()) || (pObject && pObject->Action()))
         Wake();
 }
 
@@ -152,7 +163,7 @@ bool NSBContext::IsStarving()
 bool NSBContext::IsSleeping()
 {
     uint64_t Now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    return pText || ((Now - WaitStart) < WaitTime);
+    return (Now - WaitStart) < WaitTime;
 }
 
 bool NSBContext::IsActive()

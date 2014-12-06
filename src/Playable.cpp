@@ -23,7 +23,7 @@
 GstBusSyncReply SyncHandler(GstBus* bus, GstMessage* msg, gpointer Handle)
 {
     if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_EOS)
-        thread([Handle](){((Playable*)Handle)->Play();}).detach();
+        ((Playable*)Handle)->OnEOS();
     else if (gst_is_video_overlay_prepare_window_handle_message(msg))
         gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(GST_MESSAGE_SRC(msg)), (guintptr)((Movie*)Handle)->XWin);
     else
@@ -186,10 +186,21 @@ void Playable::SetLoopPoint(int32_t Begin, int32_t End)
     this->End = GST_TIME_AS_MSECONDS(End);
 }
 
+void Playable::OnEOS()
+{
+    if (Loop)
+        thread([this](){Play();}).detach();
+}
+
 void Playable::Request(int32_t State)
 {
     if (State == Nsb::PLAY)
         Play();
+}
+
+bool Playable::Action()
+{
+    return RemainTime() <= 0;
 }
 
 void Playable::Delete(Window* pWindow)
