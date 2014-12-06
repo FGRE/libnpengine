@@ -463,7 +463,7 @@ PosFunc NSBInterpreter::PopPos()
 {
     const int32_t WIDTH = pWindow->WIDTH;
     const int32_t HEIGHT = pWindow->HEIGHT;
-    static const size_t SPECIAL_POS_NUM = 7;
+    static const size_t SPECIAL_POS_NUM = 9;
     static const PosFunc SpecialPosTable[SPECIAL_POS_NUM] =
     {
         [WIDTH] (int32_t x) { return WIDTH / 2 - x / 2; },
@@ -472,13 +472,15 @@ PosFunc NSBInterpreter::PopPos()
         [] (int32_t x) { return 0; },
         [] (int32_t y) { return 0; },
         [] (int32_t y) { return 0; },
-        [] (int32_t x) { return 0; }
+        [] (int32_t x) { return 0; },
+        [] (int32_t x) { return 0; },
+        [] (int32_t y) { return 0; }
     };
     static const string SpecialPos[SPECIAL_POS_NUM] =
     {
         "center", "inbottom", "middle",
         "onleft", "outtop", "intop",
-        "outright"
+        "outright", "left", "top"
     };
 
     PosFunc Func = nullptr;
@@ -898,11 +900,11 @@ void NSBInterpreter::Request()
 void NSBInterpreter::SetVertex()
 {
     Texture* pTexture = Get<Texture>(PopString());
-    int32_t X = PopInt();
-    int32_t Y = PopInt();
+    PosFunc X = PopPos();
+    PosFunc Y = PopPos();
 
     if (pTexture)
-        pTexture->SetVertex(X, Y);
+        pTexture->SetVertex(X(pTexture->GetWidth()), Y(pTexture->GetHeight()));
 }
 
 void NSBInterpreter::Zoom()
@@ -1111,8 +1113,8 @@ void NSBInterpreter::CreateMovie()
 {
     string Handle = PopString();
     int32_t Priority = PopInt();
-    /*int32_t X = */PopInt();
-    /*int32_t Y = */PopInt();
+    /*PosFunc X = */PopPos();
+    /*PosFunc Y = */PopPos();
     bool Loop = PopBool();
     bool Alpha = PopBool();
     string File = PopString();
