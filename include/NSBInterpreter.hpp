@@ -156,7 +156,7 @@ protected:
     void Array();
     void ArrayRead();
     void AssocArray();
-    void GetModuleFileName();
+    void ModuleFileName();
     void Request();
     void SetVertex();
     void Zoom();

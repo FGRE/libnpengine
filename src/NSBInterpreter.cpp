@@ -104,7 +104,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_ARRAY] = { &NSBInterpreter::Array, NSB_VARARGS };
     Builtins[MAGIC_ARRAY_READ] = { &NSBInterpreter::ArrayRead, 0 };
     Builtins[MAGIC_ASSOC_ARRAY] = { &NSBInterpreter::AssocArray, NSB_VARARGS };
-    Builtins[MAGIC_GET_MODULE_FILE_NAME] = { &NSBInterpreter::GetModuleFileName, 0 };
+    Builtins[MAGIC_MODULE_FILE_NAME] = { &NSBInterpreter::ModuleFileName, 0 };
     Builtins[MAGIC_REQUEST] = { &NSBInterpreter::Request, 2 };
     Builtins[MAGIC_SET_VERTEX] = { &NSBInterpreter::SetVertex, 3 };
     Builtins[MAGIC_ZOOM] = { &NSBInterpreter::Zoom, 6 };
@@ -877,7 +877,7 @@ void NSBInterpreter::AssocArray()
         i->first = PopString();
 }
 
-void NSBInterpreter::GetModuleFileName()
+void NSBInterpreter::ModuleFileName()
 {
     string Name = pContext->GetScriptName();
     PushString(Name.substr(4, Name.size() - 8)); // Remove nss/ and .nsb
