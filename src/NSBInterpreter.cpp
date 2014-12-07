@@ -39,6 +39,7 @@ extern "C" { void gst_init(int* argc, char** argv[]); }
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
 pWindow(pWindow),
 pContext(nullptr),
+pNewThread(nullptr),
 Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
 {
     gst_init(nullptr, nullptr);
@@ -173,6 +174,11 @@ void NSBInterpreter::Run(int NumCommands)
 {
     sResourceMgr->GetScriptFile("nss/0_boot.nsb")->GetLine(626)->Magic = MAGIC_CLEAR_PARAMS;
     sResourceMgr->GetScriptFile("nss/0_boot.nsb")->GetLine(633)->Magic = MAGIC_CLEAR_PARAMS;
+    if (pNewThread)
+    {
+        Threads.push_back(pNewThread);
+        pNewThread = nullptr;
+    }
     for (int i = 0; i < NumCommands; ++i)
         RunCommand();
 }
@@ -193,8 +199,8 @@ void NSBInterpreter::RunCommand()
         ClearParams();
         if (pContext->IsStarving())
         {
-            delete pContext;
             ObjectHolder.Write(pContext->GetName(), nullptr);
+            delete pContext;
             i = Threads.erase(i);
         }
     }
@@ -835,7 +841,7 @@ void NSBInterpreter::CreateProcess()
 
     NSBContext* pThread = new NSBContext(Handle);
     CallFunction_(pThread, Symbol);
-    Threads.push_back(pThread);
+    pNewThread = pThread;
     ObjectHolder.Write(Handle, pThread);
 }
 
