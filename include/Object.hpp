@@ -31,8 +31,9 @@ public:
     virtual bool Action() { return false; }
 };
 
-struct ObjectHolder_t : private Holder<Object>
+class ObjectHolder_t : private Holder<Object>
 {
+public:
     Object* Read(const string& Handle)
     {
         string Leftover = Handle;
@@ -52,11 +53,23 @@ struct ObjectHolder_t : private Holder<Object>
             GetHolder(ObjHandle)->Write(Leftover, pObject);
     }
 
-    string Regexify(const string& Wildcard)
+    template <class F>
+    void Execute(const string& Handle, F Func)
     {
-        return string("^" + Wildcard.substr(0, Wildcard.size() - 1) + ".*");
+        string Leftover = Handle;
+        string ObjHandle = ExtractObjHandle(Leftover);
+        if (ObjHandle.back() == '*')
+            ObjHandle.front() == '@' ? WildcardAlias(Leftover, ObjHandle, Func) : WildcardCache(Leftover, ObjHandle, Func);
+        else
+            Leftover.empty() ? Func(&Cache.find(ObjHandle)->second) : GetHolder(ObjHandle)->Execute(Leftover, Func);
     }
 
+    void WriteAlias(const string& Handle, const string& Alias)
+    {
+        Aliases[Alias] = Handle;
+    }
+
+private:
     template <class F>
     void ExecuteSafe(const string& HolderHandle, const string& Handle, F Func)
     {
@@ -82,29 +95,9 @@ struct ObjectHolder_t : private Holder<Object>
                 Leftover.empty() ? Func(&i->second) : ExecuteSafe(i->first, Leftover, Func);
     }
 
-    template <class F>
-    void Wildcard(const string& Leftover, const string& ObjHandle, F Func)
+    string Regexify(const string& Wildcard)
     {
-        if (ObjHandle.front() == '@')
-            WildcardAlias(Leftover, ObjHandle, Func);
-        else
-            WildcardCache(Leftover, ObjHandle, Func);
-    }
-
-    template <class F>
-    void Execute(const string& Handle, F Func)
-    {
-        string Leftover = Handle;
-        string ObjHandle = ExtractObjHandle(Leftover);
-        if (ObjHandle.back() == '*')
-            Wildcard(Leftover, ObjHandle, Func);
-        else
-            Leftover.empty() ? Func(&Cache.find(ObjHandle)->second) : GetHolder(ObjHandle)->Execute(Leftover, Func);
-    }
-
-    void WriteAlias(const string& Handle, const string& Alias)
-    {
-        Aliases[Alias] = Handle;
+        return string("^" + Wildcard.substr(0, Wildcard.size() - 1) + ".*");
     }
 
     string ExtractObjHandle(string& Handle)
