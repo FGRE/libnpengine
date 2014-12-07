@@ -19,7 +19,6 @@
 #define OBJECT_HPP
 
 #include "ResourceMgr.hpp"
-#include <boost/algorithm/string/replace.hpp>
 #include <regex>
 
 class Window;
@@ -55,9 +54,7 @@ struct ObjectHolder_t : private Holder<Object>
 
     string Regexify(const string& Wildcard)
     {
-        string Regex("^" + Wildcard);
-        boost::replace_all(Regex, "*", ".*");
-        return Regex;
+        return string("^" + Wildcard.substr(0, Wildcard.size() - 1) + ".*");
     }
 
     template <class F>
@@ -99,7 +96,7 @@ struct ObjectHolder_t : private Holder<Object>
     {
         string Leftover = Handle;
         string ObjHandle = ExtractObjHandle(Leftover);
-        if (ObjHandle.find('*') != string::npos)
+        if (ObjHandle.back() == '*')
             Wildcard(Leftover, ObjHandle, Func);
         else
             Leftover.empty() ? Func(&Cache.find(ObjHandle)->second) : GetHolder(ObjHandle)->Execute(Leftover, Func);
