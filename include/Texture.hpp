@@ -44,7 +44,7 @@ public:
     void Move(int32_t Time, int X, int Y);
     void Zoom(int32_t Time, int X, int Y);
     void Fade(int32_t Time, int Opacity);
-    void DrawTransition(int32_t Time, int32_t Start, int32_t End, const string& Filename);
+    void DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t Boundary, const string& Filename);
     void ApplyBlur(const string& Heaviness);
 
     int GetPriority() { return Priority; }
