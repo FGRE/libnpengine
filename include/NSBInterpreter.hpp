@@ -235,7 +235,7 @@ protected:
     SDL_Event Event;
     queue<SDL_Event> Events;
     Window* pWindow;
-    NSBContext* pContext;
+    NSBContext* pContext, *pNewThread;
     vector<NSBFunction> Builtins;
     Stack Params;
     vector<NSBShortcut> Shortcuts;
