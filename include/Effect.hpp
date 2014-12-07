@@ -173,7 +173,6 @@ public:
 
 class MaskEffect : public FadeEffect, GLTexture
 {
-    // TODO: This shader is incorrect
     const string MaskShader = \
         "uniform sampler2D Texture;"
         "uniform sampler2D Mask;"
@@ -191,7 +190,6 @@ class MaskEffect : public FadeEffect, GLTexture
 public:
     MaskEffect(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time, int32_t Boundary)
     {
-        std::cout << Boundary;
         CompileShader(MaskShader.c_str());
         Reset(Filename, StartOpacity, EndOpacity, Time, Boundary);
     }
