@@ -53,7 +53,7 @@ struct ObjectHolder_t : private Holder<Object>
             GetHolder(ObjHandle)->Write(Leftover, pObject);
     }
 
-    std::string Regexify(const string& Wildcard)
+    string Regexify(const string& Wildcard)
     {
         string Regex("^" + Wildcard);
         boost::replace_all(Regex, "*", ".*");
@@ -68,12 +68,30 @@ struct ObjectHolder_t : private Holder<Object>
     }
 
     template <class F>
-    void Wildcard(const string& Leftover, const string& ObjHandle, F Func)
+    void WildcardAlias(const string& Leftover, const string& ObjHandle, F Func)
+    {
+        std::regex Regex(Regexify(ObjHandle.substr(1)));
+        for (auto i = Aliases.begin(); i != Aliases.end(); ++i)
+            if (std::regex_match(i->first, Regex))
+                Leftover.empty() ? Execute(i->second, Func) : ExecuteSafe(i->second, Leftover, Func);
+    }
+
+    template <class F>
+    void WildcardCache(const string& Leftover, const string& ObjHandle, F Func)
     {
         std::regex Regex(Regexify(ObjHandle));
         for (auto i = Cache.begin(); i != Cache.end(); ++i)
             if (std::regex_match(i->first, Regex))
-                Leftover.empty() ? Func(i) : ExecuteSafe(i->first, Leftover, Func);
+                Leftover.empty() ? Func(&i->second) : ExecuteSafe(i->first, Leftover, Func);
+    }
+
+    template <class F>
+    void Wildcard(const string& Leftover, const string& ObjHandle, F Func)
+    {
+        if (ObjHandle.front() == '@')
+            WildcardAlias(Leftover, ObjHandle, Func);
+        else
+            WildcardCache(Leftover, ObjHandle, Func);
     }
 
     template <class F>
@@ -84,7 +102,7 @@ struct ObjectHolder_t : private Holder<Object>
         if (ObjHandle.find('*') != string::npos)
             Wildcard(Leftover, ObjHandle, Func);
         else
-            Leftover.empty() ? Func(Cache.find(ObjHandle)) : GetHolder(ObjHandle)->Execute(Leftover, Func);
+            Leftover.empty() ? Func(&Cache.find(ObjHandle)->second) : GetHolder(ObjHandle)->Execute(Leftover, Func);
     }
 
     void WriteAlias(const string& Handle, const string& Alias)
@@ -108,7 +126,7 @@ struct ObjectHolder_t : private Holder<Object>
             Handle.clear();
         }
         // Alias
-        if (ObjHandle.front() == '@')
+        if (ObjHandle.front() == '@' && ObjHandle.back() != '*')
         {
             Handle = Aliases[ObjHandle.substr(1)] + "/" + Handle;
             ObjHandle = ExtractObjHandle(Handle);
