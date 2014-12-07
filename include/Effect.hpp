@@ -178,21 +178,25 @@ class MaskEffect : public FadeEffect, GLTexture
         "uniform sampler2D Texture;"
         "uniform sampler2D Mask;"
         "uniform float Alpha;"
+        "uniform float Boundary;"
         "void main()"
         "{"
         "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
         "   vec4 MaskPixel = texture2D(Mask, gl_TexCoord[0].xy);"
-        "   Pixel.a = clamp(1.0f - MaskPixel.r + Alpha, 0, 1);"
+        "   if (MaskPixel.r - Alpha <= 0.0f) Pixel.a = 1.0f;"
+        "   else if (MaskPixel.r - Alpha - Boundary <= 0.0f) Pixel.a = -(MaskPixel.r - Alpha - Boundary) / Boundary;"
+        "   else Pixel.a = 0.0f;"
         "   gl_FragColor = Pixel;"
         "}";
 public:
-    MaskEffect(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time)
+    MaskEffect(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time, int32_t Boundary)
     {
+        std::cout << Boundary;
         CompileShader(MaskShader.c_str());
-        Reset(Filename, StartOpacity, EndOpacity, Time);
+        Reset(Filename, StartOpacity, EndOpacity, Time, Boundary);
     }
 
-    void Reset(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time)
+    void Reset(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time, int32_t Boundary)
     {
         uint8_t* pPixels = LoadPixels(Filename, Width, Height, PNG_COLOR_TYPE_GRAY);
         Create(pPixels, GL_LUMINANCE);
@@ -207,6 +211,7 @@ public:
         glBindTexture(GL_TEXTURE_2D, GLTextureID);
         glUniform1iARB(glGetUniformLocationARB(Program, "Mask"), 1);
         glActiveTextureARB(GL_TEXTURE0_ARB);
+        glUniform1fARB(glGetUniformLocationARB(Program, "Boundary"), Boundary * 0.001f);
     }
 };
 

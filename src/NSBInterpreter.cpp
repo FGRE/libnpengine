@@ -981,13 +981,13 @@ void NSBInterpreter::DrawTransition()
     int32_t Time = PopInt();
     int32_t Start = PopInt();
     int32_t End = PopInt();
-    /*int32_t unk1 = */PopInt();
+    int32_t Boundary = PopInt();
     /*int32_t Tempo = */PopInt();
     string Filename = PopString();
     bool Wait = PopBool();
 
     if (pTexture)
-        pTexture->DrawTransition(Time, Start, End, Filename);
+        pTexture->DrawTransition(Time, Start, End, Boundary, Filename);
 
     if (Wait)
         pContext->Wait(Time);
