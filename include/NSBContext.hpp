@@ -62,6 +62,7 @@ public:
     bool IsActive();
     void Start();
     void Request(const string& State);
+    const string& GetName();
 
 private:
     StackFrame* GetFrame();

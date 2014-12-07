@@ -194,6 +194,7 @@ void NSBInterpreter::RunCommand()
         if (pContext->IsStarving())
         {
             delete pContext;
+            ObjectHolder.Write(pContext->GetName(), nullptr);
             i = Threads.erase(i);
         }
     }
