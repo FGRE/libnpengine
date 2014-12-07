@@ -891,10 +891,10 @@ void NSBInterpreter::Request()
     string Handle = PopString();
     int32_t Request = PopInt();
 
-    ObjectHolder.Execute(Handle, [Request] (map<string, Object*>::iterator i)
+    ObjectHolder.Execute(Handle, [Request] (Object** ppObject)
     {
-        if (i->second)
-            i->second->Request(Request);
+        if (*ppObject)
+            (*ppObject)->Request(Request);
     });
 }
 
@@ -917,9 +917,9 @@ void NSBInterpreter::Zoom()
     /*int32_t Tempo = */PopInt();
     bool Wait = PopBool();
 
-    ObjectHolder.Execute(Handle, [Time, X, Y] (map<string, Object*>::iterator i)
+    ObjectHolder.Execute(Handle, [Time, X, Y] (Object** ppObject)
     {
-        if (Texture* pTexture = dynamic_cast<Texture*>(i->second))
+        if (Texture* pTexture = dynamic_cast<Texture*>(*ppObject))
             pTexture->Zoom(Time, X, Y);
     });
 
@@ -936,9 +936,9 @@ void NSBInterpreter::Move()
     /*int32_t Tempo = */PopInt();
     bool Wait = PopBool();
 
-    ObjectHolder.Execute(Handle, [Time, X, Y] (map<string, Object*>::iterator i)
+    ObjectHolder.Execute(Handle, [Time, X, Y] (Object** ppObject)
     {
-        if (Texture* pTexture = dynamic_cast<Texture*>(i->second))
+        if (Texture* pTexture = dynamic_cast<Texture*>(*ppObject))
             pTexture->Move(Time, X, Y);
     });
 
@@ -1030,9 +1030,9 @@ void NSBInterpreter::Fade()
     /*int32_t Tempo = */PopInt();
     bool Wait = PopBool();
 
-    ObjectHolder.Execute(Handle, [Time, Opacity] (map<string, Object*>::iterator i)
+    ObjectHolder.Execute(Handle, [Time, Opacity] (Object** ppObject)
     {
-        if (Texture* pTexture = dynamic_cast<Texture*>(i->second))
+        if (Texture* pTexture = dynamic_cast<Texture*>(*ppObject))
             pTexture->Fade(Time, Opacity);
     });
 
@@ -1044,14 +1044,14 @@ void NSBInterpreter::Delete()
 {
     string Handle = PopString();
 
-    ObjectHolder.Execute(Handle, [this] (map<string, Object*>::iterator i)
+    ObjectHolder.Execute(Handle, [this] (Object** ppObject)
     {
-        if (i->second)
+        if (*ppObject)
         {
-            i->second->Delete(pWindow);
-            i->second = nullptr;
+            (*ppObject)->Delete(pWindow);
+            *ppObject = nullptr;
         }
-        delete i->second;
+        delete *ppObject;
     });
 }
 
@@ -1073,9 +1073,9 @@ void NSBInterpreter::SetVolume()
     int32_t Volume = PopInt();
     /*int32_t Tempo = */PopInt();
 
-    ObjectHolder.Execute(Handle, [Time, Volume] (map<string, Object*>::iterator i)
+    ObjectHolder.Execute(Handle, [Time, Volume] (Object** ppObject)
     {
-        if (Playable* pPlayable = dynamic_cast<Playable*>(i->second))
+        if (Playable* pPlayable = dynamic_cast<Playable*>(*ppObject))
             pPlayable->SetVolume(Time, Volume);
     });
 }
