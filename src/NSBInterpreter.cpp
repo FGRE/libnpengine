@@ -1049,9 +1049,9 @@ void NSBInterpreter::Delete()
         if (*ppObject)
         {
             (*ppObject)->Delete(pWindow);
+            delete *ppObject;
             *ppObject = nullptr;
         }
-        delete *ppObject;
     });
 }
 
