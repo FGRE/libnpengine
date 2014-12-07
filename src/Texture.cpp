@@ -119,12 +119,12 @@ void Texture::Fade(int32_t Time, int Opacity)
         pFade->Reset(Opacity, 0, Time);
 }
 
-void Texture::DrawTransition(int32_t Time, int32_t Start, int32_t End, const string& Filename)
+void Texture::DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t Boundary, const string& Filename)
 {
     if (!pMask)
-        pMask = new MaskEffect(Filename, Start, End, Time);
+        pMask = new MaskEffect(Filename, Start, End, Time, Boundary);
     else
-        pMask->Reset(Filename, Start, End, Time);
+        pMask->Reset(Filename, Start, End, Time, Boundary);
 }
 
 void Texture::ApplyBlur(const string& Heaviness)
