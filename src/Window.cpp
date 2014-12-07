@@ -121,6 +121,8 @@ void Window::AddTexture(Texture* pTexture)
 
 void Window::RemoveTexture(Texture* pTexture)
 {
+    if (pText == pTexture)
+        pText = nullptr;
     Textures.remove(pTexture);
 }
 
