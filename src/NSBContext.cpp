@@ -181,3 +181,8 @@ void NSBContext::Request(const string& State)
     if (State == "Start")
         Start();
 }
+
+const string& NSBContext::GetName()
+{
+    return Name;
+}
