@@ -22,9 +22,11 @@
 #include "Texture.hpp"
 
 uint32_t SDL_NSB_MOVECURSOR;
+Window* Object::pWindow = nullptr;;
 
 Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), pInterpreter(nullptr), IsRunning(true), EventLoop(false), pText(nullptr)
 {
+    Object::pWindow = this;
     SDL_Init(SDL_INIT_VIDEO);
     SDLWindow = SDL_CreateWindow(WindowTitle, 0, 0, WIDTH, HEIGHT, SDL_WINDOW_OPENGL);
     GLContext = SDL_GL_CreateContext(SDLWindow);

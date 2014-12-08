@@ -27,8 +27,9 @@ class Object
 public:
     virtual ~Object() {}
     virtual void Request(int32_t State) { }
-    virtual void Delete(Window* pWindow) { }
     virtual bool Action() { return false; }
+
+    static Window* pWindow;
 };
 
 class ObjectHolder_t : private Holder<Object>
