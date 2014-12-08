@@ -51,7 +51,6 @@ public:
     void OnEOS();
     void Request(int32_t State);
     bool Action();
-    virtual void Delete(Window* pWindow);
 
     AppSrc* Appsrc;
 protected:

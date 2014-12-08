@@ -202,8 +202,3 @@ bool Playable::Action()
 {
     return RemainTime() <= 0;
 }
-
-void Playable::Delete(Window* pWindow)
-{
-    Stop();
-}

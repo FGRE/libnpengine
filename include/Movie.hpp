@@ -28,7 +28,6 @@ public:
     Movie(const string& FileName, Window* pWindow, int32_t Priority, bool Alpha, bool Audio);
     ~Movie();
 
-    void Delete(Window* pWindow);
     int32_t GetPriority() { return Priority; }
 private:
     void InitVideo(Window* pWindow);
