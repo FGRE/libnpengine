@@ -1053,6 +1053,8 @@ void NSBInterpreter::Delete()
     {
         if (*ppObject)
         {
+            if (NSBContext* pThread = dynamic_cast<NSBContext*>(*ppObject))
+                Threads.remove(pThread);
             (*ppObject)->Delete(pWindow);
             delete *ppObject;
             *ppObject = nullptr;
