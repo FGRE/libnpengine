@@ -74,6 +74,7 @@ uint8_t* GLTexture::LoadPNG(uint8_t* pMem, uint32_t Size, int& Width, int& Heigh
     if (!png_image_begin_read_from_memory(&png, pMem, Size))
         return nullptr;
 
+    png.format = Format;
     uint8_t* pData = new (nothrow) uint8_t[PNG_IMAGE_SIZE(png)];
     if (!pData)
     {
@@ -81,7 +82,6 @@ uint8_t* GLTexture::LoadPNG(uint8_t* pMem, uint32_t Size, int& Width, int& Heigh
         return nullptr;
     }
 
-    png.format = Format;
     if (!png_image_finish_read(&png, NULL, pData, 0, NULL))
     {
         delete[] pData;

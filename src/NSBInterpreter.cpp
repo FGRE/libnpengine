@@ -172,8 +172,6 @@ void NSBInterpreter::ExecuteScript(const string& Filename)
 
 void NSBInterpreter::Run(int NumCommands)
 {
-    sResourceMgr->GetScriptFile("nss/0_boot.nsb")->GetLine(626)->Magic = MAGIC_CLEAR_PARAMS;
-    sResourceMgr->GetScriptFile("nss/0_boot.nsb")->GetLine(633)->Magic = MAGIC_CLEAR_PARAMS;
     if (pNewThread)
     {
         Threads.push_back(pNewThread);
