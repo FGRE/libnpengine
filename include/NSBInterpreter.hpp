@@ -231,11 +231,14 @@ protected:
     void CallScript(const string& Filename, const string& Symbol);
     void Call(uint16_t Magic);
     bool SelectEvent();
+    void AddThread(NSBContext* pThread);
+    void RemoveThread(NSBContext* pThread);
 
+    bool ThreadsModified;
     SDL_Event Event;
     queue<SDL_Event> Events;
     Window* pWindow;
-    NSBContext* pContext, *pNewThread;
+    NSBContext* pContext;
     vector<NSBFunction> Builtins;
     Stack Params;
     vector<NSBShortcut> Shortcuts;
