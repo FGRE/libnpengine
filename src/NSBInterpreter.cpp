@@ -39,7 +39,6 @@ extern "C" { void gst_init(int* argc, char** argv[]); }
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
 pWindow(pWindow),
 pContext(nullptr),
-pNewThread(nullptr),
 Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
 {
     gst_init(nullptr, nullptr);
@@ -172,11 +171,6 @@ void NSBInterpreter::ExecuteScript(const string& Filename)
 
 void NSBInterpreter::Run(int NumCommands)
 {
-    if (pNewThread)
-    {
-        Threads.push_back(pNewThread);
-        pNewThread = nullptr;
-    }
     for (int i = 0; i < NumCommands; ++i)
         RunCommand();
 }
@@ -186,6 +180,7 @@ void NSBInterpreter::RunCommand()
     if (Threads.empty())
         Exit();
 
+    ThreadsModified = false;
     for (auto i = Threads.begin(); i != Threads.end(); ++i)
     {
         pContext = *i;
@@ -199,8 +194,11 @@ void NSBInterpreter::RunCommand()
         {
             ObjectHolder.Write(pContext->GetName(), nullptr);
             delete pContext;
-            i = Threads.erase(i);
+            RemoveThread(pContext);
         }
+
+        if (ThreadsModified)
+            break;
     }
 }
 
@@ -616,6 +614,18 @@ bool NSBInterpreter::SelectEvent()
     }
 }
 
+void NSBInterpreter::AddThread(NSBContext* pThread)
+{
+    Threads.push_back(pThread);
+    ThreadsModified = true;
+}
+
+void NSBInterpreter::RemoveThread(NSBContext* pThread)
+{
+    Threads.remove(pThread);
+    ThreadsModified = true;
+}
+
 string NSBInterpreter::GetString(const string& Name)
 {
     if (Name[0] != '$' && Name[0] != '#')
@@ -839,7 +849,7 @@ void NSBInterpreter::CreateProcess()
 
     NSBContext* pThread = new NSBContext(Handle);
     CallFunction_(pThread, Symbol);
-    pNewThread = pThread;
+    AddThread(pThread);
     ObjectHolder.Write(Handle, pThread);
 }
 
@@ -1054,7 +1064,7 @@ void NSBInterpreter::Delete()
         if (*ppObject)
         {
             if (NSBContext* pThread = dynamic_cast<NSBContext*>(*ppObject))
-                Threads.remove(pThread);
+                RemoveThread(pThread);
             (*ppObject)->Delete(pWindow);
             delete *ppObject;
             *ppObject = nullptr;
