@@ -1237,6 +1237,9 @@ void NSBInterpreter::SetNextFocus()
 
 void NSBInterpreter::PassageTime()
 {
+    string Handle = PopString();
+
+    // [HACK]
     PushInt(0);
 }
 
@@ -1356,6 +1359,9 @@ void NSBInterpreter::CreateClipTexture()
 void NSBInterpreter::ExistSave()
 {
     int32_t Slot = PopInt();
+
+    // [HACK]
+    PushInt(0);
 }
 
 void NSBInterpreter::WaitAction()
