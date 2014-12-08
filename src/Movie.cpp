@@ -29,6 +29,8 @@ Priority(Priority)
 
 Movie::~Movie()
 {
+    X11::SDL_SysWMinfo WindowInfo = pWindow->GetWindowInfo();
+    XDestroyWindow(WindowInfo.info.x11.display, XWin);
 }
 
 void Movie::InitVideo(Window* pWindow)
@@ -68,11 +70,4 @@ void Movie::InitVideo(Window* pWindow)
     gst_element_add_pad(VideoBin, gst_ghost_pad_new("sink", VideoPad));
     gst_object_unref(VideoPad);
     gst_bin_add(GST_BIN(Pipeline), VideoBin);
-}
-
-void Movie::Delete(Window* pWindow)
-{
-    Playable::Delete(pWindow);
-    X11::SDL_SysWMinfo WindowInfo = pWindow->GetWindowInfo();
-    XDestroyWindow(WindowInfo.info.x11.display, XWin);
 }

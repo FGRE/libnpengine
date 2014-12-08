@@ -37,10 +37,6 @@ Texture::~Texture()
     delete pFade;
     delete pMask;
     delete pBlur;
-}
-
-void Texture::Delete(Window* pWindow)
-{
     pWindow->RemoveTexture(this);
 }
 
