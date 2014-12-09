@@ -1199,6 +1199,9 @@ void NSBInterpreter::CreateWindow()
 void NSBInterpreter::CreateChoice()
 {
     ObjectHolder.Write(PopString(), new Choice);
+
+    for (int i = 1; i < pContext->GetNumParams(); ++i)
+        PopInt();
 }
 
 /*

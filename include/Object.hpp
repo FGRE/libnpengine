@@ -21,20 +21,14 @@
 #include "ResourceMgr.hpp"
 #include <regex>
 
-class Window;
-class Object
-{
-public:
-    virtual ~Object() {}
-    virtual void Request(int32_t State) { }
-    virtual bool Action() { return false; }
-
-    static Window* pWindow;
-};
-
+class Object;
 class ObjectHolder_t : private Holder<Object>
 {
 public:
+    virtual ~ObjectHolder_t()
+    {
+    }
+
     Object* Read(const string& Handle)
     {
         string Leftover = Handle;
@@ -127,10 +121,19 @@ private:
 
     ObjectHolder_t* GetHolder(const string& Handle)
     {
-        return dynamic_cast<ObjectHolder_t*>(Holder::Read(Handle));
+        return (ObjectHolder_t*)(Holder::Read(Handle));
     }
 
     map<string, string> Aliases;
+};
+
+class Window;
+struct Object : ObjectHolder_t
+{
+    virtual ~Object() {}
+    virtual void Request(int32_t State) { }
+    virtual bool Action() { return false; }
+    static Window* pWindow;
 };
 
 #endif
