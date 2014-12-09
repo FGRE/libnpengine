@@ -20,7 +20,7 @@
 
 #include "Object.hpp"
 
-struct Name : Object, ObjectHolder_t
+struct Name : Object
 {
 };
 
