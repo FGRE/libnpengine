@@ -616,6 +616,7 @@ bool NSBInterpreter::SelectEvent()
 
 void NSBInterpreter::AddThread(NSBContext* pThread)
 {
+    pThread->Start();
     Threads.push_back(pThread);
     ThreadsModified = true;
 }
