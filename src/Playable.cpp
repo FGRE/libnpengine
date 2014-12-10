@@ -53,23 +53,26 @@ void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
     gst_caps_unref(Caps);
 }
 
+static void SeekData(GstAppSrc* Appsrc, guint64 Offset, AppSrc* pAppsrc)
+{
+    pAppsrc->Offset = Offset;
+}
+
 static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
 {
-    GstFlowReturn ret;
     gsize Size = 4096;
     if (pAppsrc->Offset + Size > pAppsrc->File.GetSize())
     {
         if (pAppsrc->Offset >= pAppsrc->File.GetSize())
         {
-            g_signal_emit_by_name(pAppsrc->Appsrc, "end-of-stream", &ret);
+            gst_app_src_end_of_stream(pAppsrc->Appsrc);
             return;
         }
         Size = pAppsrc->File.GetSize() - pAppsrc->Offset;
     }
     char* pData = pAppsrc->File.ReadData(pAppsrc->Offset, Size);
     GstBuffer* Buffer = gst_buffer_new_wrapped(pData, Size);
-    g_signal_emit_by_name(pAppsrc->Appsrc, "push-buffer", Buffer, &ret);
-    gst_buffer_unref(Buffer);
+    gst_app_src_push_buffer(pAppsrc->Appsrc, Buffer);
     pAppsrc->Offset += Size;
 }
 
@@ -91,9 +94,11 @@ Begin(0)
 {
     Appsrc = new AppSrc(Res);
     Appsrc->Appsrc = (GstAppSrc*)gst_element_factory_make("appsrc", "source");
+    gst_app_src_set_stream_type(Appsrc->Appsrc, GST_APP_STREAM_TYPE_RANDOM_ACCESS);
     Appsrc->Offset = 0;
     gst_app_src_set_size(Appsrc->Appsrc, Res.GetSize());
     g_signal_connect(Appsrc->Appsrc, "need-data", G_CALLBACK(FeedData), Appsrc);
+    g_signal_connect(Appsrc->Appsrc, "seek-data", G_CALLBACK(SeekData), Appsrc);
     InitPipeline((GstElement*)Appsrc->Appsrc);
     InitAudio();
 }
@@ -182,8 +187,8 @@ void Playable::SetPan(int32_t Time, int32_t Pan)
 
 void Playable::SetLoopPoint(int32_t Begin, int32_t End)
 {
-    this->Begin = GST_TIME_AS_MSECONDS(Begin);
-    this->End = GST_TIME_AS_MSECONDS(End);
+    this->Begin = Begin * GST_MSECOND;
+    this->End = End * GST_MSECOND;
 }
 
 void Playable::OnEOS()
