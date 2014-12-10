@@ -24,7 +24,7 @@
 uint32_t SDL_NSB_MOVECURSOR;
 Window* Object::pWindow = nullptr;;
 
-Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), pInterpreter(nullptr), IsRunning(true), EventLoop(false), pText(nullptr)
+Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), pInterpreter(nullptr), IsRunning(true), EventLoop(false)
 {
     Object::pWindow = this;
     SDL_Init(SDL_INIT_VIDEO);
@@ -55,6 +55,7 @@ Window::~Window()
 
 void Window::Run()
 {
+    LastDrawTime = SDL_GetTicks();
     SDL_Event Event;
     while (IsRunning)
     {
@@ -96,17 +97,12 @@ void Window::HandleEvent(SDL_Event Event)
 
 void Window::Draw()
 {
+    uint32_t Diff = SDL_GetTicks() - LastDrawTime;
     glClear(GL_COLOR_BUFFER_BIT);
     for (auto i = Textures.begin(); i != Textures.end(); ++i)
-        (*i)->Draw();
-    if (pText)
-        pText->Draw();
+        (*i)->Draw(Diff);
     SDL_GL_SwapWindow(SDLWindow);
-}
-
-void Window::SetText(Texture* pText)
-{
-    this->pText = pText;
+    LastDrawTime = SDL_GetTicks();
 }
 
 void Window::AddTexture(Texture* pTexture)
@@ -123,8 +119,6 @@ void Window::AddTexture(Texture* pTexture)
 
 void Window::RemoveTexture(Texture* pTexture)
 {
-    if (pText == pTexture)
-        pText = nullptr;
     Textures.remove(pTexture);
 }
 

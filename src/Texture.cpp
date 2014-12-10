@@ -129,15 +129,15 @@ void Texture::ApplyBlur(const string& Heaviness)
         pBlur = new BlurEffect(Heaviness);
 }
 
-void Texture::Draw()
+void Texture::Draw(uint32_t Diff)
 {
     float ScaleX = 1, ScaleY = 1;
     int32_t OffsetX = 0, OffsetY = 0;
 
-    if (pMove) pMove->OnDraw(this, 16);
-    if (pZoom) pZoom->OnDraw(this, 16, OffsetX, OffsetY, ScaleX, ScaleY);
-    if (pFade) pFade->OnDraw(16);
-    if (pMask) pMask->OnDraw(16);
+    if (pMove) pMove->OnDraw(this, Diff);
+    if (pZoom) pZoom->OnDraw(this, Diff, OffsetX, OffsetY, ScaleX, ScaleY);
+    if (pFade) pFade->OnDraw(Diff);
+    if (pMask) pMask->OnDraw(Diff);
 
     GLTexture::Draw(X + OffsetX, Y + OffsetY, Width * ScaleX, Height * ScaleY);
 
