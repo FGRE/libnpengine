@@ -138,6 +138,7 @@ void Playable::InitAudio()
     gst_bin_add(GST_BIN(Pipeline), AudioBin);
 }
 
+// TODO: Should this->End rather than Length be taken into consideration?
 int32_t Playable::RemainTime()
 {
     gint64 Length, Position;
@@ -147,6 +148,7 @@ int32_t Playable::RemainTime()
     return (Length - Position) / GST_MSECOND;
 }
 
+// TODO: Should this->Start be substracted from this?
 int32_t Playable::DurationTime()
 {
     gint64 Length;
@@ -199,8 +201,18 @@ void Playable::OnEOS()
 
 void Playable::Request(int32_t State)
 {
-    if (State == Nsb::PLAY)
-        Play();
+    switch (State)
+    {
+        case Nsb::RESUME:
+            gst_element_set_state(Pipeline, GST_STATE_PLAYING);
+            break;
+        case Nsb::PLAY:
+            Play();
+            break;
+        case Nsb::PAUSE:
+            gst_element_set_state(Pipeline, GST_STATE_PAUSED);
+            break;
+    }
 }
 
 bool Playable::Action()
