@@ -25,7 +25,7 @@
 
 struct AppSrc
 {
-    AppSrc(Resource& Res) : File(Res) { }
+    AppSrc(Resource& Res);
     GstAppSrc* Appsrc;
     gsize Offset;
     Resource File;
@@ -52,7 +52,7 @@ public:
     void Request(int32_t State);
     bool Action();
 
-    AppSrc* Appsrc;
+    std::unique_ptr<AppSrc> Appsrc;
 protected:
     void InitAudio();
     void InitPipeline(GstElement* Source);
