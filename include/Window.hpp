@@ -39,7 +39,6 @@ public:
     void Run();
     void Exit();
     void Select(bool Enable);
-    void SetText(Texture* pText);
     void AddTexture(Texture* pTexture);
     void RemoveTexture(Texture* pTexture);
     void MoveCursor(int32_t X, int32_t Y);
@@ -54,12 +53,12 @@ protected:
 private:
     void Draw();
 
+    uint32_t LastDrawTime;
     bool IsRunning;
     bool EventLoop;
     SDL_Window* SDLWindow;
     SDL_GLContext GLContext;
     list<Texture*> Textures;
-    Texture* pText;
 };
 
 #endif

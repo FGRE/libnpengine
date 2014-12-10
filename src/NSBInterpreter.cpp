@@ -161,7 +161,10 @@ NSBInterpreter::~NSBInterpreter()
 
 void NSBInterpreter::ExecuteLocalScript(const string& Filename)
 {
-    pContext->Call(new ScriptFile(Filename, ScriptFile::NSS), "chapter.main");
+    ScriptFile* pScript = new ScriptFile(Filename, ScriptFile::NSS);
+    for (const string& i : pScript->GetIncludes())
+        sResourceMgr->GetScriptFile(i);
+    pContext->Call(pScript, "chapter.main");
 }
 
 void NSBInterpreter::ExecuteScript(const string& Filename)
@@ -1280,9 +1283,10 @@ void NSBInterpreter::LoadText()
 
     if (Text* pText = Get<Text>(TextHandle))
     {
+        pText->SetPriority(0xFFFF); // [HACK]
         pText->SetWrap(Width);
         pText->Advance();
-        pWindow->SetText(pText);
+        pWindow->AddTexture(pText);
     }
 }
 
