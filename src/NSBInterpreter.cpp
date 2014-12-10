@@ -1185,9 +1185,9 @@ void NSBInterpreter::CreateName()
 void NSBInterpreter::CreateWindow()
 {
     string Handle = PopString();
-    /*int32_t unk = */PopInt();
 
     Window_t* pWindow = new Window_t;
+    pWindow->Priority = PopInt();
     pWindow->X = PopInt();
     pWindow->Y = PopInt();
     pWindow->Width = PopInt();

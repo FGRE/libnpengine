@@ -26,7 +26,7 @@ struct Name : Object
 
 struct Window_t : Name
 {
-    int32_t X, Y, Width, Height;
+    int32_t Priority, X, Y, Width, Height;
 };
 
 #endif
