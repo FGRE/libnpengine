@@ -35,7 +35,7 @@ GstBusSyncReply SyncHandler(GstBus* bus, GstMessage* msg, gpointer Handle)
 
 void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
 {
-    GstCaps* Caps = gst_pad_query_caps(SourcePad, NULL);
+    GstCaps* Caps = gst_pad_query_caps(SourcePad, nullptr);
     GstStructure* Struct = gst_caps_get_structure(Caps, 0);
 
     GstPad* SinkPad;
@@ -76,29 +76,32 @@ static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
     pAppsrc->Offset += Size;
 }
 
-Playable::Playable(const std::string& FileName) :
+AppSrc::AppSrc(Resource& Res) : Offset(0), File(Res)
+{
+    Appsrc = (GstAppSrc*)gst_element_factory_make("appsrc", nullptr);
+    gst_app_src_set_stream_type(Appsrc, GST_APP_STREAM_TYPE_RANDOM_ACCESS);
+    gst_app_src_set_size(Appsrc, Res.GetSize());
+    g_signal_connect(Appsrc, "need-data", G_CALLBACK(FeedData), this);
+    g_signal_connect(Appsrc, "seek-data", G_CALLBACK(SeekData), this);
+}
+
+Playable::Playable(const string& FileName) :
 Appsrc(nullptr),
 Loop(false),
 AudioBin(nullptr),
 Begin(0),
 End(0)
 {
-    GstElement* Filesrc = gst_element_factory_make("filesrc", "source");
-    g_object_set(G_OBJECT(Filesrc), "location", FileName.c_str(), NULL);
+    GstElement* Filesrc = gst_element_factory_make("filesrc", nullptr);
+    g_object_set(G_OBJECT(Filesrc), "location", FileName.c_str(), nullptr);
     InitPipeline(Filesrc);
 }
 
 Playable::Playable(Resource Res) :
+Appsrc(new AppSrc(Res)),
 Loop(false),
 Begin(0)
 {
-    Appsrc = new AppSrc(Res);
-    Appsrc->Appsrc = (GstAppSrc*)gst_element_factory_make("appsrc", "source");
-    gst_app_src_set_stream_type(Appsrc->Appsrc, GST_APP_STREAM_TYPE_RANDOM_ACCESS);
-    Appsrc->Offset = 0;
-    gst_app_src_set_size(Appsrc->Appsrc, Res.GetSize());
-    g_signal_connect(Appsrc->Appsrc, "need-data", G_CALLBACK(FeedData), Appsrc);
-    g_signal_connect(Appsrc->Appsrc, "seek-data", G_CALLBACK(SeekData), Appsrc);
     InitPipeline((GstElement*)Appsrc->Appsrc);
     InitAudio();
 }
@@ -107,32 +110,31 @@ Playable::~Playable()
 {
     Stop();
     gst_object_unref(GST_OBJECT(Pipeline));
-    delete Appsrc;
 }
 
 void Playable::InitPipeline(GstElement* Source)
 {
     Pipeline = gst_pipeline_new("pipeline");
-    GstElement* Decodebin = gst_element_factory_make("decodebin", "decoder");
+    GstElement* Decodebin = gst_element_factory_make("decodebin", nullptr);
     g_signal_connect(Decodebin, "pad-added", G_CALLBACK(LinkPad), this);
-    gst_bin_add_many(GST_BIN(Pipeline), Source, Decodebin, NULL);
+    gst_bin_add_many(GST_BIN(Pipeline), Source, Decodebin, nullptr);
     gst_element_link(Source, Decodebin);
 
     // Set sync handler
     GstBus* Bus = gst_pipeline_get_bus(GST_PIPELINE(Pipeline));
-    gst_bus_set_sync_handler(Bus, (GstBusSyncHandler)SyncHandler, this, NULL);
+    gst_bus_set_sync_handler(Bus, (GstBusSyncHandler)SyncHandler, this, nullptr);
     gst_object_unref(Bus);
 }
 
 void Playable::InitAudio()
 {
     AudioBin = gst_bin_new("audiobin");
-    GstElement* AudioConv = gst_element_factory_make("audioconvert", "aconv");
+    GstElement* AudioConv = gst_element_factory_make("audioconvert", nullptr);
     GstPad* AudioPad = gst_element_get_static_pad(AudioConv, "sink");
-    GstElement* AudioSink = gst_element_factory_make("autoaudiosink", "sink");
-    VolumeFilter = gst_element_factory_make("volume", "afilter");
-    gst_bin_add_many(GST_BIN(AudioBin), AudioConv, VolumeFilter, AudioSink, NULL);
-    gst_element_link_many(AudioConv, VolumeFilter, AudioSink, NULL);
+    GstElement* AudioSink = gst_element_factory_make("autoaudiosink", nullptr);
+    VolumeFilter = gst_element_factory_make("volume", nullptr);
+    gst_bin_add_many(GST_BIN(AudioBin), AudioConv, VolumeFilter, AudioSink, nullptr);
+    gst_element_link_many(AudioConv, VolumeFilter, AudioSink, nullptr);
     gst_element_add_pad(AudioBin, gst_ghost_pad_new("sink", AudioPad));
     gst_object_unref(AudioPad);
     gst_bin_add(GST_BIN(Pipeline), AudioBin);
@@ -142,7 +144,7 @@ void Playable::InitAudio()
 int32_t Playable::RemainTime()
 {
     gint64 Length, Position;
-    gst_element_get_state(Pipeline, NULL, NULL, GST_CLOCK_TIME_NONE);
+    gst_element_get_state(Pipeline, nullptr, nullptr, GST_CLOCK_TIME_NONE);
     gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length);
     gst_element_query_position(Pipeline, GST_FORMAT_TIME, &Position);
     return (Length - Position) / GST_MSECOND;
@@ -152,7 +154,7 @@ int32_t Playable::RemainTime()
 int32_t Playable::DurationTime()
 {
     gint64 Length;
-    gst_element_get_state(Pipeline, NULL, NULL, GST_CLOCK_TIME_NONE);
+    gst_element_get_state(Pipeline, nullptr, nullptr, GST_CLOCK_TIME_NONE);
     gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length);
     return Length / GST_MSECOND;
 }
@@ -170,7 +172,7 @@ void Playable::Stop()
 void Playable::Play()
 {
     gst_element_set_state(Pipeline, GST_STATE_PLAYING);
-    if (gst_element_get_state(Pipeline, NULL, NULL, GST_SECOND) == GST_STATE_CHANGE_SUCCESS)
+    if (gst_element_get_state(Pipeline, nullptr, nullptr, GST_SECOND) == GST_STATE_CHANGE_SUCCESS)
         gst_element_seek_simple(Pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, Begin);
 }
 
@@ -215,7 +217,8 @@ void Playable::Request(int32_t State)
     }
 }
 
+// [HACK]
 bool Playable::Action()
 {
-    return RemainTime() <= 0;
+    return RemainTime() == 0;
 }
