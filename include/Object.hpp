@@ -56,7 +56,7 @@ public:
         if (ObjHandle.back() == '*')
             ObjHandle.front() == '@' ? WildcardAlias(Leftover, ObjHandle, Func) : WildcardCache(Leftover, ObjHandle, Func);
         else
-            Leftover.empty() ? Func(&Cache.find(ObjHandle)->second) : GetHolder(ObjHandle)->Execute(Leftover, Func);
+            Leftover.empty() ? Func(ReadPointer(ObjHandle)) : GetHolder(ObjHandle)->Execute(Leftover, Func);
     }
 
     void WriteAlias(const string& Handle, const string& Alias)
@@ -65,6 +65,14 @@ public:
     }
 
 private:
+    Object** ReadPointer(const string& Path)
+    {
+        auto iter = Cache.find(Path);
+        if (iter != Cache.end())
+            return &iter->second;
+        return nullptr;
+    }
+
     template <class F>
     void ExecuteSafe(const string& HolderHandle, const string& Handle, F Func)
     {

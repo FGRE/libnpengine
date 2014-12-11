@@ -37,7 +37,7 @@ class Playable : public Object
 public:
     Playable(const string& FileName);
     Playable(Resource Res);
-    ~Playable();
+    virtual ~Playable();
 
     void SetVolume(int32_t Time, int32_t Volume);
     void SetFrequency(int32_t Time, int32_t Frequency);
