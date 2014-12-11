@@ -18,6 +18,7 @@
 #include "NSBInterpreter.hpp"
 #include "NSBContext.hpp"
 #include "Texture.hpp"
+#include "Image.hpp"
 #include "Window.hpp"
 #include "Movie.hpp"
 #include "Text.hpp"
@@ -727,7 +728,12 @@ void NSBInterpreter::CreateTexture()
     string Source = PopString();
 
     Texture* pTexture = new Texture;
-    pTexture->LoadFromFile(Source);
+    if (Source.size() < 4 || Source[Source.size() - 4] != '.')
+        pTexture->CreateFromImage(Get<Image>(Source));
+    else
+        pTexture->CreateFromFile(Source, GL_BGRA);
+
+    pTexture->SetVertex(pTexture->GetWidth() / 2, pTexture->GetHeight() / 2);
     pTexture->SetPosition(X(pTexture->GetWidth()), Y(pTexture->GetHeight()));
     pTexture->SetPriority(Priority);
 
@@ -990,7 +996,7 @@ void NSBInterpreter::CreateRenderTexture()
     uint32_t Color = PopColor();
 
     Texture* pTexture = new Texture;
-    pTexture->LoadFromColor(Width, Height, Color);
+    pTexture->CreateFromColor(Width, Height, Color);
     ObjectHolder.Write(Handle, pTexture);
 }
 
@@ -1023,7 +1029,8 @@ void NSBInterpreter::CreateColor()
     uint32_t Color = PopColor();
 
     Texture* pTexture = new Texture;
-    pTexture->LoadFromColor(Width, Height, Color);
+    pTexture->CreateFromColor(Width, Height, Color);
+    pTexture->SetVertex(Width / 2, Height / 2);
     pTexture->SetPosition(X(Width), Y(Height));
     pTexture->SetPriority(Priority);
 
@@ -1036,9 +1043,9 @@ void NSBInterpreter::LoadImage()
     string Handle = PopString();
     string Filename = PopString();
 
-    Texture* pTexture = new Texture;
-    pTexture->LoadFromFile(Filename);
-    ObjectHolder.Write(Handle, pTexture);
+    Image* pImage = new Image;
+    pImage->LoadImage(Filename, GL_BGRA);
+    ObjectHolder.Write(Handle, pImage);
 }
 
 void NSBInterpreter::Fade()
@@ -1065,11 +1072,12 @@ void NSBInterpreter::Delete()
 
     ObjectHolder.Execute(Handle, [this] (Object** ppObject)
     {
-        if (*ppObject)
+        if (Object* pObject = *ppObject)
         {
-            if (NSBContext* pThread = dynamic_cast<NSBContext*>(*ppObject))
+            if (NSBContext* pThread = dynamic_cast<NSBContext*>(pObject))
                 RemoveThread(pThread);
-            delete *ppObject;
+
+            delete pObject;
             *ppObject = nullptr;
         }
     });
@@ -1363,7 +1371,11 @@ void NSBInterpreter::CreateClipTexture()
     string Source = PopString();
 
     Texture* pTexture = new Texture;
-    pTexture->LoadClipFromFile(Source, X2, Y2, Width, Height);
+    if (Source.size() < 4 || Source[Source.size() - 4] != '.')
+        pTexture->CreateFromImageClip(Get<Image>(Source), X2, Y2, Width, Height);
+    else
+        pTexture->CreateFromFileClip(Source, X2, Y2, Width, Height);
+
     pTexture->SetPosition(X1(pTexture->GetWidth()), Y1(pTexture->GetHeight()));
     pTexture->SetPriority(Priority);
 

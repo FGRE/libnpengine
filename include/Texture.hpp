@@ -33,9 +33,6 @@ public:
     virtual ~Texture();
 
     void Request(int32_t State);
-    void LoadFromColor(int Width, int Height, uint32_t Color);
-    void LoadFromFile(const string& Filename);
-    void LoadClipFromFile(const string& Filename, int ClipX, int ClipY, int ClipWidth, int ClipHeight);
     void Draw(int X, int Y, const string& Filename);
     void SetPosition(int X, int Y);
     void SetVertex(int X, int Y);

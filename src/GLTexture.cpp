@@ -16,11 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "GLTexture.hpp"
-#include "ResourceMgr.hpp"
-#include <jpeglib.h>
-#include <png.h>
+#include "Image.hpp"
 #include <cstring>
-#include <new>
 
 GLTexture::GLTexture() :
 Width(0), Height(0),
@@ -48,93 +45,48 @@ void GLTexture::Draw(float X, float Y, float Width, float Height)
     glEnd();
 }
 
-uint8_t* GLTexture::LoadPixels(const string& Filename, int& Width, int& Height, uint8_t Format)
+void GLTexture::CreateFromColor(int Width, int Height, uint32_t Color)
 {
-    uint32_t Size;
-    uint8_t* pData = (uint8_t*)sResourceMgr->Read(Filename, Size);
-    if (!pData)
-        return nullptr;
-
-    uint8_t* pPixels = nullptr;
-    if (Filename.substr(Filename.size() - 3) == "jpg")
-        pPixels = LoadJPEG(pData, Size, Width, Height);
-    else if (Filename.substr(Filename.size() - 3) == "png")
-        pPixels = LoadPNG(pData, Size, Width, Height, Format);
-
-    delete[] pData;
-    return pPixels;
+    Image Img;
+    Img.LoadColor(Width, Height, Color);
+    this->Width = Width;
+    this->Height = Height;
+    Create(Img.GetPixels(), GL_BGRA);
 }
 
-uint8_t* GLTexture::LoadPNG(uint8_t* pMem, uint32_t Size, int& Width, int& Height, uint8_t Format)
+void GLTexture::CreateFromFile(const string& Filename, GLenum Format)
 {
-    png_image png;
-    memset(&png, 0, sizeof(png_image));
-    png.version = PNG_IMAGE_VERSION;
-
-    if (!png_image_begin_read_from_memory(&png, pMem, Size))
-        return nullptr;
-
-    png.format = Format;
-    uint8_t* pData = new (nothrow) uint8_t[PNG_IMAGE_SIZE(png)];
-    if (!pData)
-    {
-        png_image_free(&png);
-        return nullptr;
-    }
-
-    if (!png_image_finish_read(&png, NULL, pData, 0, NULL))
-    {
-        delete[] pData;
-        return nullptr;
-    }
-
-    Width = png.width;
-    Height = png.height;
-    return pData;
+    Image Img;
+    Img.LoadImage(Filename, Format);
+    Width = Img.GetWidth();
+    Height = Img.GetHeight();
+    Create(Img.GetPixels(), Format);
 }
 
-uint8_t* GLTexture::LoadJPEG(uint8_t* pMem, uint32_t Size, int& Width, int& Height)
+void GLTexture::CreateFromImage(Image* pImage)
 {
-    struct jpeg_decompress_struct jpeg;
-    struct jpeg_error_mgr err;
+    Width = pImage->GetWidth();
+    Height = pImage->GetHeight();
+    Create(pImage->GetPixels(), GL_BGRA);
+}
 
-    jpeg.err = jpeg_std_error(&err);
-    jpeg_create_decompress(&jpeg);
-    jpeg_mem_src(&jpeg, pMem, Size);
-    jpeg_read_header(&jpeg, 1);
-    jpeg_start_decompress(&jpeg);
+void GLTexture::CreateFromImageClip(Image* pImage, int ClipX, int ClipY, int ClipWidth, int ClipHeight)
+{
+    uint8_t* pClipped = new uint8_t[ClipWidth * ClipHeight * 4];
+    for (int i = 0; i < ClipHeight; ++i)
+        memcpy(pClipped + i * ClipWidth * 4, pImage->GetPixels() + (pImage->GetWidth() * (ClipY + i) + ClipX) * 4, ClipWidth * 4);
 
-    Width = jpeg.output_width;
-    Height = jpeg.output_height;
-    uint8_t* pData = new (nothrow) uint8_t[Width * Height * 4];
-    if (!pData)
-    {
-        jpeg_abort_decompress(&jpeg);
-        jpeg_destroy_decompress(&jpeg);
-        return nullptr;
-    }
+    Width = ClipWidth;
+    Height = ClipHeight;
+    Create(pClipped, GL_BGRA);
+    delete[] pClipped;
+}
 
-    uint8_t* pRow = new (nothrow) uint8_t[Width * jpeg.output_components];
-    if (!pRow)
-    {
-        delete[] pData;
-        jpeg_abort_decompress(&jpeg);
-        jpeg_destroy_decompress(&jpeg);
-        return nullptr;
-    }
-
-    uint32_t* pPixel = (uint32_t*)pData;
-    for (int y = 0; y < Height; ++y)
-    {
-        jpeg_read_scanlines(&jpeg, &pRow, 1);
-        for (int x = 0; x < Width; ++x, ++pPixel)
-            *pPixel = 0xFF << 24 | pRow[x * 3] << 16 | pRow[x * 3 + 1] << 8 | pRow[x * 3 + 2];
-    }
-
-    jpeg_finish_decompress(&jpeg);
-    jpeg_destroy_decompress(&jpeg);
-    delete[] pRow;
-    return pData;
+void GLTexture::CreateFromFileClip(const string& Filename, int ClipX, int ClipY, int ClipWidth, int ClipHeight)
+{
+    Image Img;
+    Img.LoadImage(Filename, GL_BGRA);
+    CreateFromImageClip(&Img, ClipX, ClipY, ClipWidth, ClipHeight);
 }
 
 void GLTexture::Create(uint8_t* Pixels, GLenum Format)
