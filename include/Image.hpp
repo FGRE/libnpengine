@@ -15,34 +15,30 @@
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
-#ifndef GL_TEXTURE_HPP
-#define GL_TEXTURE_HPP
+#ifndef IMAGE_HPP
+#define IMAGE_HPP
 
 #include <SDL2/SDL_opengl.h>
-#include <string>
-using namespace std;
+#include "Object.hpp"
 
-class Image;
-class GLTexture
+class Image : public Object
 {
 public:
-    GLTexture();
-    virtual ~GLTexture();
+    Image();
+    ~Image();
 
-    void Draw(float X, float Y, float Width, float Height);
+    int GetWidth() const { return Width; }
+    int GetHeight() const { return Height; }
+    uint8_t* GetPixels() const { return pPixels; }
+    void LoadColor(int Width, int Height, uint32_t Color);
+    void LoadImage(const string& Filename, GLenum Format);
 
-    void CreateFromImage(Image* pImage);
-    void CreateFromImageClip(Image* pImage, int ClipX, int ClipY, int ClipWidth, int ClipHeight);
-    void CreateFromColor(int Width, int Height, uint32_t Color);
-    void CreateFromFile(const string& Filename, GLenum Format);
-    void CreateFromFileClip(const string& Filename, int ClipX, int ClipY, int ClipWidth, int ClipHeight);
-
-protected:
-    void Create(uint8_t* Pixels, GLenum Format);
-    void SetSmoothing(bool Set);
+private:
+    uint8_t* LoadPNG(uint8_t* pMem, uint32_t Size, uint8_t Format);
+    uint8_t* LoadJPEG(uint8_t* pMem, uint32_t Size);
 
     int Width, Height;
-    GLuint GLTextureID;
+    uint8_t* pPixels;
 };
 
 #endif

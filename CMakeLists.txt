@@ -80,6 +80,7 @@ add_library(npengine SHARED
     src/Text.cpp
     src/Parser.cpp
     src/Lexer.cpp
+    src/Image.cpp
 )
 
 # install headers and library
