@@ -55,6 +55,24 @@ void Texture::LoadFromFile(const string& Filename)
     OY = Height / 2;
 }
 
+void Texture::LoadClipFromFile(const string& Filename, int ClipX, int ClipY, int ClipWidth, int ClipHeight)
+{
+    uint8_t* pPixels = LoadPixels(Filename, Width, Height, PNG_FORMAT_BGRA);
+    uint8_t* pClipped = new uint8_t[ClipWidth * ClipHeight * 4];
+
+    for (int i = 0; i < ClipHeight; ++i)
+        memcpy(pClipped + i * ClipWidth * 4, pPixels + (Width * (ClipY + i) + ClipX) * 4, ClipWidth * 4);
+
+    Width = ClipWidth;
+    Height = ClipHeight;
+    OX = Width / 2;
+    OY = Height / 2;
+    Create(pClipped, GL_BGRA);
+
+    delete[] pPixels;
+    delete[] pClipped;
+}
+
 void Texture::LoadFromColor(int Width, int Height, uint32_t Color)
 {
     this->Width = Width;
