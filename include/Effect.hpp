@@ -196,9 +196,7 @@ public:
 
     void Reset(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time, int32_t Boundary)
     {
-        uint8_t* pPixels = LoadPixels(Filename, Width, Height, PNG_COLOR_TYPE_GRAY);
-        Create(pPixels, GL_LUMINANCE);
-        delete[] pPixels;
+        CreateFromFile(Filename, GL_LUMINANCE);
         LerpEffect::Reset(StartOpacity, EndOpacity, 0, 0, Time);
 
         if (!Program)

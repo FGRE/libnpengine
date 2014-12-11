@@ -17,8 +17,8 @@
  * */
 #include "Effect.hpp"
 #include "Window.hpp"
+#include "Image.hpp"
 #include "nsbconstants.hpp"
-#include <vector>
 
 Texture::Texture() :
 pMove(nullptr),
@@ -46,50 +46,12 @@ void Texture::Request(int32_t State)
         SetSmoothing(true);
 }
 
-void Texture::LoadFromFile(const string& Filename)
-{
-    uint8_t* pPixels = LoadPixels(Filename, Width, Height, PNG_FORMAT_BGRA);
-    Create(pPixels, GL_BGRA);
-    delete[] pPixels;
-    OX = Width / 2;
-    OY = Height / 2;
-}
-
-void Texture::LoadClipFromFile(const string& Filename, int ClipX, int ClipY, int ClipWidth, int ClipHeight)
-{
-    uint8_t* pPixels = LoadPixels(Filename, Width, Height, PNG_FORMAT_BGRA);
-    uint8_t* pClipped = new uint8_t[ClipWidth * ClipHeight * 4];
-
-    for (int i = 0; i < ClipHeight; ++i)
-        memcpy(pClipped + i * ClipWidth * 4, pPixels + (Width * (ClipY + i) + ClipX) * 4, ClipWidth * 4);
-
-    Width = ClipWidth;
-    Height = ClipHeight;
-    OX = Width / 2;
-    OY = Height / 2;
-    Create(pClipped, GL_BGRA);
-
-    delete[] pPixels;
-    delete[] pClipped;
-}
-
-void Texture::LoadFromColor(int Width, int Height, uint32_t Color)
-{
-    this->Width = Width;
-    this->Height = Height;
-    vector<uint32_t> Data(Width * Height, Color);
-    Create((uint8_t*)&Data[0], GL_BGRA);
-    OX = Width / 2;
-    OY = Height / 2;
-}
-
 void Texture::Draw(int X, int Y, const string& Filename)
 {
-    int Width, Height;
-    uint8_t* pPixels = LoadPixels(Filename, Width, Height, PNG_FORMAT_BGRA);
+    Image Img;
+    Img.LoadImage(Filename, GL_BGRA);
     glBindTexture(GL_TEXTURE_2D, GLTextureID);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, X, Y, Width, Height, GL_BGRA, GL_UNSIGNED_BYTE, pPixels);
-    delete[] pPixels;
+    glTexSubImage2D(GL_TEXTURE_2D, 0, X, Y, Img.GetWidth(), Img.GetHeight(), GL_BGRA, GL_UNSIGNED_BYTE, Img.GetPixels());
 }
 
 void Texture::SetPosition(int X, int Y)
