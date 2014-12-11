@@ -1356,11 +1356,19 @@ void NSBInterpreter::CreateClipTexture()
     int32_t Priority = PopInt();
     PosFunc X1 = PopPos();
     PosFunc Y1 = PopPos();
-    PosFunc X2 = PopPos();
-    PosFunc Y2 = PopPos();
+    int32_t X2 = PopInt();
+    int32_t Y2 = PopInt();
     int32_t Width = PopInt();
     int32_t Height = PopInt();
     string Source = PopString();
+
+    Texture* pTexture = new Texture;
+    pTexture->LoadClipFromFile(Source, X2, Y2, Width, Height);
+    pTexture->SetPosition(X1(pTexture->GetWidth()), Y1(pTexture->GetHeight()));
+    pTexture->SetPriority(Priority);
+
+    pWindow->AddTexture(pTexture);
+    ObjectHolder.Write(Handle, pTexture);
 }
 
 void NSBInterpreter::ExistSave()
