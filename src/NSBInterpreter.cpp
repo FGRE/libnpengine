@@ -334,13 +334,10 @@ void NSBInterpreter::Literal()
     const string& Val = pContext->GetParam(1);
     if (Type == "STRING")
     {
-        if (Variable* pVar = LocalVariableHolder.Read(Val))
-        {
-            PushVar(pVar);
-            LocalVariableHolder.Write(Val, nullptr);
-        }
-        else if (Nsb::IsValidConstant(Val))
+        if (Nsb::IsValidConstant(Val))
             PushInt(Nsb::ConstantToValue(Val));
+        else if (Variable* pVar = GetVar(Val))
+            PushVar(pVar);
         else
             PushString(Val);
     }
@@ -543,12 +540,7 @@ void NSBInterpreter::PushVar(Variable* pVar)
 
 void NSBInterpreter::Assign_(int Index)
 {
-    string Name = pContext->GetParam(Index);
-    Variable* pVar = PopVar();
-    if (Name[0] == '$')
-        SetVar(Name, pVar);
-    else
-        LocalVariableHolder.Write(Name, pVar);
+    SetVar(pContext->GetParam(Index), PopVar());
 }
 
 void NSBInterpreter::IntUnaryOp(function<int32_t(int32_t)> Func)

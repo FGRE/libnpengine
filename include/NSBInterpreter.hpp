@@ -245,7 +245,6 @@ protected:
     vector<ScriptFile*> Scripts;
     list<NSBContext*> Threads;
     Holder<Variable> VariableHolder;
-    Holder<Variable> LocalVariableHolder;
     ObjectHolder_t ObjectHolder;
 };
 
