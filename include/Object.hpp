@@ -56,7 +56,7 @@ public:
         if (ObjHandle.back() == '*')
             ObjHandle.front() == '@' ? WildcardAlias(Leftover, ObjHandle, Func) : WildcardCache(Leftover, ObjHandle, Func);
         else
-            Leftover.empty() ? CallSafe(ReadPointer(ObjHandle), Func) : GetHolder(ObjHandle)->Execute(Leftover, Func);
+            Leftover.empty() ? CallSafe(ReadPointer(ObjHandle), Func) : ExecuteSafe(ObjHandle, Leftover, Func);
     }
 
     void WriteAlias(const string& Handle, const string& Alias)
