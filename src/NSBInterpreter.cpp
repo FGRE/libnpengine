@@ -781,8 +781,8 @@ void NSBInterpreter::MoveCursor()
 void NSBInterpreter::Position()
 {
     Texture* pTexture = Get<Texture>(PopString());
-    SetInt(PopString(), pTexture->GetX());
-    SetInt(PopString(), pTexture->GetY());
+    SetInt(pContext->GetParam(1), pTexture->GetX());
+    SetInt(pContext->GetParam(2), pTexture->GetY());
 }
 
 void NSBInterpreter::Wait()
