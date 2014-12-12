@@ -220,5 +220,5 @@ void Playable::Request(int32_t State)
 // [HACK]
 bool Playable::Action()
 {
-    return RemainTime() == 0;
+    return RemainTime() <= 0;
 }

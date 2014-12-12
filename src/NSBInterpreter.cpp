@@ -188,6 +188,7 @@ void NSBInterpreter::RunCommand()
     for (auto i = Threads.begin(); i != Threads.end(); ++i)
     {
         pContext = *i;
+        pContext->TryWake();
 
         while (pContext->IsActive() && !pContext->IsStarving() && !pContext->IsSleeping() && pContext->Advance() != MAGIC_CLEAR_PARAMS)
             if (pContext->GetMagic() < Builtins.size())
@@ -215,7 +216,7 @@ void NSBInterpreter::HandleEvent(const SDL_Event& Event)
 {
     if (Event.type == SDL_MOUSEBUTTONDOWN)
         for (auto pContext : Threads)
-            pContext->TryWake();
+            pContext->OnClick();
 
     if (Event.type == SDL_KEYDOWN)
         for (NSBShortcut& Shortcut : Shortcuts)
@@ -744,13 +745,13 @@ void NSBInterpreter::CreateTexture()
 void NSBInterpreter::ImageHorizon()
 {
     Texture* pTexture = Get<Texture>(PopString());
-    PushInt(pTexture->GetWidth());
+    PushInt(pTexture ? pTexture->GetWidth() : 0);
 }
 
 void NSBInterpreter::ImageVertical()
 {
     Texture* pTexture = Get<Texture>(PopString());
-    PushInt(pTexture->GetHeight());
+    PushInt(pTexture ? pTexture->GetHeight() : 0);
 }
 
 void NSBInterpreter::Time()

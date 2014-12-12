@@ -57,6 +57,7 @@ public:
     void Wait(int32_t Time);
     void Wake();
     void TryWake();
+    void OnClick();
     bool IsStarving();
     bool IsSleeping();
     bool IsActive();

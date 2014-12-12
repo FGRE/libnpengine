@@ -151,7 +151,13 @@ void NSBContext::Wake()
 
 void NSBContext::TryWake()
 {
-    if (WaitInterrupt || (pText && !pText->Advance()) || (pObject && pObject->Action()))
+    if (pObject && pObject->Action())
+        Wake();
+}
+
+void NSBContext::OnClick()
+{
+    if (WaitInterrupt || (pText && !pText->Advance()))
         Wake();
 }
 
