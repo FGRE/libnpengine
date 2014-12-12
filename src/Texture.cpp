@@ -76,7 +76,7 @@ void Texture::Move(int32_t Time, int X, int Y)
     if (!pMove)
         pMove = new MoveEffect(X, Y, Time);
     else
-        pMove->Reset(X, Y, Time);
+        pMove->ResetRelative(X, Y, Time);
 }
 
 void Texture::Zoom(int32_t Time, int X, int Y)

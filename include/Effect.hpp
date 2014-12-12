@@ -106,6 +106,11 @@ public:
         Reset(EndX, EndY, Time);
     }
 
+    void ResetRelative(int32_t EndX, int32_t EndY, int32_t Time)
+    {
+        Reset(this->EndX, this->EndX + EndX, this->EndY, this->EndY + EndY, Time);
+    }
+
     void OnDraw(Texture* pTexture, int32_t diff)
     {
         int32_t x, y;
