@@ -28,8 +28,9 @@ class Variable
 protected:
     enum
     {
-        INT,
-        STRING
+        NSB_INT = 1,
+        NSB_STRING = 2,
+        NSB_NULL = NSB_INT | NSB_STRING
     } Tag;
     union
     {
@@ -47,6 +48,7 @@ protected:
 public:
     virtual ~Variable();
 
+    static Variable* MakeNull();
     static Variable* MakeInt(int32_t Int);
     static Variable* MakeString(const string& Str);
     static Variable* MakeCopy(Variable* pVar);
