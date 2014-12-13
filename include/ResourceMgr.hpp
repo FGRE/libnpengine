@@ -39,17 +39,30 @@ struct Holder
         for_each(Cache.begin(), Cache.end(), MapDeleter());
     }
 
-    T* Read(const string& Path)
+    T** ReadPointer(const string& Path)
     {
         auto iter = Cache.find(Path);
         if (iter != Cache.end())
-            return iter->second;
+            return &iter->second;
+        return nullptr;
+    }
+
+    T* Read(const string& Path)
+    {
+        if (T** ppT = ReadPointer(Path))
+            return *ppT;
         return nullptr;
     }
 
     void Write(const string& Path, T* Data)
     {
-        Cache[Path] = Data;
+        if (T** ppT = ReadPointer(Path))
+        {
+            delete *ppT;
+            *ppT = Data;
+        }
+        else
+            Cache[Path] = Data;
     }
 
     map<string, T*> Cache;

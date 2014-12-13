@@ -48,6 +48,11 @@ public:
             GetHolder(ObjHandle)->Write(Leftover, pObject);
     }
 
+    void Delete(const string& Handle)
+    {
+        Write(Handle, nullptr);
+    }
+
     template <class F>
     void Execute(const string& Handle, F Func)
     {
@@ -65,14 +70,6 @@ public:
     }
 
 private:
-    Object** ReadPointer(const string& Path)
-    {
-        auto iter = Cache.find(Path);
-        if (iter != Cache.end())
-            return &iter->second;
-        return nullptr;
-    }
-
     template <class F>
     void CallSafe(Object** ppObject, F Func)
     {
