@@ -150,6 +150,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_CREATE_CLIP_TEXTURE] = { &NSBInterpreter::CreateClipTexture, 9 };
     Builtins[MAGIC_EXIST_SAVE] = { &NSBInterpreter::ExistSave, 1 };
     Builtins[MAGIC_WAIT_ACTION] = { &NSBInterpreter::WaitAction, NSB_VARARGS };
+    Builtins[MAGIC_LOAD] = { &NSBInterpreter::Load, 1 };
 
     pContext = new NSBContext("__nitroscript_main__");
     pContext->Start();
@@ -1250,7 +1251,7 @@ void NSBInterpreter::SetNextFocus()
 
 void NSBInterpreter::PassageTime()
 {
-    string Handle = PopString();
+    /*string Handle = */PopString();
 
     // [HACK]
     PushInt(0);
@@ -1263,11 +1264,7 @@ void NSBInterpreter::ParseText()
     string XML = pContext->GetParam(2);
 
     if (Variable* pVar = GetVar("$SYSTEM_present_text"))
-    {
-        string OldHandle = pVar->ToString();
-        if (Text* pText = Get<Text>(OldHandle))
-            ObjectHolder.Delete(OldHandle);
-    }
+        ObjectHolder.Delete(pVar->ToString());
 
     Text* pText = new Text(XML);
     Handle = Box + "/" + Handle;
@@ -1281,7 +1278,7 @@ void NSBInterpreter::LoadText()
     /*string unk = */PopString();
     string TextHandle = PopString();
     int32_t Width = PopInt();
-    int32_t Height = PopInt();
+    /*int32_t Height = */PopInt();
     /*int32_t unk = */PopInt();
     /*int32_t unk = */PopInt();
 
@@ -1305,17 +1302,17 @@ void NSBInterpreter::WaitText()
 
 void NSBInterpreter::LockVideo()
 {
-    bool Lock = PopBool();
+    /*bool Lock = */PopBool();
 }
 
 void NSBInterpreter::Save()
 {
-    int32_t Slot = PopInt();
+    /*int32_t Slot = */PopInt();
 }
 
 void NSBInterpreter::DeleteSaveFile()
 {
-    int32_t Slot = PopInt();
+    /*int32_t Slot = */PopInt();
 }
 
 void NSBInterpreter::Conquest()
@@ -1339,11 +1336,11 @@ void NSBInterpreter::ClearBacklog()
 
 void NSBInterpreter::SetFont()
 {
-    string Font = PopString();
-    int32_t Size = PopInt();
-    uint32_t InColor = PopColor();
-    uint32_t OutColor = PopColor();
-    int32_t Weight = PopInt();
+    /*string Font = */PopString();
+    /*int32_t Size = */PopInt();
+    /*uint32_t InColor = */PopColor();
+    /*uint32_t OutColor = */PopColor();
+    /*int32_t Weight = */PopInt();
     /*string unk = */PopString();
 }
 
@@ -1381,7 +1378,7 @@ void NSBInterpreter::CreateClipTexture()
 
 void NSBInterpreter::ExistSave()
 {
-    int32_t Slot = PopInt();
+    /*int32_t Slot = */PopInt();
 
     // [HACK]
     PushInt(0);
@@ -1394,4 +1391,9 @@ void NSBInterpreter::WaitAction()
 
     if (Object* pObject = GetObject(Handle))
         pContext->WaitAction(pObject, Time);
+}
+
+void NSBInterpreter::Load()
+{
+    /*int32_t Slot = */PopInt();
 }

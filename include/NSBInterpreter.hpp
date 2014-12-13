@@ -201,6 +201,7 @@ protected:
     void CreateClipTexture();
     void ExistSave();
     void WaitAction();
+    void Load();
 
     int32_t PopInt();
     string PopString();
