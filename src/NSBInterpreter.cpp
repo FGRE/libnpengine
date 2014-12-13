@@ -110,7 +110,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_VERTEX] = { &NSBInterpreter::SetVertex, 3 };
     Builtins[MAGIC_ZOOM] = { &NSBInterpreter::Zoom, 6 };
     Builtins[MAGIC_MOVE] = { &NSBInterpreter::Move, 6 };
-    Builtins[MAGIC_APPLY_BLUR] = { &NSBInterpreter::ApplyBlur, 2 };
+    Builtins[MAGIC_SET_SHADE] = { &NSBInterpreter::SetShade, 2 };
     Builtins[MAGIC_DRAW_TO_TEXTURE] = { &NSBInterpreter::DrawToTexture, 4 };
     Builtins[MAGIC_CREATE_RENDER_TEXTURE] = { &NSBInterpreter::CreateRenderTexture, 4 };
     Builtins[MAGIC_DRAW_TRANSITION] = { &NSBInterpreter::DrawTransition, 8 };
@@ -964,10 +964,10 @@ void NSBInterpreter::Move()
         pContext->Wait(Time);
 }
 
-void NSBInterpreter::ApplyBlur()
+void NSBInterpreter::SetShade()
 {
     if (Texture* pTexture = Get<Texture>(PopString()))
-        pTexture->ApplyBlur(PopString());
+        pTexture->SetShade(PopString());
 }
 
 void NSBInterpreter::DrawToTexture()
