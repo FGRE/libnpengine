@@ -103,10 +103,11 @@ void Texture::DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t B
         pMask->Reset(Filename, Start, End, Time, Boundary);
 }
 
-void Texture::ApplyBlur(const string& Heaviness)
+void Texture::SetShade(const string& Shade)
 {
+    // TODO: Support for other shaders as well
     if (!pBlur)
-        pBlur = new BlurEffect(Heaviness);
+        pBlur = new BlurEffect(Shade);
 }
 
 void Texture::Draw(uint32_t Diff)

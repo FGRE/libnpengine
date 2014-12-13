@@ -42,7 +42,7 @@ public:
     void Zoom(int32_t Time, int X, int Y);
     void Fade(int32_t Time, int Opacity);
     void DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t Boundary, const string& Filename);
-    void ApplyBlur(const string& Heaviness);
+    void SetShade(const string& Shade);
 
     int GetPriority() { return Priority; }
     int GetWidth() { return Width; }
