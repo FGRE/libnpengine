@@ -161,7 +161,7 @@ protected:
     void SetVertex();
     void Zoom();
     void Move();
-    void ApplyBlur();
+    void SetShade();
     void DrawToTexture();
     void CreateRenderTexture();
     void DrawTransition();
