@@ -430,11 +430,9 @@ void NSBInterpreter::Jump()
 
 Variable* NSBInterpreter::PopVar()
 {
-    // TODO: This is a nasty hack (see: ArrayVariable::Find(int32_t))
-    Variable* pVar = Params.Pop();
-    if (!pVar)
-        return Variable::MakeInt(0);
-    return pVar;
+    if (Variable* pVar = Params.Pop())
+        return pVar;
+    return Variable::MakeNull();
 }
 
 ArrayVariable* NSBInterpreter::PopArr()
@@ -638,7 +636,12 @@ Variable* NSBInterpreter::GetVar(const string& Name)
 
 ArrayVariable* NSBInterpreter::GetArr(const string& Name)
 {
-    return dynamic_cast<ArrayVariable*>(GetVar(Name));
+    if (Variable* pVariable = GetVar(Name))
+        return dynamic_cast<ArrayVariable*>(pVariable);
+
+    ArrayVariable* pArr = new ArrayVariable;
+    VariableHolder.Write(Name, pArr);
+    return pArr;
 }
 
 Object* NSBInterpreter::GetObject(const string& Name)
@@ -834,7 +837,11 @@ void NSBInterpreter::VariableValue()
 {
     string Type = PopString();
     string Name = PopString();
-    if (pContext->GetNumParams() == 3)
+
+    // Check if it's array index. Not sure about this...
+    if (Name.size() > 3 && Name[Name.size() - 3] == '[' && Name.back() == ']' && isdigit(Name[Name.size() - 2]))
+        PushVar(GetArr(Name.substr(0, Name.size() - 3))->Find(Name[Name.size() - 2] - '0'));
+    else if (pContext->GetNumParams() == 3)
         SetVar(Type + Name, PopVar());
     else if (pContext->GetNumParams() == 2)
         PushVar(GetVar(Type + Name));
@@ -879,7 +886,7 @@ void NSBInterpreter::ArrayRead()
     ArrayVariable* pArr = GetArr(pContext->GetParam(0));
     int32_t Depth = stoi(pContext->GetParam(1));
     Params.Begin(Depth);
-    while (Depth --> 0 && pArr)
+    while (Depth --> 0)
     {
         Variable* pVar = PopVar();
         if (pVar->IsInt())
