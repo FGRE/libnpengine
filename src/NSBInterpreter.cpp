@@ -197,8 +197,7 @@ void NSBInterpreter::RunCommand()
         ClearParams();
         if (pContext->IsStarving())
         {
-            ObjectHolder.Write(pContext->GetName(), nullptr);
-            delete pContext;
+            ObjectHolder.Delete(pContext->GetName());
             RemoveThread(pContext);
         }
 
@@ -1267,10 +1266,7 @@ void NSBInterpreter::ParseText()
     {
         string OldHandle = pVar->ToString();
         if (Text* pText = Get<Text>(OldHandle))
-        {
-            ObjectHolder.Write(OldHandle, nullptr);
-            delete pText;
-        }
+            ObjectHolder.Delete(OldHandle);
     }
 
     Text* pText = new Text(XML);
