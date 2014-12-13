@@ -30,13 +30,13 @@ Variable::~Variable()
 void Variable::Initialize(int32_t Int)
 {
     Val.Int = Int;
-    Tag = INT;
+    Tag = NSB_INT;
 }
 
 void Variable::Initialize(const string& Str)
 {
     Val.Str = new string(Str);
-    Tag = STRING;
+    Tag = NSB_STRING;
 }
 
 void Variable::Initialize(Variable* pVar)
@@ -67,6 +67,14 @@ Variable* Variable::MakeString(const string& Str)
     return pVar;
 }
 
+Variable* Variable::MakeNull()
+{
+    Variable* pVar = new Variable;
+    pVar->Val.Str = 0;
+    pVar->Tag = NSB_NULL;
+    return pVar;
+}
+
 Variable* Variable::MakeCopy(Variable* pVar)
 {
     Variable* pNew = new Variable;
@@ -76,24 +84,26 @@ Variable* Variable::MakeCopy(Variable* pVar)
 
 int32_t Variable::ToInt()
 {
+    if (Tag == NSB_NULL) return 0;
     assert(IsInt());
     return Val.Int;
 }
 
 string Variable::ToString()
 {
+    if (Tag == NSB_NULL) return "";
     assert(IsString());
     return *Val.Str;
 }
 
 bool Variable::IsInt()
 {
-    return Tag == INT;
+    return Tag & NSB_INT;
 }
 
 bool Variable::IsString()
 {
-    return Tag == STRING;
+    return Tag & NSB_STRING;
 }
 
 void Variable::Set(Variable* pVar)
@@ -112,9 +122,9 @@ Variable* Variable::Add(Variable* pFirst, Variable* pSecond)
 {
     Variable* pThird = nullptr;
     if (pFirst->IsInt() && pSecond->IsInt())
-        pThird = MakeInt(pFirst->Val.Int + pSecond->Val.Int);
+        pThird = MakeInt(pFirst->ToInt() + pSecond->ToInt());
     else if (pFirst->IsString() && pSecond->IsString())
-        pThird = MakeString(*pFirst->Val.Str + *pSecond->Val.Str);
+        pThird = MakeString(pFirst->ToString() + pSecond->ToString());
     Destroy(pFirst);
     Destroy(pSecond);
     return pThird;
@@ -124,9 +134,9 @@ Variable* Variable::Equal(Variable* pFirst, Variable* pSecond)
 {
     Variable* pThird = nullptr;
     if (pFirst->IsInt() && pSecond->IsInt())
-        pThird = MakeInt(pFirst->Val.Int == pSecond->Val.Int);
-    else if (pFirst->Tag == STRING && pSecond->Tag == STRING)
-        pThird = MakeInt(*pFirst->Val.Str == *pSecond->Val.Str);
+        pThird = MakeInt(pFirst->ToInt() == pSecond->ToInt());
+    else if (pFirst->IsString() && pSecond->IsString())
+        pThird = MakeInt(pFirst->ToString() == pSecond->ToString());
     Destroy(pFirst);
     Destroy(pSecond);
     return pThird;
