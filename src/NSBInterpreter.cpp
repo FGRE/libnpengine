@@ -38,6 +38,10 @@
 extern "C" { void gst_init(int* argc, char** argv[]); }
 
 NSBInterpreter::NSBInterpreter(Window* pWindow) :
+pDebuggerThread(nullptr),
+LogCalls(false),
+DbgStepping(false),
+RunInterpreter(true),
 pWindow(pWindow),
 pContext(nullptr),
 Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
@@ -152,13 +156,16 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_WAIT_ACTION] = { &NSBInterpreter::WaitAction, NSB_VARARGS };
     Builtins[MAGIC_LOAD] = { &NSBInterpreter::Load, 1 };
 
-    pContext = new NSBContext("__nitroscript_main__");
+    pContext = new NSBContext("__main__");
     pContext->Start();
     Threads.push_back(pContext);
 }
 
 NSBInterpreter::~NSBInterpreter()
 {
+    if (pDebuggerThread)
+        pDebuggerThread->join();
+    delete pDebuggerThread;
 }
 
 void NSBInterpreter::ExecuteLocalScript(const string& Filename)
@@ -185,6 +192,9 @@ void NSBInterpreter::RunCommand()
     if (Threads.empty())
         Exit();
 
+    if (!RunInterpreter)
+        return;
+
     ThreadsModified = false;
     for (auto i = Threads.begin(); i != Threads.end(); ++i)
     {
@@ -192,8 +202,13 @@ void NSBInterpreter::RunCommand()
         pContext->TryWake();
 
         while (pContext->IsActive() && !pContext->IsStarving() && !pContext->IsSleeping() && pContext->Advance() != MAGIC_CLEAR_PARAMS)
+        {
+            if (pContext->GetName() == "__main__")
+                DebuggerTick();
+
             if (pContext->GetMagic() < Builtins.size())
                  Call(pContext->GetMagic());
+        }
 
         ClearParams();
         if (pContext->IsStarving())

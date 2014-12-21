@@ -81,6 +81,7 @@ add_library(npengine SHARED
     src/Parser.cpp
     src/Lexer.cpp
     src/Image.cpp
+    src/NSBDebugger.cpp
 )
 
 # install headers and library

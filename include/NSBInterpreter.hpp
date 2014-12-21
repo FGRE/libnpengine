@@ -25,6 +25,7 @@
 #include <deque>
 #include <functional>
 #include <queue>
+#include <thread>
 using namespace std;
 
 class Stack
@@ -68,6 +69,7 @@ private:
 
 typedef function<int32_t(int32_t)> PosFunc;
 
+class Line;
 class Window;
 class Texture;
 class NSBContext;
@@ -234,6 +236,21 @@ protected:
     bool SelectEvent();
     void AddThread(NSBContext* pThread);
     void RemoveThread(NSBContext* pThread);
+
+    void DebuggerMain();
+    void Inspect(int32_t n);
+    void DbgBreak(bool Break);
+    void DebuggerTick();
+    void PrintArray(ArrayVariable* pArray);
+    void PrintVariable(Variable* pVar);
+    void SetBreakpoint(const string& Script, int32_t LineNumber);
+    void StartDebugger();
+    string Disassemble(Line* pLine);
+    thread* pDebuggerThread;
+    bool LogCalls;
+    bool DbgStepping;
+    bool RunInterpreter;
+    list<pair<string, uint32_t>> Breakpoints;
 
     bool ThreadsModified;
     SDL_Event Event;

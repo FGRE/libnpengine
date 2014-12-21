@@ -192,3 +192,16 @@ const string& NSBContext::GetName()
 {
     return Name;
 }
+
+void NSBContext::WriteTrace(ostream& Stream)
+{
+    if (!GetScript())
+        return;
+
+    stack<StackFrame> Returns = CallStack;
+    while (!Returns.empty())
+    {
+        Stream << Returns.top().pScript->GetName() << " at " << Returns.top().SourceLine << endl;
+        Returns.pop();
+    }
+}
