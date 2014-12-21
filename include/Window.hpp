@@ -43,6 +43,7 @@ public:
     void RemoveTexture(Texture* pTexture);
     void MoveCursor(int32_t X, int32_t Y);
     X11::SDL_SysWMinfo GetWindowInfo();
+    bool IsRunning_() { return IsRunning; }
 
     const int WIDTH;
     const int HEIGHT;

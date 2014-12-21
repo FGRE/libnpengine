@@ -64,6 +64,7 @@ public:
     void Start();
     void Request(const string& State);
     const string& GetName();
+    void WriteTrace(ostream& Stream);
 
 private:
     StackFrame* GetFrame();
