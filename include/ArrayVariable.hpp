@@ -24,14 +24,15 @@
 
 class ArrayVariable : public Variable
 {
-public:
     ArrayVariable();
+public:
     ~ArrayVariable();
 
     ArrayVariable* Find(const string& Key);
     ArrayVariable* Find(int32_t Index);
     void Push(ArrayVariable* pVar);
 
+    static ArrayVariable* MakeNull();
     static ArrayVariable* MakeCopy(Variable* pVar);
 
     list<pair<string, ArrayVariable*>> Members;

@@ -504,7 +504,12 @@ PosFunc NSBInterpreter::PopPos()
 
     PosFunc Func = nullptr;
     Variable* pVar = PopVar();
-    if (pVar->IsString())
+    if (pVar->IsInt())
+    {
+        int32_t Val = pVar->ToInt();
+        Func = [Val] (int32_t) { return Val; };
+    }
+    else
     {
         string Str = pVar->ToString();
         transform(Str.begin(), Str.end(), Str.begin(), ::tolower);
@@ -512,11 +517,6 @@ PosFunc NSBInterpreter::PopPos()
         while (++i < SPECIAL_POS_NUM)
             if (Str == SpecialPos[i])
                 Func = SpecialPosTable[i];
-    }
-    else
-    {
-        int32_t Val = pVar->ToInt();
-        Func = [Val] (int32_t) { return Val; };
     }
     Variable::Destroy(pVar);
     return Func;
@@ -527,10 +527,10 @@ uint32_t NSBInterpreter::PopColor()
     uint32_t Color;
 
     Variable* pVar = PopVar();
-    if (pVar->IsString())
-        Color = stoi(pVar->ToString().c_str() + 1, nullptr, 16) | (0xFF << 24);
-    else
+    if (pVar->IsInt())
         Color = pVar->ToInt();
+    else
+        Color = stoi(pVar->ToString().c_str() + 1, nullptr, 16) | (0xFF << 24);
 
     Variable::Destroy(pVar);
     return Color;
@@ -654,7 +654,7 @@ ArrayVariable* NSBInterpreter::GetArr(const string& Name)
     if (Variable* pVariable = GetVar(Name))
         return dynamic_cast<ArrayVariable*>(pVariable);
 
-    ArrayVariable* pArr = new ArrayVariable;
+    ArrayVariable* pArr = ArrayVariable::MakeNull();
     VariableHolder.Write(Name, pArr);
     return pArr;
 }
@@ -839,10 +839,10 @@ void NSBInterpreter::String()
     for (int i = 1; i < pContext->GetNumParams(); ++i)
     {
         Variable* pVar = PopVar();
-        if (pVar->IsString())
-            Fmt % pVar->ToString();
-        else if (pVar->IsInt())
+        if (pVar->IsInt())
             Fmt % pVar->ToInt();
+        else if (pVar->IsString())
+            Fmt % pVar->ToString();
         Variable::Destroy(pVar);
     }
     PushString(Fmt.str());
@@ -888,7 +888,7 @@ void NSBInterpreter::Array()
     ArrayVariable* pArr = PopArr();
     if (!pArr)
     {
-        pArr = new ArrayVariable;
+        pArr = ArrayVariable::MakeNull();
         VariableHolder.Write(pContext->GetParam(0), pArr);
     }
 

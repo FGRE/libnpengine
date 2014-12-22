@@ -42,6 +42,7 @@ protected:
 
     void Initialize(int32_t Int);
     void Initialize(const string& Str);
+    void Initialize();
     void Initialize(Variable* pVar);
     void Destroy();
 
