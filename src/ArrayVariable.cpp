@@ -40,7 +40,7 @@ ArrayVariable* ArrayVariable::Find(const string& Key)
 ArrayVariable* ArrayVariable::Find(int32_t Index)
 {
     while (Index >= Members.size())
-        Push(new ArrayVariable);
+        Push(MakeNull());
 
     auto i = Members.begin();
     advance(i, Index);
@@ -50,6 +50,13 @@ ArrayVariable* ArrayVariable::Find(int32_t Index)
 void ArrayVariable::Push(ArrayVariable* pVar)
 {
     Members.push_back(make_pair(string(), pVar));
+}
+
+ArrayVariable* ArrayVariable::MakeNull()
+{
+    ArrayVariable* pVar = new ArrayVariable;
+    pVar->Initialize();
+    return pVar;
 }
 
 ArrayVariable* ArrayVariable::MakeCopy(Variable* pVar)

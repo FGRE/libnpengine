@@ -39,9 +39,17 @@ void Variable::Initialize(const string& Str)
     Tag = NSB_STRING;
 }
 
+void Variable::Initialize()
+{
+    Val.Str = nullptr;
+    Tag = NSB_NULL;
+}
+
 void Variable::Initialize(Variable* pVar)
 {
-    if (pVar->IsString())
+    if (pVar->Tag == NSB_NULL)
+        Initialize();
+    else if (pVar->IsString())
         Initialize(pVar->ToString());
     else
         Initialize(pVar->ToInt());
@@ -70,8 +78,7 @@ Variable* Variable::MakeString(const string& Str)
 Variable* Variable::MakeNull()
 {
     Variable* pVar = new Variable;
-    pVar->Val.Str = 0;
-    pVar->Tag = NSB_NULL;
+    pVar->Initialize();
     return pVar;
 }
 
