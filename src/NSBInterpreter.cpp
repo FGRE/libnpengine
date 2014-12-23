@@ -155,6 +155,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_EXIST_SAVE] = { &NSBInterpreter::ExistSave, 1 };
     Builtins[MAGIC_WAIT_ACTION] = { &NSBInterpreter::WaitAction, NSB_VARARGS };
     Builtins[MAGIC_LOAD] = { &NSBInterpreter::Load, 1 };
+    Builtins[MAGIC_SET_BACKLOG] = { &NSBInterpreter::SetBacklog, 3 };
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -1411,4 +1412,11 @@ void NSBInterpreter::WaitAction()
 void NSBInterpreter::Load()
 {
     /*int32_t Slot = */PopInt();
+}
+
+void NSBInterpreter::SetBacklog()
+{
+    /*string Text = */PopString();
+    /*string Voice = */PopString();
+    /*string Name = */PopString();
 }
