@@ -204,6 +204,7 @@ protected:
     void ExistSave();
     void WaitAction();
     void Load();
+    void SetBacklog();
 
     int32_t PopInt();
     string PopString();
