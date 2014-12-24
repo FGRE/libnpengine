@@ -107,7 +107,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_CREATE_PROCESS] = { &NSBInterpreter::CreateProcess, 5 };
     Builtins[MAGIC_COUNT] = { &NSBInterpreter::Count, 1 };
     Builtins[MAGIC_ARRAY] = { &NSBInterpreter::Array, NSB_VARARGS };
-    Builtins[MAGIC_ARRAY_READ] = { &NSBInterpreter::ArrayRead, 0 };
+    Builtins[MAGIC_SUB_SCRIPT] = { &NSBInterpreter::SubScript, 0 };
     Builtins[MAGIC_ASSOC_ARRAY] = { &NSBInterpreter::AssocArray, NSB_VARARGS };
     Builtins[MAGIC_MODULE_FILE_NAME] = { &NSBInterpreter::ModuleFileName, 0 };
     Builtins[MAGIC_REQUEST] = { &NSBInterpreter::Request, 2 };
@@ -911,7 +911,7 @@ void NSBInterpreter::Array()
         pArr->Push(ArrayVariable::MakeCopy(PopVar()));
 }
 
-void NSBInterpreter::ArrayRead()
+void NSBInterpreter::SubScript()
 {
     ArrayVariable* pArr = GetArr(pContext->GetParam(0));
     int32_t Depth = stoi(pContext->GetParam(1));
