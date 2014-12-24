@@ -97,7 +97,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_EXIT] = { &NSBInterpreter::Exit, 0 };
     Builtins[MAGIC_CURSOR_POSITION] = { &NSBInterpreter::CursorPosition, 2 };
     Builtins[MAGIC_MOVE_CURSOR] = { &NSBInterpreter::MoveCursor, 2 };
-    Builtins[MAGIC_POSITION] = { &NSBInterpreter::Position, 2 };
+    Builtins[MAGIC_POSITION] = { &NSBInterpreter::Position, 3 };
     Builtins[MAGIC_WAIT] = { &NSBInterpreter::Wait, 1 };
     Builtins[MAGIC_WAIT_KEY] = { &NSBInterpreter::WaitKey, NSB_VARARGS };
     Builtins[MAGIC_NEGA_EXPRESSION] = { &NSBInterpreter::NegaExpression, 1 };
