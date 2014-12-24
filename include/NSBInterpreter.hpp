@@ -156,7 +156,7 @@ protected:
     void CreateProcess();
     void Count();
     void Array();
-    void ArrayRead();
+    void SubScript();
     void AssocArray();
     void ModuleFileName();
     void Request();
