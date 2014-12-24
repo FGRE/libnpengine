@@ -368,8 +368,7 @@ void NSBInterpreter::Assign()
         Params.Begin(1);
         Variable* pVar = PopVar();
         Variable* pLit = PopVar();
-        if (pVar)
-            pVar->Set(pLit);
+        pVar->Set(pLit);
         Variable::Destroy(pLit);
     }
     else
@@ -483,7 +482,7 @@ PosFunc NSBInterpreter::PopPos()
 {
     const int32_t WIDTH = pWindow->WIDTH;
     const int32_t HEIGHT = pWindow->HEIGHT;
-    static const size_t SPECIAL_POS_NUM = 16;
+    static const size_t SPECIAL_POS_NUM = 18;
     static const PosFunc SpecialPosTable[SPECIAL_POS_NUM] =
     {
         [WIDTH] (int32_t x) { return WIDTH; }, // OutRight
@@ -501,17 +500,21 @@ PosFunc NSBInterpreter::PopPos()
         [] (int32_t y) { return -(y / 2); }, // OnTop
         [HEIGHT] (int32_t y) { return HEIGHT - (y / 2); }, // OnBottom
 
-        [WIDTH] (int32_t x) { return (WIDTH - x) / 2; }, // Center
-        [HEIGHT] (int32_t y) { return (HEIGHT - y) / 2; }, // Middle
+        [] (int32_t x) { return x; }, // Right
         [] (int32_t x) { return 0; }, // Left
-        [] (int32_t y) { return 0; } // Top
+        [] (int32_t y) { return 0; }, // Top
+        [] (int32_t y) { return y; }, // Bottom
+
+        [WIDTH] (int32_t x) { return (WIDTH - x) / 2; }, // Center
+        [HEIGHT] (int32_t y) { return (HEIGHT - y) / 2; } // Middle
     };
     static const string SpecialPos[SPECIAL_POS_NUM] =
     {
         "outright", "outleft", "outtop", "outbottom",
         "inright", "inleft", "intop", "inbottom",
         "onright", "onleft", "ontop", "onbottom",
-        "center", "middle", "left", "top"
+        "right", "left", "top", "bottom",
+        "center", "middle"
     };
 
     PosFunc Func = nullptr;
@@ -945,8 +948,8 @@ void NSBInterpreter::Request()
 
     ObjectHolder.Execute(Handle, [Request] (Object** ppObject)
     {
-        if (*ppObject)
-            (*ppObject)->Request(Request);
+        if (Object* pObject = *ppObject)
+            pObject->Request(Request);
     });
 }
 
