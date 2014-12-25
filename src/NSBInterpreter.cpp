@@ -157,6 +157,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_LOAD] = { &NSBInterpreter::Load, 1 };
     Builtins[MAGIC_SET_BACKLOG] = { &NSBInterpreter::SetBacklog, 3 };
     Builtins[MAGIC_CREATE_TEXT] = { &NSBInterpreter::CreateText, 7 };
+    Builtins[MAGIC_AT_EXPRESSION] = { &NSBInterpreter::AtExpression, 1 };
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -479,11 +480,11 @@ bool NSBInterpreter::PopBool()
     return static_cast<bool>(PopInt());
 }
 
-PosFunc NSBInterpreter::PopPos()
+NSBPosition NSBInterpreter::PopPos()
 {
     const int32_t WIDTH = pWindow->WIDTH;
     const int32_t HEIGHT = pWindow->HEIGHT;
-    static const size_t SPECIAL_POS_NUM = 18;
+    static const size_t SPECIAL_POS_NUM = 19;
     static const PosFunc SpecialPosTable[SPECIAL_POS_NUM] =
     {
         [WIDTH] (int32_t x) { return WIDTH; }, // OutRight
@@ -507,7 +508,8 @@ PosFunc NSBInterpreter::PopPos()
         [] (int32_t y) { return y; }, // Bottom
 
         [WIDTH] (int32_t x) { return (WIDTH - x) / 2; }, // Center
-        [HEIGHT] (int32_t y) { return (HEIGHT - y) / 2; } // Middle
+        [HEIGHT] (int32_t y) { return (HEIGHT - y) / 2; }, // Middle
+        [] (int32_t xy) { return numeric_limits<int32_t>::max(); } // Auto
     };
     static const string SpecialPos[SPECIAL_POS_NUM] =
     {
@@ -515,15 +517,16 @@ PosFunc NSBInterpreter::PopPos()
         "inright", "inleft", "intop", "inbottom",
         "onright", "onleft", "ontop", "onbottom",
         "right", "left", "top", "bottom",
-        "center", "middle"
+        "center", "middle", "auto"
     };
 
-    PosFunc Func = nullptr;
+    NSBPosition Position;
     Variable* pVar = PopVar();
+    Position.Relative = pVar->Relative;
     if (pVar->IsInt())
     {
         int32_t Val = pVar->ToInt();
-        Func = [Val] (int32_t) { return Val; };
+        Position.Func = [Val] (int32_t) { return Val; };
     }
     else
     {
@@ -532,10 +535,10 @@ PosFunc NSBInterpreter::PopPos()
         size_t i = -1;
         while (++i < SPECIAL_POS_NUM)
             if (Str == SpecialPos[i])
-                Func = SpecialPosTable[i];
+                Position.Func = SpecialPosTable[i];
     }
     Variable::Destroy(pVar);
-    return Func;
+    return Position;
 }
 
 uint32_t NSBInterpreter::PopColor()
@@ -665,14 +668,21 @@ Variable* NSBInterpreter::GetVar(const string& Name)
     return VariableHolder.Read(Name);
 }
 
-ArrayVariable* NSBInterpreter::GetArr(const string& Name)
+ArrayVariable* NSBInterpreter::GetArrSafe(const string& Name)
 {
-    if (Variable* pVariable = GetVar(Name))
-        return dynamic_cast<ArrayVariable*>(pVariable);
+    if (ArrayVariable* pArr = GetArr(Name))
+        return pArr;
 
     ArrayVariable* pArr = ArrayVariable::MakeNull();
     VariableHolder.Write(Name, pArr);
     return pArr;
+}
+
+ArrayVariable* NSBInterpreter::GetArr(const string& Name)
+{
+    if (Variable* pVariable = GetVar(Name))
+        return dynamic_cast<ArrayVariable*>(pVariable);
+    return nullptr;
 }
 
 Object* NSBInterpreter::GetObject(const string& Name)
@@ -750,8 +760,8 @@ void NSBInterpreter::CreateTexture()
 {
     string Handle = PopString();
     int32_t Priority = PopInt();
-    PosFunc X = PopPos();
-    PosFunc Y = PopPos();
+    NSBPosition X = PopPos();
+    NSBPosition Y = PopPos();
     string Source = PopString();
 
     Texture* pTexture = new Texture;
@@ -761,7 +771,7 @@ void NSBInterpreter::CreateTexture()
         pTexture->CreateFromFile(Source, GL_BGRA);
 
     pTexture->SetVertex(pTexture->GetWidth() / 2, pTexture->GetHeight() / 2);
-    pTexture->SetPosition(X(pTexture->GetWidth()), Y(pTexture->GetHeight()));
+    pTexture->Move(X(pTexture->GetWidth()), Y(pTexture->GetHeight()));
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
@@ -871,7 +881,7 @@ void NSBInterpreter::VariableValue()
 
     // Check if it's array index. Not sure about this...
     if (Name.size() > 3 && Name[Name.size() - 3] == '[' && Name.back() == ']' && isdigit(Name[Name.size() - 2]))
-        PushVar(GetArr(Name.substr(0, Name.size() - 3))->Find(Name[Name.size() - 2] - '0'));
+        PushVar(GetArrSafe(Name.substr(0, Name.size() - 3))->Find(Name[Name.size() - 2] - '0'));
     else if (pContext->GetNumParams() == 3)
         SetVar(Type + Name, PopVar());
     else if (pContext->GetNumParams() == 2)
@@ -914,7 +924,7 @@ void NSBInterpreter::Array()
 
 void NSBInterpreter::SubScript()
 {
-    ArrayVariable* pArr = GetArr(pContext->GetParam(0));
+    ArrayVariable* pArr = GetArrSafe(pContext->GetParam(0));
     int32_t Depth = stoi(pContext->GetParam(1));
     Params.Begin(Depth);
     while (Depth --> 0)
@@ -957,11 +967,11 @@ void NSBInterpreter::Request()
 void NSBInterpreter::SetVertex()
 {
     Texture* pTexture = Get<Texture>(PopString());
-    PosFunc X = PopPos();
-    PosFunc Y = PopPos();
+    NSBPosition X = PopPos();
+    NSBPosition Y = PopPos();
 
     if (pTexture)
-        pTexture->SetVertex(X(pTexture->GetWidth()), Y(pTexture->GetHeight()));
+        pTexture->SetVertex(X(pTexture->GetWidth(), pTexture->GetOX()), Y(pTexture->GetHeight(), pTexture->GetOY()));
 }
 
 void NSBInterpreter::Zoom()
@@ -987,15 +997,15 @@ void NSBInterpreter::Move()
 {
     string Handle = PopString();
     int32_t Time = PopInt();
-    int32_t X = PopInt();
-    int32_t Y = PopInt();
+    NSBPosition X = PopPos();
+    NSBPosition Y = PopPos();
     /*int32_t Tempo = */PopInt();
     bool Wait = PopBool();
 
-    ObjectHolder.Execute(Handle, [Time, X, Y] (Object** ppObject)
+    ObjectHolder.Execute(Handle, [&] (Object** ppObject)
     {
         if (Texture* pTexture = dynamic_cast<Texture*>(*ppObject))
-            pTexture->Move(Time, X, Y);
+            pTexture->Move(X(pTexture->GetWidth(), pTexture->GetMX()), Y(pTexture->GetHeight(), pTexture->GetMY()), Time);
     });
 
     if (Wait)
@@ -1053,8 +1063,8 @@ void NSBInterpreter::CreateColor()
 {
     string Handle = PopString();
     int32_t Priority = PopInt();
-    PosFunc X = PopPos();
-    PosFunc Y = PopPos();
+    NSBPosition X = PopPos();
+    NSBPosition Y = PopPos();
     int32_t Width = PopInt();
     int32_t Height = PopInt();
     uint32_t Color = PopColor();
@@ -1062,7 +1072,7 @@ void NSBInterpreter::CreateColor()
     Texture* pTexture = new Texture;
     pTexture->CreateFromColor(Width, Height, Color);
     pTexture->SetVertex(Width / 2, Height / 2);
-    pTexture->SetPosition(X(Width), Y(Height));
+    pTexture->Move(X(Width), Y(Height));
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
@@ -1173,8 +1183,8 @@ void NSBInterpreter::CreateMovie()
 {
     string Handle = PopString();
     int32_t Priority = PopInt();
-    /*PosFunc X = */PopPos();
-    /*PosFunc Y = */PopPos();
+    /*NSBPosition X = */PopPos();
+    /*NSBPosition Y = */PopPos();
     bool Loop = PopBool();
     bool Alpha = PopBool();
     string File = PopString();
@@ -1299,6 +1309,7 @@ void NSBInterpreter::ParseText()
 
     Text* pText = new Text;
     pText->CreateFromXML(XML);
+    pText->Move(0, 0);
     Handle = Box + "/" + Handle;
     SetVar("$SYSTEM_present_text", Variable::MakeString(Handle));
     ObjectHolder.Write(Handle, pText);
@@ -1387,8 +1398,8 @@ void NSBInterpreter::CreateClipTexture()
 {
     string Handle = PopString();
     int32_t Priority = PopInt();
-    PosFunc X1 = PopPos();
-    PosFunc Y1 = PopPos();
+    NSBPosition X1 = PopPos();
+    NSBPosition Y1 = PopPos();
     int32_t X2 = PopInt();
     int32_t Y2 = PopInt();
     int32_t Width = PopInt();
@@ -1401,7 +1412,7 @@ void NSBInterpreter::CreateClipTexture()
     else
         pTexture->CreateFromFileClip(Source, X2, Y2, Width, Height);
 
-    pTexture->SetPosition(X1(pTexture->GetWidth()), Y1(pTexture->GetHeight()));
+    pTexture->Move(X1(pTexture->GetWidth()), Y1(pTexture->GetHeight()));
     pTexture->SetPriority(Priority);
 
     pWindow->AddTexture(pTexture);
@@ -1441,17 +1452,25 @@ void NSBInterpreter::CreateText()
 {
     string Handle = PopString();
     int32_t Priority = PopInt();
-    PosFunc X = PopPos();
-    PosFunc Y = PopPos();
-    PopVar();
-    PopVar();
+    NSBPosition X = PopPos();
+    NSBPosition Y = PopPos();
+    NSBPosition Width = PopPos();
+    /*NSBPosition Height = */PopPos();
     string String = PopString();
 
     Text* pText = new Text;
     pText->CreateFromString(String);
     pText->SetPriority(Priority);
     pText->SetPosition(X(pText->GetWidth()), Y(pText->GetHeight()));
+    pText->SetWrap(Width(0));
 
     pWindow->AddTexture(pText);
     ObjectHolder.Write(Handle, pText);
+}
+
+void NSBInterpreter::AtExpression()
+{
+    Variable* pVar = PopVar();
+    pVar->Relative = true;
+    PushVar(pVar);
 }
