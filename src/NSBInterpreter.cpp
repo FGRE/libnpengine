@@ -156,6 +156,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_WAIT_ACTION] = { &NSBInterpreter::WaitAction, NSB_VARARGS };
     Builtins[MAGIC_LOAD] = { &NSBInterpreter::Load, 1 };
     Builtins[MAGIC_SET_BACKLOG] = { &NSBInterpreter::SetBacklog, 3 };
+    Builtins[MAGIC_CREATE_TEXT] = { &NSBInterpreter::CreateText, 7 };
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -1296,7 +1297,8 @@ void NSBInterpreter::ParseText()
     if (Variable* pVar = GetVar("$SYSTEM_present_text"))
         ObjectHolder.Delete(pVar->ToString());
 
-    Text* pText = new Text(XML);
+    Text* pText = new Text;
+    pText->CreateFromXML(XML);
     Handle = Box + "/" + Handle;
     SetVar("$SYSTEM_present_text", Variable::MakeString(Handle));
     ObjectHolder.Write(Handle, pText);
@@ -1433,4 +1435,23 @@ void NSBInterpreter::SetBacklog()
     /*string Text = */PopString();
     /*string Voice = */PopString();
     /*string Name = */PopString();
+}
+
+void NSBInterpreter::CreateText()
+{
+    string Handle = PopString();
+    int32_t Priority = PopInt();
+    PosFunc X = PopPos();
+    PosFunc Y = PopPos();
+    PopVar();
+    PopVar();
+    string String = PopString();
+
+    Text* pText = new Text;
+    pText->CreateFromString(String);
+    pText->SetPriority(Priority);
+    pText->SetPosition(X(pText->GetWidth()), Y(pText->GetHeight()));
+
+    pWindow->AddTexture(pText);
+    ObjectHolder.Write(Handle, pText);
 }

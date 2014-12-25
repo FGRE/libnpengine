@@ -205,6 +205,7 @@ protected:
     void WaitAction();
     void Load();
     void SetBacklog();
+    void CreateText();
 
     int32_t PopInt();
     string PopString();
