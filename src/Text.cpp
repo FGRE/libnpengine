@@ -25,7 +25,16 @@
 
 TextParser::Text* pText;
 
-Text::Text(const string& XML) : Index(0), LayoutWidth(-1), pVoice(nullptr)
+Text::Text() : Index(0), LayoutWidth(-1), pVoice(nullptr)
+{
+}
+
+Text::~Text()
+{
+    delete pVoice;
+}
+
+void Text::CreateFromXML(const string& XML)
 {
     ::pText = this;
     YY_BUFFER_STATE buffer = yy_scan_bytes(XML.c_str(), XML.size());
@@ -33,9 +42,9 @@ Text::Text(const string& XML) : Index(0), LayoutWidth(-1), pVoice(nullptr)
     yy_delete_buffer(buffer);
 }
 
-Text::~Text()
+void Text::CreateFromString(const string& String)
 {
-    delete pVoice;
+    SetString(String);
 }
 
 void Text::SetWrap(int32_t Width)

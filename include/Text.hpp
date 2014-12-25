@@ -25,8 +25,11 @@ class Playable;
 class Text : public Texture, private TextParser::Text
 {
 public:
-    Text(const string& XML);
+    Text();
     ~Text();
+
+    void CreateFromXML(const string& XML);
+    void CreateFromString(const string& String);
 
     void SetWrap(int32_t Width);
     bool Advance();
