@@ -252,8 +252,8 @@ protected:
     void Inspect(int32_t n);
     void DbgBreak(bool Break);
     void DebuggerTick();
-    void PrintArray(ArrayVariable* pArray);
-    void PrintVariable(Variable* pVar);
+    void PrintArray(ArrayVariable* pArray, const string& Identifier, int Depth = 1);
+    void PrintVariable(Variable* pVar, const string& Identifier);
     void SetBreakpoint(const string& Script, int32_t LineNumber);
     void StartDebugger();
     string Disassemble(Line* pLine);
