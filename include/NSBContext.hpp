@@ -54,7 +54,7 @@ public:
     void WaitText(Text* pText, int32_t Time);
     void WaitAction(Object* pObject, int32_t Time);
     void WaitKey(int32_t Time);
-    void Wait(int32_t Time);
+    void Wait(int32_t Time, bool Interrupt = false);
     void Wake();
     void TryWake();
     void OnClick();
