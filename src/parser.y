@@ -19,7 +19,7 @@
     std::string* string;
 }
 
-%define api.prefix {xml}
+%define api.prefix xml
 
 %token <string> TSTRING THEX
 %token <token> TPRE TFONT TRUBY TVOICE TLBRACE TRBRACE TLABRACE TRABRACE TQUOTE TEQUAL TSLASH TAT TNEWLINE
