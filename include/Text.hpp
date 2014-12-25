@@ -34,6 +34,12 @@ public:
     void SetWrap(int32_t Width);
     bool Advance();
 
+    static string Font;
+    static int32_t Size;
+    static uint32_t InColor;
+    static uint32_t OutColor;
+    static int32_t Weight;
+    static string Alignment;
 private:
     void SetString(const string& String);
 

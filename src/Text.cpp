@@ -25,6 +25,14 @@
 
 TextParser::Text* pText;
 
+// TODO: Initialize from system.ini
+string Text::Font;
+int32_t Text::Size;
+uint32_t Text::InColor;
+uint32_t Text::OutColor;
+int32_t Text::Weight;
+string Text::Alignment;
+
 Text::Text() : Index(0), LayoutWidth(-1), pVoice(nullptr)
 {
 }
@@ -62,7 +70,7 @@ bool Text::Advance()
     // [HACK]
     string String;
     for (size_t i = 0; i < CurrLine.StringSegs.size(); ++i)
-        String += CurrLine.StringSegs[i].Segment;
+        String += CurrLine.StringSegs[CurrLine.StringSegs.size() - i - 1].Segment;
     SetString(String);
 
     if (!CurrLine.VoiceAttrs.empty())
