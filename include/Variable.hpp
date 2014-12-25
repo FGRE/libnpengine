@@ -66,6 +66,7 @@ public:
     static void Destroy(Variable* pVar);
 
     bool Literal;
+    bool Relative;
 };
 
 #endif
