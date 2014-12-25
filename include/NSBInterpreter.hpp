@@ -234,6 +234,7 @@ protected:
 
     void SetInt(const string& Name, int32_t Val);
     void SetVar(const string& Name, Variable* pVar);
+    int32_t GetInt(const string& Name);
     string GetString(const string& Name);
     Variable* GetVar(const string& Name);
     ArrayVariable* GetArrSafe(const string& Name);
