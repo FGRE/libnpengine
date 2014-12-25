@@ -131,12 +131,12 @@ void NSBContext::WaitAction(Object* pObject, int32_t Time)
 
 void NSBContext::WaitKey(int32_t Time)
 {
-    WaitInterrupt = true;
-    Wait(Time);
+    Wait(Time, true);
 }
 
-void NSBContext::Wait(int32_t Time)
+void NSBContext::Wait(int32_t Time, bool Interrupt)
 {
+    WaitInterrupt = Interrupt;
     WaitTime = Time;
     WaitStart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
