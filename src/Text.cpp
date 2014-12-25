@@ -113,3 +113,7 @@ void Text::SetString(const string& String)
     cairo_destroy(RenderContext);
     cairo_surface_destroy(Surface);
 }
+
+void Text::Request(int32_t State)
+{
+}

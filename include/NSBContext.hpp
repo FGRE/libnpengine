@@ -62,7 +62,7 @@ public:
     bool IsSleeping();
     bool IsActive();
     void Start();
-    void Request(const string& State);
+    void Request(int32_t State);
     const string& GetName();
     void WriteTrace(ostream& Stream);
 

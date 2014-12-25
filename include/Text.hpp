@@ -34,6 +34,8 @@ public:
     void SetWrap(int32_t Width);
     bool Advance();
 
+    void Request(int32_t State);
+
     static string Font;
     static int32_t Size;
     static uint32_t InColor;
