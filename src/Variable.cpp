@@ -57,7 +57,7 @@ void Variable::Initialize(Variable* pVar)
 
 void Variable::Destroy()
 {
-    if (IsString())
+    if (Tag == NSB_STRING)
         delete Val.Str;
 }
 
@@ -92,6 +92,7 @@ Variable* Variable::MakeCopy(Variable* pVar)
 int32_t Variable::ToInt()
 {
     if (Tag == NSB_NULL) return 0;
+    if (Tag == NSB_STRING && Relative) return stoi(Val.Str->c_str() + 1);
     assert(IsInt());
     return Val.Int;
 }
@@ -99,18 +100,19 @@ int32_t Variable::ToInt()
 string Variable::ToString()
 {
     if (Tag == NSB_NULL) return "";
+    if (Tag == NSB_INT && Relative) return string("@") + to_string(Val.Int);
     assert(IsString());
     return *Val.Str;
 }
 
 bool Variable::IsInt()
 {
-    return Tag & NSB_INT;
+    return (Tag & NSB_INT) || Relative;
 }
 
 bool Variable::IsString()
 {
-    return Tag & NSB_STRING;
+    return (Tag & NSB_STRING) || Relative;
 }
 
 void Variable::Set(Variable* pVar)
