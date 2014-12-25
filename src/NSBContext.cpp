@@ -18,6 +18,7 @@
 #include "NSBContext.hpp"
 #include "Text.hpp"
 #include "scriptfile.hpp"
+#include "nsbconstants.hpp"
 #include <chrono>
 using namespace std::chrono;
 
@@ -182,9 +183,9 @@ void NSBContext::Start()
     Active = true;
 }
 
-void NSBContext::Request(const string& State)
+void NSBContext::Request(int32_t State)
 {
-    if (State == "Start")
+    if (State == Nsb::START)
         Start();
 }
 
