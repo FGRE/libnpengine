@@ -71,12 +71,12 @@ void Texture::SetPriority(int Priority)
     this->Priority = Priority;
 }
 
-void Texture::Move(int32_t Time, int X, int Y)
+void Texture::Move(int X, int Y, int32_t Time)
 {
     if (!pMove)
         pMove = new MoveEffect(X, Y, Time);
     else
-        pMove->ResetRelative(X, Y, Time);
+        pMove->Reset(X, Y, Time);
 }
 
 void Texture::Zoom(int32_t Time, int X, int Y)
@@ -126,4 +126,14 @@ void Texture::Draw(uint32_t Diff)
 
     if (glUseProgramObjectARB)
         glUseProgramObjectARB(0);
+}
+
+int32_t Texture::GetMX()
+{
+    return pMove->EndX;
+}
+
+int32_t Texture::GetMY()
+{
+    return pMove->EndY;
 }

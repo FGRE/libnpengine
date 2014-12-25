@@ -18,7 +18,7 @@
 #include "Variable.hpp"
 #include <cassert>
 
-Variable::Variable() : Literal(true)
+Variable::Variable() : Literal(true), Relative(false)
 {
 }
 

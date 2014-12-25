@@ -68,6 +68,13 @@ private:
 };
 
 typedef function<int32_t(int32_t)> PosFunc;
+struct NSBPosition
+{
+    NSBPosition() : Func(nullptr) { }
+    PosFunc Func;
+    bool Relative;
+    int32_t operator()(int32_t xy, int32_t Old = 0) { return Relative ? Old + Func(xy) : Func(xy); }
+};
 
 class Line;
 class Window;
@@ -206,11 +213,12 @@ protected:
     void Load();
     void SetBacklog();
     void CreateText();
+    void AtExpression();
 
     int32_t PopInt();
     string PopString();
     bool PopBool();
-    PosFunc PopPos();
+    NSBPosition PopPos();
     uint32_t PopColor();
     Variable* PopVar();
     ArrayVariable* PopArr();
@@ -228,6 +236,7 @@ protected:
     void SetVar(const string& Name, Variable* pVar);
     string GetString(const string& Name);
     Variable* GetVar(const string& Name);
+    ArrayVariable* GetArrSafe(const string& Name);
     ArrayVariable* GetArr(const string& Name);
     Object* GetObject(const string& Name);
     template <class T> T* Get(const string& Name);

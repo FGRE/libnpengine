@@ -38,7 +38,7 @@ public:
     void SetVertex(int X, int Y);
     void Draw(uint32_t Diff);
     void SetPriority(int Priority);
-    void Move(int32_t Time, int X, int Y);
+    void Move(int X, int Y, int32_t Time = 0);
     void Zoom(int32_t Time, int X, int Y);
     void Fade(int32_t Time, int Opacity);
     void DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t Boundary, const string& Filename);
@@ -51,6 +51,8 @@ public:
     int GetY() { return Y; }
     int GetOX() { return OX; }
     int GetOY() { return OY; }
+    int32_t GetMX();
+    int32_t GetMY();
 
 private:
     MoveEffect* pMove;
