@@ -53,21 +53,22 @@ void NSBInterpreter::SetBreakpoint(const string& Script, int32_t LineNumber)
         cout << "Cannot set breakpoint " << Script << ":" << LineNumber << endl;
 }
 
-void NSBInterpreter::PrintVariable(Variable* pVar)
+void NSBInterpreter::PrintVariable(Variable* pVar, const string& Identifier)
 {
+    cout << Identifier << " = ";
     if (pVar->IsInt())
         cout << pVar->ToInt() << endl;
     else if (pVar->IsString())
         cout << pVar->ToString() << endl;
 }
 
-void NSBInterpreter::PrintArray(ArrayVariable* pArray)
+void NSBInterpreter::PrintArray(ArrayVariable* pArray, const string& Identifier, int Depth)
 {
-    PrintVariable(pArray);
+    PrintVariable(pArray, Identifier);
     for (auto i : pArray->Members)
     {
-        cout << i.first << " = ";
-        PrintArray(i.second);
+        cout << string(Depth * 2, ' ');
+        PrintArray(i.second, i.first, Depth + 1);
     }
 }
 
@@ -172,17 +173,14 @@ void NSBInterpreter::DebuggerMain()
             else if (Tokens.size() == 2 && Tokens[0] == "p")
             {
                 if (Variable* pVar = GetVar(Tokens[1]))
-                {
-                    cout << Tokens[1] << " = ";
-                    PrintVariable(pVar);
-                }
+                    PrintVariable(pVar, Tokens[1]);
                 else cout << "Variable " << Tokens[1] << " not found!" << endl;
             }
             // Print Array
             else if (Tokens.size() == 3 && Tokens[0] == "p" && Tokens[1] == "a")
             {
-                if (ArrayVariable* pVar = GetArr(Tokens[1]))
-                    PrintArray(pVar);
+                if (ArrayVariable* pVar = GetArr(Tokens[2]))
+                    PrintArray(pVar, Tokens[2]);
                 else cout << "Array " << Tokens[2] << " not found!" << endl;
             }
             // Inspect surrounding code
@@ -197,10 +195,7 @@ void NSBInterpreter::DebuggerMain()
             else if (Tokens.size() == 2 && Tokens[0] == "d" && Tokens[1] == "v")
             {
                 for (auto i : VariableHolder.Cache)
-                {
-                    cout << i.first << " = ";
-                    PrintVariable(i.second);
-                }
+                    PrintVariable(i.second, i.first);
             }
         }
     }
