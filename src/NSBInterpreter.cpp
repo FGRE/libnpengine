@@ -656,6 +656,11 @@ void NSBInterpreter::RemoveThread(NSBContext* pThread)
     ThreadsModified = true;
 }
 
+int32_t NSBInterpreter::GetInt(const string& Name)
+{
+    return GetVar(Name)->ToInt();
+}
+
 string NSBInterpreter::GetString(const string& Name)
 {
     if (Name[0] != '$' && Name[0] != '#')
