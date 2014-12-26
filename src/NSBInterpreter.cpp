@@ -1020,7 +1020,7 @@ void NSBInterpreter::Move()
 void NSBInterpreter::SetShade()
 {
     if (Texture* pTexture = Get<Texture>(PopString()))
-        pTexture->SetShade(PopString());
+        pTexture->SetShade(PopInt());
 }
 
 void NSBInterpreter::DrawToTexture()
