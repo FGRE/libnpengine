@@ -236,7 +236,7 @@ class BlurEffect : public Effect
         "   gl_FragColor = Average / CoeffSum;"
         "}";
 public:
-    BlurEffect(const string& Heaviness)
+    BlurEffect()
     {
         CompileShader(BlurShader.c_str());
 
