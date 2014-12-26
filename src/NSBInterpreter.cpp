@@ -47,6 +47,7 @@ pContext(nullptr),
 Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
 {
     gst_init(nullptr, nullptr);
+    srand(time(0));
 
     Builtins[MAGIC_FUNCTION_DECLARATION] = { &NSBInterpreter::FunctionDeclaration, 0 };
     Builtins[MAGIC_CALL_FUNCTION] = { &NSBInterpreter::CallFunction, 0 };
@@ -158,6 +159,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_BACKLOG] = { &NSBInterpreter::SetBacklog, 3 };
     Builtins[MAGIC_CREATE_TEXT] = { &NSBInterpreter::CreateText, 7 };
     Builtins[MAGIC_AT_EXPRESSION] = { &NSBInterpreter::AtExpression, 1 };
+    Builtins[MAGIC_RANDOM] = { &NSBInterpreter::Random, 1 };
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -1478,4 +1480,9 @@ void NSBInterpreter::AtExpression()
     Variable* pVar = PopVar();
     pVar->Relative = true;
     PushVar(pVar);
+}
+
+void NSBInterpreter::Random()
+{
+    PushInt(random() % PopInt());
 }
