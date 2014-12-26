@@ -214,6 +214,7 @@ protected:
     void SetBacklog();
     void CreateText();
     void AtExpression();
+    void Random();
 
     int32_t PopInt();
     string PopString();
