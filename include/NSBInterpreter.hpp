@@ -100,6 +100,7 @@ public:
 
     void ExecuteLocalScript(const string& Filename);
     void ExecuteScript(const string& Filename);
+    void StartDebugger();
 
     void PushEvent(const SDL_Event& Event);
     void HandleEvent(const SDL_Event& Event);
@@ -258,7 +259,6 @@ protected:
     void PrintArray(ArrayVariable* pArray, const string& Identifier, int Depth = 1);
     void PrintVariable(Variable* pVar, const string& Identifier);
     void SetBreakpoint(const string& Script, int32_t LineNumber);
-    void StartDebugger();
     string Disassemble(Line* pLine);
     thread* pDebuggerThread;
     bool LogCalls;

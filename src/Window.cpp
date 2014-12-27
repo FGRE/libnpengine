@@ -51,6 +51,7 @@ Window::~Window()
     SDL_GL_DeleteContext(GLContext);
     SDL_DestroyWindow(SDLWindow);
     SDL_Quit();
+    delete pInterpreter;
 }
 
 void Window::Run()
