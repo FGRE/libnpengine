@@ -27,6 +27,7 @@
 #include "scriptfile.hpp"
 #include "npafile.hpp"
 #include "fscommon.hpp"
+#include "buffer.hpp"
 #include <boost/format.hpp>
 #include <iostream>
 #include <memory>
@@ -560,7 +561,7 @@ uint32_t NSBInterpreter::PopColor()
 string NSBInterpreter::PopSave()
 {
     boost::format Fmt("%s/%04d.npf");
-    Fmt % GetVar("#SYSTEM_save_path");
+    Fmt % GetString("#SYSTEM_save_path");
     Fmt % PopInt();
     return Fmt.str();
 }
@@ -1452,7 +1453,31 @@ void NSBInterpreter::WaitAction()
 
 void NSBInterpreter::Load()
 {
-    string Filename = PopSave();
+    uint32_t Size;
+    char* pData = fs::ReadFile(PopSave(), Size);
+    Npa::Buffer SaveData(NpaFile::Decrypt(pData, Size), Size);
+
+    uint32_t NumVars = SaveData.Read<uint32_t>();
+    for (int i = 0; i < NumVars; ++i)
+    {
+        string Name1 = SaveData.ReadStr32();
+        string Name2 = SaveData.ReadStr32();
+        uint32_t Type = SaveData.Read<uint32_t>();
+        int32_t IntVal = SaveData.Read<int32_t>();
+        int32_t unk = SaveData.Read<int32_t>();
+        string StrVal = SaveData.ReadStr32();
+        bool Relative = SaveData.Read<bool>();
+        string ArrayRef = SaveData.ReadStr32();
+    }
+
+    uint32_t NumArrs = SaveData.Read<uint32_t>();
+    for (int i = 0; i < NumArrs; ++i)
+    {
+        string Name1 = SaveData.ReadStr32();
+        uint32_t NumElems = SaveData.Read<uint32_t>();
+        for (int j = 0; j < NumElems; ++j)
+            string Value = SaveData.ReadStr32();
+    }
 }
 
 void NSBInterpreter::SetBacklog()
