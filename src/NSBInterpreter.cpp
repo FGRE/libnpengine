@@ -1366,7 +1366,8 @@ void NSBInterpreter::LockVideo()
 
 void NSBInterpreter::Save()
 {
-    string Filename = PopSave();
+    Npa::Buffer SaveData;
+    fs::WriteFile(PopSave(), NpaFile::Encrypt(SaveData.GetData(), SaveData.GetSize()), SaveData.GetSize());
 }
 
 void NSBInterpreter::DeleteSaveFile()
