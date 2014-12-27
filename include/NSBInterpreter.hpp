@@ -221,6 +221,7 @@ protected:
     bool PopBool();
     NSBPosition PopPos();
     uint32_t PopColor();
+    string PopSave();
     Variable* PopVar();
     ArrayVariable* PopArr();
 

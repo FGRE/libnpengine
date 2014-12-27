@@ -557,6 +557,14 @@ uint32_t NSBInterpreter::PopColor()
     return Color;
 }
 
+string NSBInterpreter::PopSave()
+{
+    boost::format Fmt("%s/%04d.npf");
+    Fmt % GetVar("#SYSTEM_save_path");
+    Fmt % PopInt();
+    return Fmt.str();
+}
+
 void NSBInterpreter::PushInt(int32_t Int)
 {
     PushVar(Variable::MakeInt(Int));
@@ -1357,12 +1365,14 @@ void NSBInterpreter::LockVideo()
 
 void NSBInterpreter::Save()
 {
-    /*int32_t Slot = */PopInt();
+    string Filename = PopSave();
 }
 
 void NSBInterpreter::DeleteSaveFile()
 {
-    /*int32_t Slot = */PopInt();
+    string Filename = PopSave();
+    fs::DeleteFile(Filename);
+    fs::DeleteDirectory(Filename.substr(0, Filename.size() - 4));
 }
 
 void NSBInterpreter::Conquest()
@@ -1428,10 +1438,7 @@ void NSBInterpreter::CreateClipTexture()
 
 void NSBInterpreter::ExistSave()
 {
-    /*int32_t Slot = */PopInt();
-
-    // [HACK]
-    PushInt(0);
+    PushInt(fs::Exists(PopSave()));
 }
 
 void NSBInterpreter::WaitAction()
@@ -1445,7 +1452,7 @@ void NSBInterpreter::WaitAction()
 
 void NSBInterpreter::Load()
 {
-    /*int32_t Slot = */PopInt();
+    string Filename = PopSave();
 }
 
 void NSBInterpreter::SetBacklog()
