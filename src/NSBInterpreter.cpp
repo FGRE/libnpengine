@@ -1459,7 +1459,7 @@ void NSBInterpreter::Load()
     Npa::Buffer SaveData(NpaFile::Decrypt(pData, Size), Size);
 
     uint32_t NumVars = SaveData.Read<uint32_t>();
-    for (int i = 0; i < NumVars; ++i)
+    for (uint32_t i = 0; i < NumVars; ++i)
     {
         string Name1 = SaveData.ReadStr32();
         string Name2 = SaveData.ReadStr32();
@@ -1472,11 +1472,11 @@ void NSBInterpreter::Load()
     }
 
     uint32_t NumArrs = SaveData.Read<uint32_t>();
-    for (int i = 0; i < NumArrs; ++i)
+    for (uint32_t i = 0; i < NumArrs; ++i)
     {
         string Name1 = SaveData.ReadStr32();
         uint32_t NumElems = SaveData.Read<uint32_t>();
-        for (int j = 0; j < NumElems; ++j)
+        for (uint32_t j = 0; j < NumElems; ++j)
             string Value = SaveData.ReadStr32();
     }
 }
