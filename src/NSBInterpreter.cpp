@@ -130,7 +130,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_LOOP_POINT] = { &NSBInterpreter::SetLoopPoint, 3 };
     Builtins[MAGIC_CREATE_SOUND] = { &NSBInterpreter::CreateSound, 3 };
     Builtins[MAGIC_REMAIN_TIME] = { &NSBInterpreter::RemainTime, 1 };
-    Builtins[MAGIC_CREATE_MOVIE] = { &NSBInterpreter::CreateMovie, 8 };
+    //Builtins[MAGIC_CREATE_MOVIE] = { &NSBInterpreter::CreateMovie, 8 };
     Builtins[MAGIC_DURATION_TIME] = { &NSBInterpreter::DurationTime, 1 };
     Builtins[MAGIC_SET_FREQUENCY] = { &NSBInterpreter::SetFrequency, 4 };
     Builtins[MAGIC_SET_PAN] = { &NSBInterpreter::SetPan, 4 };
