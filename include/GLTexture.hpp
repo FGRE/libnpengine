@@ -36,6 +36,7 @@ public:
     void CreateFromColor(int Width, int Height, uint32_t Color);
     void CreateFromFile(const string& Filename, GLenum Format);
     void CreateFromFileClip(const string& Filename, int ClipX, int ClipY, int ClipWidth, int ClipHeight);
+    void CreateEmpty(int Width, int Height);
 
 protected:
     void Create(uint8_t* Pixels, GLenum Format);

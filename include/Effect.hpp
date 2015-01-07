@@ -210,7 +210,7 @@ public:
     }
 };
 
-class BlurEffect : public Effect
+class BlurEffect : public Effect, GLTexture
 {
     const string BlurShader = \
         "uniform float Sigma;"
@@ -236,33 +236,73 @@ class BlurEffect : public Effect
         "   gl_FragColor = Average / CoeffSum;"
         "}";
 public:
-    BlurEffect()
+    BlurEffect() : Framebuffer(GL_INVALID_VALUE)
+    {
+    }
+
+    ~BlurEffect()
+    {
+        glDeleteFramebuffers(1, &Framebuffer);
+    }
+
+    bool Create(int Width, int Height)
     {
         CompileShader(BlurShader.c_str());
 
         if (!Program)
-            return;
+            return false;
 
         glUseProgramObjectARB(Program);
         glUniform1fARB(glGetUniformLocationARB(Program, "Sigma"), 3.0f); // Guess for SEMIHEAVY
         glUniform1iARB(glGetUniformLocationARB(Program, "Texture"), 0);
+
+        glGenFramebuffers(1, &Framebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, Framebuffer);
+        CreateEmpty(Width, Height);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, GLTextureID, 0);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            return false;
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        return true;
     }
 
     void OnDraw(GLTexture* pTexture, float X, float Y, float Width, float Height)
     {
-        if (!Program)
-            return;
-
         glUseProgramObjectARB(Program);
 
-        glUniform1fARB(glGetUniformLocationARB(Program, "BlurSize"), 1.0f / Width);
+        // Switch to FBO
+        glBindFramebuffer(GL_FRAMEBUFFER, Framebuffer);
+        glPushAttrib(GL_VIEWPORT_BIT);
+        glViewport(0, 0, this->Width, this->Height);
+
+        // Flip texture
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+        glOrtho(0, this->Width, 0, this->Height, -1, 1);
+
+        // First pass to texture
+        glUniform1fARB(glGetUniformLocationARB(Program, "BlurSize"), 1.0f / this->Width);
         glUniform2fARB(glGetUniformLocationARB(Program, "Pass"), 1.0f, 0.0f);
-        pTexture->Draw(X, Y, Width, Height);
-        // TODO: Multipass doesn't work
+        pTexture->Draw(0, 0, this->Width, this->Height);
+
+        // Switch to window
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glPopAttrib();
+        glPopMatrix();
+
+        // Second pass to window
         glUniform1fARB(glGetUniformLocationARB(Program, "BlurSize"), 1.0f / Height);
         glUniform2fARB(glGetUniformLocationARB(Program, "Pass"), 0.0f, 1.0f);
-        pTexture->Draw(X, Y, Width, Height);
+        Draw(X, Y, Width, Height);
     }
+
+    GLuint Framebuffer;
 };
 
 #endif
