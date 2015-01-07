@@ -161,6 +161,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_CREATE_TEXT] = { &NSBInterpreter::CreateText, 7 };
     Builtins[MAGIC_AT_EXPRESSION] = { &NSBInterpreter::AtExpression, 1 };
     Builtins[MAGIC_RANDOM] = { &NSBInterpreter::Random, 1 };
+    Builtins[MAGIC_CREATE_EFFECT] = { &NSBInterpreter::CreateEffect, 7 };
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -1518,4 +1519,15 @@ void NSBInterpreter::AtExpression()
 void NSBInterpreter::Random()
 {
     PushInt(random() % PopInt());
+}
+
+void NSBInterpreter::CreateEffect()
+{
+    string Handle = PopString();
+    int32_t Priority = PopInt();
+    NSBPosition X = PopPos();
+    NSBPosition Y = PopPos();
+    int32_t Width = PopInt();
+    int32_t Height = PopInt();
+    string Type = PopString();
 }
