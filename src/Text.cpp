@@ -34,8 +34,28 @@ uint32_t Text::OutColor;
 int32_t Text::Weight;
 string Text::Alignment;
 
-static Playable* pVoice = nullptr;
-struct VoiceDeleter { ~VoiceDeleter() { delete pVoice; } } Deleter;
+class VoiceMgr
+{
+public:
+    VoiceMgr() : pVoice(nullptr)
+    {
+    }
+
+    ~VoiceMgr()
+    {
+        delete pVoice;
+    }
+
+    void SetVoice(const string& Filename)
+    {
+        delete pVoice;
+        pVoice = new Playable(sResourceMgr->GetResource(Filename + ".ogg"));
+        pVoice->Play();
+    }
+
+private:
+    Playable* pVoice;
+} sVoiceMgr;
 
 Text::Text() : Index(0), LayoutWidth(-1)
 {
@@ -77,11 +97,7 @@ bool Text::Advance()
     SetString(String);
 
     if (!CurrLine.VoiceAttrs.empty())
-    {
-        delete pVoice;
-        pVoice = new Playable(sResourceMgr->GetResource(CurrLine.VoiceAttrs[TextParser::ATTR_SRC] + ".ogg"));
-        pVoice->Play();
-    }
+        sVoiceMgr.SetVoice(CurrLine.VoiceAttrs[TextParser::ATTR_SRC]);
     Index++;
     return true;
 }
