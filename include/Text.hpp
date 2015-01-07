@@ -46,7 +46,6 @@ private:
     void SetString(const string& String);
 
     size_t Index, LayoutWidth;
-    Playable* pVoice;
 };
 
 
