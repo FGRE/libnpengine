@@ -89,6 +89,13 @@ void GLTexture::CreateFromFileClip(const string& Filename, int ClipX, int ClipY,
     CreateFromImageClip(&Img, ClipX, ClipY, ClipWidth, ClipHeight);
 }
 
+void GLTexture::CreateEmpty(int Width, int Height)
+{
+    this->Width = Width;
+    this->Height = Height;
+    Create(0, GL_RGB);
+}
+
 void GLTexture::Create(uint8_t* Pixels, GLenum Format)
 {
     glDeleteTextures(1, &GLTextureID);
