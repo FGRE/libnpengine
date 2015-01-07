@@ -23,6 +23,7 @@
 #include "flex.hpp"
 #include <pango/pangocairo.h>
 
+// For use in bison
 TextParser::Text* pText;
 
 // TODO: Initialize from system.ini
@@ -33,13 +34,15 @@ uint32_t Text::OutColor;
 int32_t Text::Weight;
 string Text::Alignment;
 
-Text::Text() : Index(0), LayoutWidth(-1), pVoice(nullptr)
+static Playable* pVoice = nullptr;
+struct VoiceDeleter { ~VoiceDeleter() { delete pVoice; } } Deleter;
+
+Text::Text() : Index(0), LayoutWidth(-1)
 {
 }
 
 Text::~Text()
 {
-    delete pVoice;
 }
 
 void Text::CreateFromXML(const string& XML)
@@ -75,6 +78,7 @@ bool Text::Advance()
 
     if (!CurrLine.VoiceAttrs.empty())
     {
+        delete pVoice;
         pVoice = new Playable(sResourceMgr->GetResource(CurrLine.VoiceAttrs[TextParser::ATTR_SRC] + ".ogg"));
         pVoice->Play();
     }
