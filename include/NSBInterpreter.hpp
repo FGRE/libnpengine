@@ -216,6 +216,7 @@ protected:
     void CreateText();
     void AtExpression();
     void Random();
+    void CreateEffect();
 
     int32_t PopInt();
     string PopString();
