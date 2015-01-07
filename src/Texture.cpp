@@ -105,9 +105,16 @@ void Texture::DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t B
 
 void Texture::SetShade(int32_t Shade)
 {
-    // TODO: Support for other shaders as well
-    if (!pBlur)
-        pBlur = new BlurEffect;
+    // Error message probably won't cut it: assert is more effective way to make sure user reports a bug
+    // TODO: Support for other shaders as well. Investigate multiple shader support/replacing shaders.
+    assert(!pBlur && Shade == Nsb::SEMIHEAVY);
+
+    pBlur = new BlurEffect;
+    if (!pBlur->Create(Width, Height))
+    {
+        delete pBlur;
+        pBlur = nullptr;
+    }
 }
 
 void Texture::Draw(uint32_t Diff)
@@ -120,9 +127,8 @@ void Texture::Draw(uint32_t Diff)
     if (pFade) pFade->OnDraw(Diff);
     if (pMask) pMask->OnDraw(Diff);
 
-    GLTexture::Draw(X + OffsetX, Y + OffsetY, Width * ScaleX, Height * ScaleY);
-
     if (pBlur) pBlur->OnDraw(this, X + OffsetX, Y + OffsetY, Width * ScaleX, Height * ScaleY);
+    else GLTexture::Draw(X + OffsetX, Y + OffsetY, Width * ScaleX, Height * ScaleY);
 
     if (glUseProgramObjectARB)
         glUseProgramObjectARB(0);
