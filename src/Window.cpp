@@ -1,6 +1,6 @@
 /* 
  * libnpengine: Nitroplus script interpreter
- * Copyright (C) 2014 Mislav Blažević <krofnica996@gmail.com>
+ * Copyright (C) 2014-2015 Mislav Blažević <krofnica996@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
@@ -22,7 +22,7 @@
 #include "Texture.hpp"
 
 uint32_t SDL_NSB_MOVECURSOR;
-Window* Object::pWindow = nullptr;;
+Window* Object::pWindow = nullptr;
 
 Window::Window(const char* WindowTitle, const int Width, const int Height) : WIDTH(Width), HEIGHT(Height), pInterpreter(nullptr), IsRunning(true), EventLoop(false)
 {
@@ -54,6 +54,16 @@ Window::~Window()
     delete pInterpreter;
 }
 
+void Window::PushMoveCursorEvent(int X, int Y)
+{
+    SDL_Event Event;
+    SDL_zero(Event);
+    Event.type = SDL_NSB_MOVECURSOR;
+    Event.user.data1 = reinterpret_cast<void*>(X);
+    Event.user.data2 = reinterpret_cast<void*>(Y);
+    SDL_PushEvent(&Event);
+}
+
 void Window::Run()
 {
     LastDrawTime = SDL_GetTicks();
@@ -79,7 +89,7 @@ void Window::Select(bool Enable)
     EventLoop = Enable;
 }
 
-void Window::HandleEvent(SDL_Event Event)
+void Window::HandleEvent(SDL_Event& Event)
 {
     switch (Event.type)
     {
@@ -123,7 +133,7 @@ void Window::RemoveTexture(Texture* pTexture)
     Textures.remove(pTexture);
 }
 
-void Window::MoveCursor(int32_t X, int32_t Y)
+void Window::MoveCursor(int X, int Y)
 {
     SDL_WarpMouseInWindow(SDLWindow, X, Y);
 }

@@ -1,6 +1,6 @@
 /* 
  * libnpengine: Nitroplus script interpreter
- * Copyright (C) 2014 Mislav Blažević <krofnica996@gmail.com>
+ * Copyright (C) 2014-2015 Mislav Blažević <krofnica996@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
@@ -36,6 +36,8 @@ public:
     Window(const char* WindowTitle, const int Width, const int Height);
     virtual ~Window();
 
+    static void PushMoveCursorEvent(int X, int Y);
+
     void Run();
     void Exit();
     void Select(bool Enable);
@@ -48,7 +50,7 @@ public:
     const int WIDTH;
     const int HEIGHT;
 protected:
-    void HandleEvent(SDL_Event Event);
+    void HandleEvent(SDL_Event& Event);
 
     NSBInterpreter* pInterpreter;
 private:

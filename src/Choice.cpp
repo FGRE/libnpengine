@@ -1,6 +1,6 @@
 /* 
  * libnpengine: Nitroplus script interpreter
- * Copyright (C) 2014 Mislav Blažević <krofnica996@gmail.com>
+ * Copyright (C) 2014-2015 Mislav Blažević <krofnica996@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "Choice.hpp"
+#include "Window.hpp"
 
 Choice::Choice() : MouseOver(false), ButtonDown(false), ButtonUp(false)
 {
@@ -76,16 +77,8 @@ void Choice::Arrow(SDL_Keycode sym)
 void Choice::ChangeFocus(int Index)
 {
     if (Choice* pChoice = pNextFocus[Index])
-    {
         if (Texture* pTexture = dynamic_cast<Texture*>(pChoice->Read("MouseOver/img")))
-        {
-            SDL_Event Event;
-            Event.type = SDL_NSB_MOVECURSOR;
-            Event.user.data1 = (void*)(pTexture->GetX() + pTexture->GetWidth() / 2);
-            Event.user.data2 = (void*)(pTexture->GetY() + pTexture->GetHeight() / 2);
-            SDL_PushEvent(&Event);
-        }
-    }
+            Window::PushMoveCursorEvent(pTexture->GetX() + pTexture->GetWidth() / 2, pTexture->GetY() + pTexture->GetHeight() / 2);
 }
 
 int Choice::KeyToIndex(const string& Key)
