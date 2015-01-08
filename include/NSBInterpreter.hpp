@@ -1,6 +1,6 @@
 /* 
  * libnpengine: Nitroplus script interpreter
- * Copyright (C) 2014 Mislav Blažević <krofnica996@gmail.com>
+ * Copyright (C) 2014-2015 Mislav Blažević <krofnica996@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
@@ -103,7 +103,7 @@ public:
     void StartDebugger();
 
     void PushEvent(const SDL_Event& Event);
-    void HandleEvent(const SDL_Event& Event);
+    virtual void HandleEvent(const SDL_Event& Event);
     void Run(int NumCommands);
     void RunCommand();
 
@@ -237,7 +237,7 @@ protected:
     void BoolBinaryOp(function<bool(bool, bool)> Func);
 
     void SetInt(const string& Name, int32_t Val);
-    void SetVar(const string& Name, Variable* pVar);
+    virtual void SetVar(const string& Name, Variable* pVar);
     int32_t GetInt(const string& Name);
     string GetString(const string& Name);
     Variable* GetVar(const string& Name);
