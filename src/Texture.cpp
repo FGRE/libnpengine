@@ -106,15 +106,20 @@ void Texture::DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t B
 void Texture::SetShade(int32_t Shade)
 {
     // Error message probably won't cut it: assert is more effective way to make sure user reports a bug
-    // TODO: Support for other shaders as well. Investigate multiple shader support/replacing shaders.
-    assert(!pBlur && Shade == Nsb::SEMIHEAVY);
+    // TODO: Support for other shaders as well
+    assert(Shade == Nsb::SEMIHEAVY);
 
+    delete pBlur;
     pBlur = new BlurEffect;
     if (!pBlur->Create(Width, Height))
     {
         delete pBlur;
         pBlur = nullptr;
     }
+}
+
+void Texture::SetTone(int32_t Tone)
+{
 }
 
 void Texture::Draw(uint32_t Diff)
