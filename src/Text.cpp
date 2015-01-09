@@ -27,6 +27,7 @@
 TextParser::Text* pText;
 
 // TODO: Initialize from system.ini
+// TODO: Test how are these used
 string Text::Font;
 int32_t Text::Size;
 uint32_t Text::InColor;
@@ -57,7 +58,7 @@ private:
     Playable* pVoice;
 } sVoiceMgr;
 
-Text::Text() : Index(0), LayoutWidth(-1)
+Text::Text() : Index(0), LayoutWidth(-1), Color(0xFFFFFFFF)
 {
 }
 
@@ -76,6 +77,11 @@ void Text::CreateFromXML(const string& XML)
 void Text::CreateFromString(const string& String)
 {
     SetString(String);
+}
+
+void Text::SetColor(uint32_t Color)
+{
+    this->Color = Color;
 }
 
 void Text::SetWrap(int32_t Width)
@@ -123,7 +129,7 @@ void Text::SetString(const string& String)
     cairo_surface_t* Surface = cairo_image_surface_create_for_data(pData, CAIRO_FORMAT_ARGB32, Width, Height, 4 * Width);
     cairo_t* RenderContext = cairo_create(Surface);
 
-    cairo_set_source_rgba(RenderContext, 1, 1, 1, 1.0);
+    cairo_set_source_rgba(RenderContext, Color & 0xFF, (Color >> 8) & 0xFF, (Color >> 16) & 0xFF, Color >> 24);
     pango_cairo_show_layout(RenderContext, Layout);
     Create(pData, GL_BGRA);
 
