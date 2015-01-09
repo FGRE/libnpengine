@@ -43,6 +43,7 @@ public:
     void Fade(int32_t Time, int Opacity);
     void DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t Boundary, const string& Filename);
     void SetShade(int32_t Shade);
+    void SetTone(int32_t Tone);
 
     int GetPriority() { return Priority; }
     int GetWidth() { return Width; }

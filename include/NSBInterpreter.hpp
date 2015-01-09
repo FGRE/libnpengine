@@ -21,8 +21,6 @@
 #include "Choice.hpp"
 #include "ArrayVariable.hpp"
 #include <SDL2/SDL.h>
-#include <stack>
-#include <deque>
 #include <functional>
 #include <queue>
 #include <thread>
@@ -79,6 +77,7 @@ struct NSBPosition
 class Line;
 class Window;
 class Texture;
+class Playable;
 class NSBContext;
 class NSBInterpreter
 {
@@ -217,18 +216,25 @@ protected:
     void AtExpression();
     void Random();
     void CreateEffect();
+    void SetTone();
 
     int32_t PopInt();
     string PopString();
-    bool PopBool();
     NSBPosition PopPos();
     uint32_t PopColor();
+    int32_t PopRequest();
+    int32_t PopTone();
+    int32_t PopShade();
+    int32_t PopTempo();
+    bool PopBool();
     string PopSave();
     Variable* PopVar();
     ArrayVariable* PopArr();
+    Texture* PopTexture();
+    Playable* PopPlayable();
 
     void PushInt(int32_t Int);
-    void PushString(string Str);
+    void PushString(const string& Str);
     void PushVar(Variable* pVar);
     void Assign_(int Index);
 

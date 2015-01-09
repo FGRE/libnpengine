@@ -162,6 +162,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_AT_EXPRESSION] = { &NSBInterpreter::AtExpression, 1 };
     Builtins[MAGIC_RANDOM] = { &NSBInterpreter::Random, 1 };
     Builtins[MAGIC_CREATE_EFFECT] = { &NSBInterpreter::CreateEffect, 7 };
+    Builtins[MAGIC_SET_TONE] = { &NSBInterpreter::SetTone, 2 };
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -356,9 +357,7 @@ void NSBInterpreter::Literal()
     const string& Val = pContext->GetParam(1);
     if (Type == "STRING")
     {
-        if (Nsb::IsValidConstant(Val))
-            PushInt(Nsb::ConstantToValue(Val));
-        else if (Variable* pVar = GetVar(Val))
+        if (Variable* pVar = GetVar(Val))
             PushVar(pVar);
         else
             PushString(Val);
@@ -461,10 +460,20 @@ ArrayVariable* NSBInterpreter::PopArr()
     return dynamic_cast<ArrayVariable*>(PopVar());
 }
 
+Texture* NSBInterpreter::PopTexture()
+{
+    return Get<Texture>(PopString());
+}
+
+Playable* NSBInterpreter::PopPlayable()
+{
+    return Get<Playable>(PopString());
+}
+
 int32_t NSBInterpreter::PopInt()
 {
     Variable* pVar = PopVar();
-    int32_t Val = pVar->ToInt();
+    int32_t Val = pVar->IsInt() ? pVar->ToInt() : Nsb::ConstantToValue<Nsb::Null>(pVar->ToString());
     Variable::Destroy(pVar);
     return Val;
 }
@@ -472,16 +481,9 @@ int32_t NSBInterpreter::PopInt()
 string NSBInterpreter::PopString()
 {
     Variable* pVar = PopVar();
-    string Val;
-    if (!pVar->IsInt())
-        Val = pVar->ToString();
+    string Val = pVar->ToString();
     Variable::Destroy(pVar);
     return Val;
-}
-
-bool NSBInterpreter::PopBool()
-{
-    return static_cast<bool>(PopInt());
 }
 
 NSBPosition NSBInterpreter::PopPos()
@@ -550,13 +552,41 @@ uint32_t NSBInterpreter::PopColor()
     uint32_t Color;
 
     Variable* pVar = PopVar();
-    if (pVar->IsInt())
-        Color = pVar->ToInt();
+    if (pVar->IsString() && Nsb::IsValidConstant<Nsb::Color>(pVar->ToString()))
+        Color = Nsb::ConstantToValue<Nsb::Color>(pVar->ToString());
     else
-        Color = stoi(pVar->ToString().c_str() + 1, nullptr, 16) | (0xFF << 24);
+        Color = stoi(pVar->IsInt() ? to_string(pVar->ToInt()) : pVar->ToString().c_str() + 1, nullptr, 16) | (0xFF << 24);
 
     Variable::Destroy(pVar);
     return Color;
+}
+
+int32_t NSBInterpreter::PopRequest()
+{
+    return Nsb::ConstantToValue<Nsb::Request>(PopString());
+}
+
+int32_t NSBInterpreter::PopTone()
+{
+    return Nsb::ConstantToValue<Nsb::Tone>(PopString());
+}
+
+int32_t NSBInterpreter::PopShade()
+{
+    return Nsb::ConstantToValue<Nsb::Shade>(PopString());
+}
+
+int32_t NSBInterpreter::PopTempo()
+{
+    return Nsb::ConstantToValue<Nsb::Tempo>(PopString());
+}
+
+bool NSBInterpreter::PopBool()
+{
+    Variable* pVar = PopVar();
+    int32_t Int = pVar->IsInt() ? pVar->ToInt() : Nsb::ConstantToValue<Nsb::Boolean>(pVar->ToString());
+    Variable::Destroy(pVar);
+    return static_cast<bool>(Int);
 }
 
 string NSBInterpreter::PopSave()
@@ -572,7 +602,7 @@ void NSBInterpreter::PushInt(int32_t Int)
     PushVar(Variable::MakeInt(Int));
 }
 
-void NSBInterpreter::PushString(string Str)
+void NSBInterpreter::PushString(const string& Str)
 {
     PushVar(Variable::MakeString(Str));
 }
@@ -797,13 +827,13 @@ void NSBInterpreter::CreateTexture()
 
 void NSBInterpreter::ImageHorizon()
 {
-    Texture* pTexture = Get<Texture>(PopString());
+    Texture* pTexture = PopTexture();
     PushInt(pTexture ? pTexture->GetWidth() : 0);
 }
 
 void NSBInterpreter::ImageVertical()
 {
-    Texture* pTexture = Get<Texture>(PopString());
+    Texture* pTexture = PopTexture();
     PushInt(pTexture ? pTexture->GetHeight() : 0);
 }
 
@@ -841,7 +871,7 @@ void NSBInterpreter::MoveCursor()
 
 void NSBInterpreter::Position()
 {
-    Texture* pTexture = Get<Texture>(PopString());
+    Texture* pTexture = PopTexture();
     SetInt(pContext->GetParam(1), pTexture->GetX());
     SetInt(pContext->GetParam(2), pTexture->GetY());
 }
@@ -972,7 +1002,7 @@ void NSBInterpreter::ModuleFileName()
 void NSBInterpreter::Request()
 {
     string Handle = PopString();
-    int32_t Request = PopInt();
+    int32_t Request = PopRequest();
 
     ObjectHolder.Execute(Handle, [Request] (Object** ppObject)
     {
@@ -983,7 +1013,7 @@ void NSBInterpreter::Request()
 
 void NSBInterpreter::SetVertex()
 {
-    Texture* pTexture = Get<Texture>(PopString());
+    Texture* pTexture = PopTexture();
     NSBPosition X = PopPos();
     NSBPosition Y = PopPos();
 
@@ -997,7 +1027,7 @@ void NSBInterpreter::Zoom()
     int32_t Time = PopInt();
     int32_t X = PopInt();
     int32_t Y = PopInt();
-    /*int32_t Tempo = */PopInt();
+    /*int32_t Tempo = */PopTempo();
     bool Wait = PopBool();
 
     ObjectHolder.Execute(Handle, [Time, X, Y] (Object** ppObject)
@@ -1016,7 +1046,7 @@ void NSBInterpreter::Move()
     int32_t Time = PopInt();
     NSBPosition X = PopPos();
     NSBPosition Y = PopPos();
-    /*int32_t Tempo = */PopInt();
+    /*int32_t Tempo = */PopTempo();
     bool Wait = PopBool();
 
     ObjectHolder.Execute(Handle, [&] (Object** ppObject)
@@ -1031,13 +1061,13 @@ void NSBInterpreter::Move()
 
 void NSBInterpreter::SetShade()
 {
-    if (Texture* pTexture = Get<Texture>(PopString()))
-        pTexture->SetShade(PopInt());
+    if (Texture* pTexture = PopTexture())
+        pTexture->SetShade(PopShade());
 }
 
 void NSBInterpreter::DrawToTexture()
 {
-    Texture* pTexture = Get<Texture>(PopString());
+    Texture* pTexture = PopTexture();
     int32_t X = PopInt();
     int32_t Y = PopInt();
     string Filename = PopString();
@@ -1060,12 +1090,12 @@ void NSBInterpreter::CreateRenderTexture()
 
 void NSBInterpreter::DrawTransition()
 {
-    Texture* pTexture = Get<Texture>(PopString());
+    Texture* pTexture = PopTexture();
     int32_t Time = PopInt();
     int32_t Start = PopInt();
     int32_t End = PopInt();
     int32_t Boundary = PopInt();
-    /*int32_t Tempo = */PopInt();
+    /*int32_t Tempo = */PopTempo();
     string Filename = PopString();
     bool Wait = PopBool();
 
@@ -1111,7 +1141,7 @@ void NSBInterpreter::Fade()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Opacity = PopInt();
-    /*int32_t Tempo = */PopInt();
+    /*int32_t Tempo = */PopTempo();
     bool Wait = PopBool();
 
     ObjectHolder.Execute(Handle, [Time, Opacity] (Object** ppObject)
@@ -1148,7 +1178,7 @@ void NSBInterpreter::ClearParams()
 
 void NSBInterpreter::SetLoop()
 {
-    if (Playable* pPlayable = Get<Playable>(PopString()))
+    if (Playable* pPlayable = PopPlayable())
         pPlayable->SetLoop(PopBool());
 }
 
@@ -1157,7 +1187,7 @@ void NSBInterpreter::SetVolume()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Volume = PopInt();
-    /*int32_t Tempo = */PopInt();
+    /*int32_t Tempo = */PopTempo();
 
     ObjectHolder.Execute(Handle, [Time, Volume] (Object** ppObject)
     {
@@ -1192,7 +1222,7 @@ void NSBInterpreter::CreateSound()
 
 void NSBInterpreter::RemainTime()
 {
-    Playable* pPlayable = Get<Playable>(PopString());
+    Playable* pPlayable = PopPlayable();
     PushInt(pPlayable ? pPlayable->RemainTime() : 0);
 }
 
@@ -1214,7 +1244,7 @@ void NSBInterpreter::CreateMovie()
 
 void NSBInterpreter::DurationTime()
 {
-    Playable* pPlayable = Get<Playable>(PopString());
+    Playable* pPlayable = PopPlayable();
     PushInt(pPlayable ? pPlayable->DurationTime() : 0);
 }
 
@@ -1223,7 +1253,7 @@ void NSBInterpreter::SetFrequency()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Frequency = PopInt();
-    /*int32_t Tempo = */PopInt();
+    /*int32_t Tempo = */PopTempo();
 
     if (Playable* pPlayable = Get<Playable>(Handle))
         pPlayable->SetFrequency(Time, Frequency);
@@ -1234,7 +1264,7 @@ void NSBInterpreter::SetPan()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Pan = PopInt();
-    /*int32_t Tempo = */PopInt();
+    /*int32_t Tempo = */PopTempo();
 
     if (Playable* pPlayable = Get<Playable>(Handle))
         pPlayable->SetPan(Time, Pan);
@@ -1464,11 +1494,11 @@ void NSBInterpreter::Load()
     {
         string Name1 = SaveData.ReadStr32();
         string Name2 = SaveData.ReadStr32();
-        uint32_t Type = SaveData.Read<uint32_t>();
-        int32_t IntVal = SaveData.Read<int32_t>();
-        int32_t unk = SaveData.Read<int32_t>();
+        /*uint32_t Type = */SaveData.Read<uint32_t>();
+        /*int32_t IntVal = */SaveData.Read<int32_t>();
+        /*int32_t unk = */SaveData.Read<int32_t>();
         string StrVal = SaveData.ReadStr32();
-        bool Relative = SaveData.Read<bool>();
+        /*bool Relative = */SaveData.Read<bool>();
         string ArrayRef = SaveData.ReadStr32();
     }
 
@@ -1524,10 +1554,16 @@ void NSBInterpreter::Random()
 void NSBInterpreter::CreateEffect()
 {
     string Handle = PopString();
-    int32_t Priority = PopInt();
+    /*int32_t Priority = */PopInt();
     NSBPosition X = PopPos();
     NSBPosition Y = PopPos();
-    int32_t Width = PopInt();
-    int32_t Height = PopInt();
+    /*int32_t Width = */PopInt();
+    /*int32_t Height = */PopInt();
     string Type = PopString();
+}
+
+void NSBInterpreter::SetTone()
+{
+    if (Texture* pTexture = PopTexture())
+        pTexture->SetTone(PopTone());
 }
