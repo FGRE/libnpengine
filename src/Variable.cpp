@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 #include "Variable.hpp"
+#include "nsbconstants.hpp"
 #include <cassert>
 
 Variable::Variable() : Literal(true), Relative(false)
@@ -71,6 +72,7 @@ Variable* Variable::MakeInt(int32_t Int)
 Variable* Variable::MakeString(const string& Str)
 {
     Variable* pVar = new Variable;
+    if (Str[0] == '@') pVar->Relative = true;
     pVar->Initialize(Str);
     return pVar;
 }
@@ -132,8 +134,9 @@ Variable* Variable::Add(Variable* pFirst, Variable* pSecond)
     Variable* pThird = nullptr;
     if (pFirst->IsInt() && pSecond->IsInt())
         pThird = MakeInt(pFirst->ToInt() + pSecond->ToInt());
-    else if (pFirst->IsString() && pSecond->IsString())
-        pThird = MakeString(pFirst->ToString() + pSecond->ToString());
+    else if (pFirst->IsString())
+        pThird = MakeString(pFirst->ToString() + (pSecond->IsString() ? pSecond->ToString() : to_string(pSecond->ToInt())));
+    else assert(false);
     Destroy(pFirst);
     Destroy(pSecond);
     return pThird;
@@ -142,9 +145,11 @@ Variable* Variable::Add(Variable* pFirst, Variable* pSecond)
 Variable* Variable::Equal(Variable* pFirst, Variable* pSecond)
 {
     Variable* pThird = nullptr;
-    if (pFirst->IsInt() && pSecond->IsInt())
-        pThird = MakeInt(pFirst->ToInt() == pSecond->ToInt());
-    else if (pFirst->IsString() && pSecond->IsString())
+    if (pFirst->IsInt() && pFirst->Tag != NSB_NULL)
+        pThird = MakeInt(pFirst->ToInt() == (pSecond->IsInt() ? pSecond->ToInt() : Nsb::ConstantToValue<Nsb::Boolean>(pSecond->ToString())));
+    else if (pSecond->IsInt() && pSecond->Tag != NSB_NULL)
+        pThird = MakeInt(pSecond->ToInt() == (pFirst->IsInt() ? pFirst->ToInt() : Nsb::ConstantToValue<Nsb::Boolean>(pFirst->ToString())));
+    else
         pThird = MakeInt(pFirst->ToString() == pSecond->ToString());
     Destroy(pFirst);
     Destroy(pSecond);

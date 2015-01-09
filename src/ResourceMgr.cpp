@@ -18,7 +18,6 @@
 #include "ResourceMgr.hpp"
 #include "scriptfile.hpp"
 #include <glib.h>
-#include <memory>
 
 char* Resource::ReadData(uint32_t Offset, uint32_t Size)
 {
