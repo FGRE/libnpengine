@@ -31,6 +31,7 @@ public:
     void CreateFromXML(const string& XML);
     void CreateFromString(const string& String);
 
+    void SetColor(uint32_t Color);
     void SetWrap(int32_t Width);
     bool Advance();
 
@@ -46,6 +47,7 @@ private:
     void SetString(const string& String);
 
     size_t Index, LayoutWidth;
+    uint32_t Color;
 };
 
 
