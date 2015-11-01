@@ -1516,7 +1516,10 @@ void NSBInterpreter::SetBacklog()
 {
     /*string Text = */PopString();
     /*string Voice = */PopString();
-    /*string Name = */PopString();
+
+    // [WORKAROUND] In JAST the third parameter may be an integer
+    Variable::Destroy(PopVar());
+    ///*string Name = */PopString();
 }
 
 void NSBInterpreter::CreateText()
