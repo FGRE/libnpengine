@@ -18,7 +18,7 @@
 "FONT"                  return TOKEN(TFONT);
 "voice"                 return TOKEN(TVOICE);
 "#"[0-9A-Fa-f]{6}       SAVE_TOKEN; return THEX;
-[a-zA-Zａ-ｚＡ-Ｚあ-ゖァ-ヺ一-龯_][/.a-zA-Zａ-ｚＡ-Ｚあ-ゖァ-ヺ一-龯０-９0-9_]*  SAVE_TOKEN; return TSTRING;
+[?a-zA-Zａ-ｚＡ-Ｚあ-ゖァ-ヺ一-龯_][?,'/.a-zA-Zａ-ｚＡ-Ｚあ-ゖァ-ヺ一-龯０-９0-9_]*  SAVE_TOKEN; return TSTRING;
 "<"                     return TOKEN(TLBRACE);
 ">"                     return TOKEN(TRBRACE);
 "["                     return TOKEN(TLABRACE);
