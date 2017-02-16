@@ -31,7 +31,7 @@ public:
     int GetHeight() const { return Height; }
     uint8_t* GetPixels() const { return pPixels; }
     void LoadColor(int Width, int Height, uint32_t Color);
-    void LoadImage(const string& Filename, GLenum Format);
+    GLenum LoadImage(const string& Filename, bool Mask = false);
 
 private:
     uint8_t* LoadPNG(uint8_t* pMem, uint32_t Size, uint8_t Format);

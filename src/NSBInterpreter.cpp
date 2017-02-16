@@ -815,7 +815,7 @@ void NSBInterpreter::CreateTexture()
     if (Source.size() < 4 || Source[Source.size() - 4] != '.')
         pTexture->CreateFromImage(Get<Image>(Source));
     else
-        pTexture->CreateFromFile(Source, GL_BGRA);
+        pTexture->CreateFromFile(Source);
 
     pTexture->SetVertex(pTexture->GetWidth() / 2, pTexture->GetHeight() / 2);
     pTexture->Move(X(pTexture->GetWidth()), Y(pTexture->GetHeight()));
@@ -1132,7 +1132,7 @@ void NSBInterpreter::LoadImage()
     string Filename = PopString();
 
     Image* pImage = new Image;
-    pImage->LoadImage(Filename, GL_BGRA);
+    pImage->LoadImage(Filename);
     ObjectHolder.Write(Handle, pImage);
 }
 

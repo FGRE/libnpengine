@@ -195,7 +195,7 @@ public:
 
     void Reset(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time, int32_t Boundary)
     {
-        CreateFromFile(Filename, GL_LUMINANCE);
+        CreateFromFile(Filename, true);
         LerpEffect::Reset(StartOpacity, EndOpacity, 0, 0, Time);
 
         if (!Program)
