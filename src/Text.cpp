@@ -131,7 +131,7 @@ void Text::SetString(const string& String)
 
     cairo_set_source_rgba(RenderContext, Color & 0xFF, (Color >> 8) & 0xFF, (Color >> 16) & 0xFF, Color >> 24);
     pango_cairo_show_layout(RenderContext, Layout);
-    Create(pData, GL_BGRA);
+    Create(pData, GL_RGBA);
 
     free(pData);
     g_object_unref(Layout);

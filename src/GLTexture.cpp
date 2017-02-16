@@ -54,10 +54,10 @@ void GLTexture::CreateFromColor(int Width, int Height, uint32_t Color)
     Create(Img.GetPixels(), GL_BGRA);
 }
 
-void GLTexture::CreateFromFile(const string& Filename, GLenum Format)
+void GLTexture::CreateFromFile(const string& Filename, bool Mask)
 {
     Image Img;
-    Img.LoadImage(Filename, Format);
+    GLenum Format = Img.LoadImage(Filename, Mask);
     Width = Img.GetWidth();
     Height = Img.GetHeight();
     Create(Img.GetPixels(), Format);
@@ -67,7 +67,7 @@ void GLTexture::CreateFromImage(Image* pImage)
 {
     Width = pImage->GetWidth();
     Height = pImage->GetHeight();
-    Create(pImage->GetPixels(), GL_BGRA);
+    Create(pImage->GetPixels(), GL_RGBA);
 }
 
 void GLTexture::CreateFromImageClip(Image* pImage, int ClipX, int ClipY, int ClipWidth, int ClipHeight)
@@ -78,14 +78,14 @@ void GLTexture::CreateFromImageClip(Image* pImage, int ClipX, int ClipY, int Cli
 
     Width = ClipWidth;
     Height = ClipHeight;
-    Create(pClipped, GL_BGRA);
+    Create(pClipped, GL_RGBA);
     delete[] pClipped;
 }
 
 void GLTexture::CreateFromFileClip(const string& Filename, int ClipX, int ClipY, int ClipWidth, int ClipHeight)
 {
     Image Img;
-    Img.LoadImage(Filename, GL_BGRA);
+    Img.LoadImage(Filename);
     CreateFromImageClip(&Img, ClipX, ClipY, ClipWidth, ClipHeight);
 }
 

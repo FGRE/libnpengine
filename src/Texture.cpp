@@ -49,9 +49,9 @@ void Texture::Request(int32_t State)
 void Texture::Draw(int X, int Y, const string& Filename)
 {
     Image Img;
-    Img.LoadImage(Filename, GL_BGRA);
+    Img.LoadImage(Filename);
     glBindTexture(GL_TEXTURE_2D, GLTextureID);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, X, Y, Img.GetWidth(), Img.GetHeight(), GL_BGRA, GL_UNSIGNED_BYTE, Img.GetPixels());
+    glTexSubImage2D(GL_TEXTURE_2D, 0, X, Y, Img.GetWidth(), Img.GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Img.GetPixels());
 }
 
 void Texture::SetPosition(int X, int Y)
