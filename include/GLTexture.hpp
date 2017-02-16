@@ -34,7 +34,7 @@ public:
     void CreateFromImage(Image* pImage);
     void CreateFromImageClip(Image* pImage, int ClipX, int ClipY, int ClipWidth, int ClipHeight);
     void CreateFromColor(int Width, int Height, uint32_t Color);
-    void CreateFromFile(const string& Filename, GLenum Format);
+    void CreateFromFile(const string& Filename, bool Mask = false);
     void CreateFromFileClip(const string& Filename, int ClipX, int ClipY, int ClipWidth, int ClipHeight);
     void CreateEmpty(int Width, int Height);
 

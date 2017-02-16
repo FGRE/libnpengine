@@ -39,19 +39,29 @@ void Image::LoadColor(int Width, int Height, uint32_t Color)
         memcpy(pPixels + i * 4, &Color, 4);
 }
 
-void Image::LoadImage(const string& Filename, GLenum Format)
+GLenum Image::LoadImage(const string& Filename, bool Mask)
 {
     uint32_t Size;
     uint8_t* pData = (uint8_t*)sResourceMgr->Read(Filename, Size);
     if (!pData)
-        return;
+        return 0;
 
+    GLenum Format = 0;
     if (Filename.substr(Filename.size() - 3) == "jpg")
+    {
         pPixels = LoadJPEG(pData, Size);
+        Format = GL_RGB;
+    }
     else if (Filename.substr(Filename.size() - 3) == "png")
-        pPixels = LoadPNG(pData, Size, Format == GL_LUMINANCE ? PNG_FORMAT_GRAY : PNG_FORMAT_BGRA);
+    {
+        pPixels = LoadPNG(pData, Size, Mask ? PNG_FORMAT_GRAY : PNG_FORMAT_RGBA);
+        Format = Mask ? GL_LUMINANCE : GL_RGBA;
+    }
+    else
+        cout << Filename << " is neither .jpg nor .png!" << endl;
 
     delete[] pData;
+    return Format;
 }
 
 uint8_t* Image::LoadPNG(uint8_t* pMem, uint32_t Size, uint8_t Format)
@@ -95,33 +105,15 @@ uint8_t* Image::LoadJPEG(uint8_t* pMem, uint32_t Size)
 
     Width = jpeg.output_width;
     Height = jpeg.output_height;
-    uint8_t* pData = new (nothrow) uint8_t[Width * Height * 4];
-    if (!pData)
-    {
-        jpeg_abort_decompress(&jpeg);
-        jpeg_destroy_decompress(&jpeg);
-        return nullptr;
-    }
 
-    uint8_t* pRow = new (nothrow) uint8_t[Width * jpeg.output_components];
-    if (!pRow)
-    {
-        delete[] pData;
-        jpeg_abort_decompress(&jpeg);
-        jpeg_destroy_decompress(&jpeg);
-        return nullptr;
-    }
-
-    uint32_t* pPixel = (uint32_t*)pData;
+    uint8_t* data = new uint8_t[Width * Height * 3];
     for (int y = 0; y < Height; ++y)
     {
-        jpeg_read_scanlines(&jpeg, &pRow, 1);
-        for (int x = 0; x < Width; ++x, ++pPixel)
-            *pPixel = 0xFF << 24 | pRow[x * 3] << 16 | pRow[x * 3 + 1] << 8 | pRow[x * 3 + 2];
+        uint8_t* ptr = data + Width * 3 * y;
+        jpeg_read_scanlines(&jpeg, &ptr, 1);
     }
 
     jpeg_finish_decompress(&jpeg);
     jpeg_destroy_decompress(&jpeg);
-    delete[] pRow;
-    return pData;
+    return data;
 }

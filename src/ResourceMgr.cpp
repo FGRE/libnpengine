@@ -53,6 +53,8 @@ char* ResourceMgr::Read(string Path, uint32_t& Size)
     for (uint32_t i = 0; i < Archives.size(); ++i)
         if (char* pData = Archives[i]->ReadFile(Path, Size))
             return pData;
+
+    cout << "Failed to read " << Path << endl;
     Size = 0;
     return nullptr;
 }
