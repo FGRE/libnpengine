@@ -36,6 +36,9 @@ find_package(JPEG REQUIRED)
 find_package(GStreamer REQUIRED)
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
+find_package(X11 REQUIRED)
+find_package(PNG REQUIRED)
+find_package(Threads REQUIRED)
 include(FindPkgConfig)
 
 PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
@@ -83,6 +86,20 @@ add_library(npengine SHARED
     src/Image.cpp
     src/NSBDebugger.cpp
 )
+
+target_link_libraries(npengine
+	${CMAKE_THREAD_LIBS_INIT}
+	${SDL2_LIBRARIES}
+	${NPA_LIBRARY}
+	${GSTREAMER_LIBRARIES}
+	${GSTREAMER_APP_LIBRARIES}
+	${GSTREAMER_VIDEO_LIBRARIES}
+	${PANGOCAIRO_LIBRARIES} 
+	${JPEG_LIBRARY} 
+	${GLEW_LIBRARY} 
+	${X11_LIBRARIES} 
+	${PNG_LIBRARIES}
+	-lGL)
 
 # install headers and library
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
