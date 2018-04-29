@@ -20,7 +20,7 @@
 ArrayVariable::ArrayVariable()
 {
     Literal = false;
-    Initialize(0);
+    Set(0);
 }
 
 ArrayVariable::~ArrayVariable()
@@ -37,7 +37,7 @@ ArrayVariable* ArrayVariable::Find(const string& Key)
     return nullptr;
 }
 
-ArrayVariable* ArrayVariable::Find(int32_t Index)
+ArrayVariable* ArrayVariable::Find(uint32_t Index)
 {
     while (Index >= Members.size())
         Push(MakeNull());

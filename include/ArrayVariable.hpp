@@ -29,7 +29,7 @@ public:
     ~ArrayVariable();
 
     ArrayVariable* Find(const string& Key);
-    ArrayVariable* Find(int32_t Index);
+    ArrayVariable* Find(uint32_t Index);
     void Push(ArrayVariable* pVar);
 
     static ArrayVariable* MakeNull();

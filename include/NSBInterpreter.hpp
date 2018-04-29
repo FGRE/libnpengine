@@ -217,6 +217,7 @@ protected:
     void Random();
     void CreateEffect();
     void SetTone();
+    void DateTime();
 
     int32_t PopInt();
     string PopString();
