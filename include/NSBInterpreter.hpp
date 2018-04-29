@@ -219,6 +219,12 @@ protected:
     void SetTone();
     void DateTime();
     void Shake();
+    void MoviePlay();
+    void SetStream();
+    void WaitPlay();
+    void WaitFade();
+    void SoundAmplitude();
+    void Rotate();
 
     int32_t PopInt();
     string PopString();
