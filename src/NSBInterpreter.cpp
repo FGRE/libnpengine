@@ -165,6 +165,12 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_TONE] = { &NSBInterpreter::SetTone, 2 };
     Builtins[MAGIC_DATE_TIME] = { &NSBInterpreter::DateTime, 6};
     Builtins[MAGIC_SHAKE] = { &NSBInterpreter::Shake, 9};
+    Builtins[MAGIC_MOVIE_PLAY] = { &NSBInterpreter::MoviePlay, 2};
+    Builtins[MAGIC_SET_STREAM] = { &NSBInterpreter::SetStream, 2};
+    Builtins[MAGIC_WAIT_PLAY] = { &NSBInterpreter::WaitPlay, 2};
+    Builtins[MAGIC_WAIT_FADE] = { &NSBInterpreter::WaitFade, 2};
+    Builtins[MAGIC_SOUND_AMPLITUDE] = { &NSBInterpreter::SoundAmplitude, 2};
+    Builtins[MAGIC_ROTATE] = { &NSBInterpreter::Rotate, 7};
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -1613,4 +1619,47 @@ void NSBInterpreter::Shake()
     /*int32_t unk3 = */PopInt();
     /*int32_t Tempo = */PopTempo();
     /*bool Wait = */PopBool();
+}
+
+void NSBInterpreter::MoviePlay()
+{
+    string File = PopString();
+    /*bool unk = */PopBool();
+}
+
+void NSBInterpreter::SetStream()
+{
+    string Handle = PopString();
+    /*int32_t unk = */PopInt();
+}
+
+void NSBInterpreter::WaitPlay()
+{
+    string Handle = PopString();
+    /*string unk = */PopString();
+}
+
+void NSBInterpreter::WaitFade()
+{
+    string Handle = PopString();
+    /*string unk = */PopString();
+}
+
+void NSBInterpreter::SoundAmplitude()
+{
+    string Handle = PopString();
+    /*string unk = */PopString();
+
+    // [HACK]
+    PushInt(0);
+}
+
+void NSBInterpreter::Rotate()
+{
+    string Handle = PopString();
+    /*int32_t unk1 = */PopInt();
+    /*int32_t unk2 = */PopInt();
+    /*int32_t unk3 = */PopInt();
+    /*int32_t Tempo = */PopTempo();
+    /*bool unk4 = */PopBool();
 }
