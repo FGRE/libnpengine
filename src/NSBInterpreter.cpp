@@ -164,6 +164,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_CREATE_EFFECT] = { &NSBInterpreter::CreateEffect, 7 };
     Builtins[MAGIC_SET_TONE] = { &NSBInterpreter::SetTone, 2 };
     Builtins[MAGIC_DATE_TIME] = { &NSBInterpreter::DateTime, 6};
+    Builtins[MAGIC_SHAKE] = { &NSBInterpreter::Shake, 9};
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -1599,4 +1600,17 @@ void NSBInterpreter::DateTime()
     PopVar()->Set(tms->tm_hour);
     PopVar()->Set(tms->tm_min);
     PopVar()->Set(tms->tm_sec);
+}
+
+void NSBInterpreter::Shake()
+{
+    string Handle = PopString();
+    /*int32_t Priority = */PopInt();
+    /*int32_t XWidth = */PopInt();
+    /*int32_t YWidth = */PopInt();
+    /*int32_t unk1 = */PopInt();
+    /*int32_t unk2 = */PopInt();
+    /*int32_t unk3 = */PopInt();
+    /*int32_t Tempo = */PopTempo();
+    /*bool Wait = */PopBool();
 }

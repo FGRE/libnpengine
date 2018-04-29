@@ -218,6 +218,7 @@ protected:
     void CreateEffect();
     void SetTone();
     void DateTime();
+    void Shake();
 
     int32_t PopInt();
     string PopString();
