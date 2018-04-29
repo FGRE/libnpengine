@@ -163,6 +163,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_RANDOM] = { &NSBInterpreter::Random, 1 };
     Builtins[MAGIC_CREATE_EFFECT] = { &NSBInterpreter::CreateEffect, 7 };
     Builtins[MAGIC_SET_TONE] = { &NSBInterpreter::SetTone, 2 };
+    Builtins[MAGIC_DATE_TIME] = { &NSBInterpreter::DateTime, 6};
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -357,7 +358,8 @@ void NSBInterpreter::Literal()
     const string& Val = pContext->GetParam(1);
     if (Type == "STRING")
     {
-        if (Variable* pVar = GetVar(Val))
+        Variable* pVar = GetVar(Val);
+        if (!pVar->IsNull())
             PushVar(pVar);
         else
             PushString(Val);
@@ -712,7 +714,13 @@ string NSBInterpreter::GetString(const string& Name)
 
 Variable* NSBInterpreter::GetVar(const string& Name)
 {
-    return VariableHolder.Read(Name);
+    if (Variable* pVar = VariableHolder.Read(Name))
+        return pVar;
+
+    Variable* pVar = Variable::MakeNull();
+    pVar->Literal = false;
+    VariableHolder.Write(Name, pVar);
+    return pVar;
 }
 
 ArrayVariable* NSBInterpreter::GetArrSafe(const string& Name)
@@ -727,9 +735,7 @@ ArrayVariable* NSBInterpreter::GetArrSafe(const string& Name)
 
 ArrayVariable* NSBInterpreter::GetArr(const string& Name)
 {
-    if (Variable* pVariable = GetVar(Name))
-        return dynamic_cast<ArrayVariable*>(pVariable);
-    return nullptr;
+    return dynamic_cast<ArrayVariable*>(GetVar(Name));
 }
 
 Object* NSBInterpreter::GetObject(const string& Name)
@@ -739,24 +745,8 @@ Object* NSBInterpreter::GetObject(const string& Name)
 
 void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
 {
-    // Variable exists: Copy value
-    if (Variable* pVar2 = GetVar(Name))
-    {
-        pVar2->Set(pVar);
-        Variable::Destroy(pVar);
-        return;
-    }
-
-    // Variable doesnt exist: Create it
-    Variable* pNew = nullptr;
-    // Reuse literal as new variable
-    if (pVar->Literal)
-        pNew = pVar;
-    // Not a literal, so make a copy
-    else
-        pNew = Variable::MakeCopy(pVar);
-    pNew->Literal = false;
-    VariableHolder.Write(Name, pNew);
+    GetVar(Name)->Set(pVar);
+    Variable::Destroy(pVar);
 }
 
 void NSBInterpreter::SetInt(const string& Name, int32_t Val)
@@ -1356,14 +1346,13 @@ void NSBInterpreter::ParseText()
     string Box = pContext->GetParam(1);
     string XML = pContext->GetParam(2);
 
-    if (Variable* pVar = GetVar("$SYSTEM_present_text"))
-        ObjectHolder.Delete(pVar->ToString());
+    ObjectHolder.Delete(GetVar("$SYSTEM_present_text")->ToString());
 
     Text* pText = new Text;
     pText->CreateFromXML(XML);
     pText->Move(0, 0);
     Handle = Box + "/" + Handle;
-    SetVar("$SYSTEM_present_text", Variable::MakeString(Handle));
+    SetString("$SYSTEM_present_text", Handle);
     ObjectHolder.Write(Handle, pText);
 }
 
@@ -1574,4 +1563,16 @@ void NSBInterpreter::SetTone()
 {
     if (Texture* pTexture = PopTexture())
         pTexture->SetTone(PopTone());
+}
+
+void NSBInterpreter::DateTime()
+{
+    time_t t = time(nullptr);
+    tm* tms = localtime(&t);
+    PopVar()->Set(tms->tm_year + 1900);
+    PopVar()->Set(tms->tm_mon + 1);
+    PopVar()->Set(tms->tm_mday);
+    PopVar()->Set(tms->tm_hour);
+    PopVar()->Set(tms->tm_min);
+    PopVar()->Set(tms->tm_sec);
 }

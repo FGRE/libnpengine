@@ -28,15 +28,16 @@ Variable::~Variable()
     Destroy();
 }
 
-void Variable::Initialize(int32_t Int)
+void Variable::Set(int32_t Int)
 {
     Val.Int = Int;
     Tag = NSB_INT;
 }
 
-void Variable::Initialize(const string& Str)
+void Variable::Set(const string& Str)
 {
     Val.Str = new string(Str);
+    if (Str[0] == '@') Relative = true;
     Tag = NSB_STRING;
 }
 
@@ -51,9 +52,9 @@ void Variable::Initialize(Variable* pVar)
     if (pVar->Tag == NSB_NULL)
         Initialize();
     else if (pVar->IsString())
-        Initialize(pVar->ToString());
+        Set(pVar->ToString());
     else
-        Initialize(pVar->ToInt());
+        Set(pVar->ToInt());
 }
 
 void Variable::Destroy()
@@ -65,15 +66,14 @@ void Variable::Destroy()
 Variable* Variable::MakeInt(int32_t Int)
 {
     Variable* pVar = new Variable;
-    pVar->Initialize(Int);
+    pVar->Set(Int);
     return pVar;
 }
 
 Variable* Variable::MakeString(const string& Str)
 {
     Variable* pVar = new Variable;
-    if (Str[0] == '@') pVar->Relative = true;
-    pVar->Initialize(Str);
+    pVar->Set(Str);
     return pVar;
 }
 
@@ -115,6 +115,11 @@ bool Variable::IsInt()
 bool Variable::IsString()
 {
     return (Tag & NSB_STRING) || Relative;
+}
+
+bool Variable::IsNull()
+{
+    return Tag == NSB_NULL;
 }
 
 void Variable::Set(Variable* pVar)

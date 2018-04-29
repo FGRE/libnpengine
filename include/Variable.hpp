@@ -40,8 +40,6 @@ protected:
 
     Variable();
 
-    void Initialize(int32_t Int);
-    void Initialize(const string& Str);
     void Initialize();
     void Initialize(Variable* pVar);
     void Destroy();
@@ -58,7 +56,10 @@ public:
     string ToString();
     bool IsInt();
     bool IsString();
+    bool IsNull();
     void Set(Variable* pVar);
+    void Set(int32_t Int);
+    void Set(const string& Str);
     Variable* IntUnaryOp(function<int32_t(int32_t)> Func);
 
     static Variable* Add(Variable* pFirst, Variable* pSecond);
