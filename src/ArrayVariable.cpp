@@ -25,15 +25,15 @@ ArrayVariable::ArrayVariable()
 
 ArrayVariable::~ArrayVariable()
 {
-    for (auto i = Members.begin(); i != Members.end(); ++i)
-        delete i->second;
+    for (auto& i : Members)
+        delete i.second;
 }
 
 ArrayVariable* ArrayVariable::Find(const string& Key)
 {
-    for (auto i = Members.begin(); i != Members.end(); ++i)
-        if (i->first == Key)
-            return i->second;
+    for (auto& i : Members)
+        if (i.first == Key)
+            return i.second;
     return nullptr;
 }
 
@@ -49,7 +49,7 @@ ArrayVariable* ArrayVariable::Find(uint32_t Index)
 
 void ArrayVariable::Push(ArrayVariable* pVar)
 {
-    Members.push_back(make_pair(string(), pVar));
+    Members.emplace_back("", pVar);
 }
 
 ArrayVariable* ArrayVariable::MakeNull()

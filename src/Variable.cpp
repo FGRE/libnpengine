@@ -37,7 +37,19 @@ void Variable::Set(int32_t Int)
 void Variable::Set(const string& Str)
 {
     Val.Str = new string(Str);
-    if (Str[0] == '@') Relative = true;
+    // hack
+    if (Str[0] == '@')
+    {
+        Relative = true;
+        try
+        {
+            stoi(Val.Str->c_str() + 1);
+        }
+        catch(...)
+        {
+            Relative = false;
+        }
+    }
     Tag = NSB_STRING;
 }
 

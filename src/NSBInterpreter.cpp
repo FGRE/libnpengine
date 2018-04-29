@@ -358,8 +358,7 @@ void NSBInterpreter::Literal()
     const string& Val = pContext->GetParam(1);
     if (Type == "STRING")
     {
-        Variable* pVar = GetVar(Val);
-        if (!pVar->IsNull())
+        if (Variable* pVar = VariableHolder.Read(Val))
             PushVar(pVar);
         else
             PushString(Val);
@@ -459,7 +458,7 @@ Variable* NSBInterpreter::PopVar()
 
 ArrayVariable* NSBInterpreter::PopArr()
 {
-    return dynamic_cast<ArrayVariable*>(PopVar());
+    return dynamic_cast<ArrayVariable*>(Params.Pop());
 }
 
 Texture* NSBInterpreter::PopTexture()
@@ -714,6 +713,10 @@ string NSBInterpreter::GetString(const string& Name)
 
 Variable* NSBInterpreter::GetVar(const string& Name)
 {
+    // hacky
+    if (ArrayVariable* pArr = GetArr(Name))
+        return pArr;
+
     if (Variable* pVar = VariableHolder.Read(Name))
         return pVar;
 
@@ -729,13 +732,13 @@ ArrayVariable* NSBInterpreter::GetArrSafe(const string& Name)
         return pArr;
 
     ArrayVariable* pArr = ArrayVariable::MakeNull();
-    VariableHolder.Write(Name, pArr);
+    ArrayHolder.Write(Name, pArr);
     return pArr;
 }
 
 ArrayVariable* NSBInterpreter::GetArr(const string& Name)
 {
-    return dynamic_cast<ArrayVariable*>(GetVar(Name));
+    return ArrayHolder.Read(Name);
 }
 
 Object* NSBInterpreter::GetObject(const string& Name)
@@ -957,7 +960,7 @@ void NSBInterpreter::Array()
     if (!pArr)
     {
         pArr = ArrayVariable::MakeNull();
-        VariableHolder.Write(pContext->GetParam(0), pArr);
+        ArrayHolder.Write(pContext->GetParam(0), pArr);
     }
 
     for (int i = 1; i < pContext->GetNumParams(); ++i)
@@ -984,8 +987,8 @@ void NSBInterpreter::SubScript()
 void NSBInterpreter::AssocArray()
 {
     ArrayVariable* pArr = PopArr();
-    for (auto i = pArr->Members.begin(); i != pArr->Members.end(); ++i)
-        i->first = PopString();
+    for (auto& i : pArr->Members)
+        i.first = PopString();
 }
 
 void NSBInterpreter::ModuleFileName()
@@ -1392,6 +1395,27 @@ void NSBInterpreter::LockVideo()
 void NSBInterpreter::Save()
 {
     Npa::Buffer SaveData;
+    SaveData.Write<uint32_t>(VariableHolder.Cache.size());
+    for (auto& var : VariableHolder.Cache)
+    {
+        SaveData.WriteStr32(NpaFile::FromUtf8(var.first));
+        SaveData.WriteStr32(NpaFile::FromUtf8(var.first));
+        SaveData.Write<uint32_t>(var.second->IsInt() ? 1 : 3); // TODO: other values
+        SaveData.Write<int32_t>(var.second->IsInt() ? var.second->ToInt() : 0);
+        SaveData.Write<uint32_t>(0); // unk
+        SaveData.WriteStr32(NpaFile::FromUtf8(var.second->IsString() ? var.second->ToString() : ""));
+        SaveData.Write<bool>(0); // unk - maybe bool? 4? what is 2?
+        SaveData.WriteStr32(NpaFile::FromUtf8("")); // TODO: arrayref?
+    }
+    // TODO: lower levels too
+    SaveData.Write<uint32_t>(ArrayHolder.Cache.size());
+    for (auto& arr : ArrayHolder.Cache)
+    {
+        SaveData.WriteStr32(NpaFile::FromUtf8(arr.first));
+        SaveData.Write<uint32_t>(arr.second->Members.size());
+        for (auto& i : arr.second->Members)
+            SaveData.WriteStr32(NpaFile::ToUtf8(i.first)); // TODO: these are keys; what about vals?
+    }
     fs::WriteFile(PopSave(), NpaFile::Encrypt(SaveData.GetData(), SaveData.GetSize()), SaveData.GetSize());
 }
 
@@ -1486,23 +1510,23 @@ void NSBInterpreter::Load()
     uint32_t NumVars = SaveData.Read<uint32_t>();
     for (uint32_t i = 0; i < NumVars; ++i)
     {
-        string Name1 = SaveData.ReadStr32();
-        string Name2 = SaveData.ReadStr32();
+        string Name1 = NpaFile::ToUtf8(SaveData.ReadStr32());
+        string Name2 = NpaFile::ToUtf8(SaveData.ReadStr32());
         /*uint32_t Type = */SaveData.Read<uint32_t>();
         /*int32_t IntVal = */SaveData.Read<int32_t>();
         /*int32_t unk = */SaveData.Read<int32_t>();
-        string StrVal = SaveData.ReadStr32();
-        /*bool Relative = */SaveData.Read<bool>();
-        string ArrayRef = SaveData.ReadStr32();
+        string StrVal = NpaFile::ToUtf8(SaveData.ReadStr32());
+        /*bool unk = */SaveData.Read<bool>();
+        string ArrayRef = NpaFile::ToUtf8(SaveData.ReadStr32());
     }
 
     uint32_t NumArrs = SaveData.Read<uint32_t>();
     for (uint32_t i = 0; i < NumArrs; ++i)
     {
-        string Name1 = SaveData.ReadStr32();
+        string Name1 = NpaFile::ToUtf8(SaveData.ReadStr32());
         uint32_t NumElems = SaveData.Read<uint32_t>();
         for (uint32_t j = 0; j < NumElems; ++j)
-            string Value = SaveData.ReadStr32();
+            string Value = NpaFile::ToUtf8(SaveData.ReadStr32());
     }
 }
 
