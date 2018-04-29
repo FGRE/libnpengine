@@ -171,6 +171,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_WAIT_FADE] = { &NSBInterpreter::WaitFade, 2};
     Builtins[MAGIC_SOUND_AMPLITUDE] = { &NSBInterpreter::SoundAmplitude, 2};
     Builtins[MAGIC_ROTATE] = { &NSBInterpreter::Rotate, 7};
+    Builtins[MAGIC_MESSAGE] = { &NSBInterpreter::Message, 4};
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -1662,4 +1663,12 @@ void NSBInterpreter::Rotate()
     /*int32_t unk3 = */PopInt();
     /*int32_t Tempo = */PopTempo();
     /*bool unk4 = */PopBool();
+}
+
+void NSBInterpreter::Message()
+{
+    string Title = PopString();
+    string Text = PopString();
+    string Type = PopString();
+    string Icon = PopString();
 }
