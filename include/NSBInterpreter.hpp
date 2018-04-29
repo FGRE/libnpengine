@@ -243,6 +243,7 @@ protected:
     void BoolBinaryOp(function<bool(bool, bool)> Func);
 
     void SetInt(const string& Name, int32_t Val);
+    void SetString(const string& Name, const string& Val);
     virtual void SetVar(const string& Name, Variable* pVar);
     int32_t GetInt(const string& Name);
     string GetString(const string& Name);

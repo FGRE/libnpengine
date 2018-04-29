@@ -764,6 +764,11 @@ void NSBInterpreter::SetInt(const string& Name, int32_t Val)
     SetVar(Name, Variable::MakeInt(Val));
 }
 
+void NSBInterpreter::SetString(const string& Name, const string& Val)
+{
+    SetVar(Name, Variable::MakeString(Val));
+}
+
 void NSBInterpreter::AddAssign()
 {
     Variable* pVar = GetVar(pContext->GetParam(0));
