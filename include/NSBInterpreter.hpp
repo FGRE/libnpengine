@@ -225,6 +225,7 @@ protected:
     void WaitFade();
     void SoundAmplitude();
     void Rotate();
+    void Message();
 
     int32_t PopInt();
     string PopString();
