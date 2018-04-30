@@ -197,6 +197,8 @@ void NSBInterpreter::DebuggerMain()
                 for (auto i : VariableHolder.Cache)
                     PrintVariable(i.second, i.first);
             }
+            else
+                cout << "Bad command!" << endl;
         }
     }
 }
