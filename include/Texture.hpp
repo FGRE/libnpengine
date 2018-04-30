@@ -36,7 +36,7 @@ public:
     void Draw(int X, int Y, const string& Filename);
     void SetPosition(int X, int Y);
     void SetVertex(int X, int Y);
-    void Draw(uint32_t Diff);
+    virtual void Draw(uint32_t Diff);
     void SetPriority(int Priority);
     void Move(int X, int Y, int32_t Time = 0);
     void Zoom(int32_t Time, int X, int Y);

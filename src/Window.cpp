@@ -110,8 +110,8 @@ void Window::Draw()
 {
     uint32_t Diff = SDL_GetTicks() - LastDrawTime;
     glClear(GL_COLOR_BUFFER_BIT);
-    for (auto i = Textures.begin(); i != Textures.end(); ++i)
-        (*i)->Draw(Diff);
+    for (Texture* pTex : Textures)
+        pTex->Draw(Diff);
     SDL_GL_SwapWindow(SDLWindow);
     LastDrawTime = SDL_GetTicks();
 }

@@ -757,6 +757,7 @@ Object* NSBInterpreter::GetObject(const string& Name)
 void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
 {
     GetVar(Name)->Set(pVar);
+    OnVariableChanged(Name);
     Variable::Destroy(pVar);
 }
 
@@ -872,7 +873,8 @@ void NSBInterpreter::CursorPosition()
 void NSBInterpreter::MoveCursor()
 {
     int32_t X = PopInt();
-    pWindow->MoveCursor(X, PopInt());
+    int32_t Y = PopInt();
+    pWindow->MoveCursor(X, Y);
 }
 
 void NSBInterpreter::Position()
