@@ -226,6 +226,7 @@ protected:
     void SoundAmplitude();
     void Rotate();
     void Message();
+    void Integer();
 
     int32_t PopInt();
     string PopString();
