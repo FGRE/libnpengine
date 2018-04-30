@@ -878,7 +878,10 @@ void NSBInterpreter::CreateTexture()
     string Source = PopString();
 
     Texture* pTexture = new Texture;
-    if (Source.size() < 4 || Source[Source.size() - 4] != '.')
+    // TODO: LoadImage too
+    if (Source == "VIDEO" || Source == "SCREEN")
+        ;
+    else if (Source.size() < 4 || Source[Source.size() - 4] != '.')
         pTexture->CreateFromImage(Get<Image>(Source));
     else
         pTexture->CreateFromFile(Source);

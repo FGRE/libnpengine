@@ -48,6 +48,7 @@ void Choice::SetNextFocus(Choice* pNext, const string& Key)
 void Choice::Cursor(int x, int y, bool& Flag)
 {
     Texture* pTexture = dynamic_cast<Texture*>(Read("MouseUsual/img"));
+    if (!pTexture) return;
     int x1 = pTexture->GetX();
     int x2 = x1 + pTexture->GetWidth();
     int y1 = pTexture->GetY();
