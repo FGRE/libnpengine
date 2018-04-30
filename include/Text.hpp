@@ -31,23 +31,17 @@ public:
     void CreateFromXML(const string& XML);
     void CreateFromString(const string& String);
 
+    void SetCharacterSize(uint32_t Size);
     void SetColor(uint32_t Color);
     void SetWrap(int32_t Width);
     bool Advance();
 
     void Request(int32_t State);
-
-    static string Font;
-    static int32_t Size;
-    static uint32_t InColor;
-    static uint32_t OutColor;
-    static int32_t Weight;
-    static string Alignment;
 private:
     void SetString(const string& String);
 
     size_t Index, LayoutWidth;
-    uint32_t Color;
+    uint32_t Size, Color;
 };
 
 
