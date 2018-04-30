@@ -26,15 +26,6 @@
 // For use in bison
 TextParser::Text* pText;
 
-// TODO: Initialize from system.ini
-// TODO: Test how are these used
-string Text::Font;
-int32_t Text::Size;
-uint32_t Text::InColor;
-uint32_t Text::OutColor;
-int32_t Text::Weight;
-string Text::Alignment;
-
 class VoiceMgr
 {
 public:
@@ -58,7 +49,7 @@ private:
     Playable* pVoice;
 } sVoiceMgr;
 
-Text::Text() : Index(0), LayoutWidth(-1), Color(0xFFFFFFFF)
+Text::Text() : Index(0), LayoutWidth(-1), Size(0), Color(0xFFFFFFFF)
 {
 }
 
@@ -77,6 +68,11 @@ void Text::CreateFromXML(const string& XML)
 void Text::CreateFromString(const string& String)
 {
     SetString(String);
+}
+
+void Text::SetCharacterSize(uint32_t Size)
+{
+    this->Size = Size;
 }
 
 void Text::SetColor(uint32_t Color)
@@ -120,6 +116,7 @@ void Text::SetString(const string& String)
     pango_layout_set_text(Layout, String.c_str(), -1);
 
     PangoFontDescription* Desc = pango_font_description_from_string("Sans 18");
+    if (Size) pango_font_description_set_absolute_size(Desc, Size * PANGO_SCALE);
     pango_font_description_set_weight(Desc, PANGO_WEIGHT_MEDIUM);
     pango_layout_set_font_description(Layout, Desc);
     pango_font_description_free(Desc);
