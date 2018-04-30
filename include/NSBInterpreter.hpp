@@ -270,6 +270,8 @@ protected:
     bool SelectEvent();
     void AddThread(NSBContext* pThread);
     void RemoveThread(NSBContext* pThread);
+    void ProcessKey(int Key, const string& Val);
+    void ProcessButton(int button, const string& Val);
 
     void DebuggerMain();
     void Inspect(int32_t n);

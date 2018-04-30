@@ -1,17 +1,17 @@
-/* 
+/*
  * libnpengine: Nitroplus script interpreter
  * Copyright (C) 2014-2016 Mislav Blažević <krofnica996@gmail.com>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
@@ -247,14 +247,72 @@ void NSBInterpreter::PushEvent(const SDL_Event& Event)
 
 void NSBInterpreter::HandleEvent(const SDL_Event& Event)
 {
-    if (Event.type == SDL_MOUSEBUTTONDOWN)
+    /*
+      TODO:
+      $SYSTEM_mousewheel_down
+      $SYSTEM_mousewheel_up
+      _onetime
+    */
+    switch (Event.type)
+    {
+    case SDL_MOUSEBUTTONDOWN:
+        ProcessButton(Event.button.button, "true");
         for (auto pContext : Threads)
             pContext->OnClick();
-
-    if (Event.type == SDL_KEYDOWN)
+        break;
+    case SDL_MOUSEBUTTONUP:
+        ProcessButton(Event.button.button, "false");
+        break;
+    case SDL_KEYDOWN:
+        ProcessKey(Event.key.keysym.sym, "true");
         for (NSBShortcut& Shortcut : Shortcuts)
             if (Shortcut.Key == Event.key.keysym.sym)
                 CallScript(Shortcut.Script, "chapter.main");
+        break;
+    case SDL_KEYUP:
+        ProcessKey(Event.key.keysym.sym, "false");
+        break;
+    }
+}
+
+void NSBInterpreter::ProcessButton(int button, const string& Val)
+{
+    if (button == SDL_BUTTON_LEFT)
+        SetString("$SYSTEM_l_button_down", Val);
+    else if (button == SDL_BUTTON_RIGHT)
+        SetString("$SYSTEM_r_button_down", Val);
+}
+
+void NSBInterpreter::ProcessKey(int Key, const string& Val)
+{
+    static const map<int, string> keydown =
+    {
+        { SDLK_RCTRL, "$SYSTEM_keydown_ctrl" },
+        { SDLK_KP_ENTER, "$SYSTEM_keydown_enter" },
+        { SDLK_RETURN, "$SYSTEM_keydown_enter" },
+        { SDLK_END, "$SYSTEM_keydown_end" },
+        { SDLK_ESCAPE, "$SYSTEM_keydown_esc" },
+        { SDLK_LEFT, "$SYSTEM_keydown_left" },
+        { SDLK_RIGHT, "$SYSTEM_keydown_right" },
+        { SDLK_DOWN, "$SYSTEM_keydown_up" },
+        { SDLK_UP, "$SYSTEM_keydown_down" },
+        { SDLK_ESCAPE, "$SYSTEM_keydown_esc" },
+        { SDLK_HOME, "$SYSTEM_keydown_home" },
+        { SDLK_PAGEDOWN, "$SYSTEM_keydown_pagedown" },
+        { SDLK_PAGEUP, "$SYSTEM_keydown_pageup" },
+        { SDLK_RSHIFT, "$SYSTEM_keydown_shift" },
+        { SDLK_SPACE, "$SYSTEM_keydown_space" },
+        { SDLK_TAB, "$SYSTEM_keydown_tab" }
+    };
+    if (Key >= SDLK_a && Key <= SDLK_z)
+    {
+        char c = 'a' + Key - SDLK_a;
+        string Identifier = "$SYSTEM_keydown_" + string(1, c);
+        SetString(Identifier, Val);
+    }
+    auto it = keydown.find(Key);
+    if (it != keydown.end())
+        SetString(it->second, Val);
 }
 
 void NSBInterpreter::FunctionDeclaration()
