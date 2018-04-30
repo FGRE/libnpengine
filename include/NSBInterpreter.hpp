@@ -253,7 +253,8 @@ protected:
 
     void SetInt(const string& Name, int32_t Val);
     void SetString(const string& Name, const string& Val);
-    virtual void SetVar(const string& Name, Variable* pVar);
+    void SetVar(const string& Name, Variable* pVar);
+    virtual void OnVariableChanged(const string& Identifier) {}
     int32_t GetInt(const string& Name);
     string GetString(const string& Name);
     Variable* GetVar(const string& Name);
