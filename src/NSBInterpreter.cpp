@@ -172,6 +172,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SOUND_AMPLITUDE] = { &NSBInterpreter::SoundAmplitude, 2};
     Builtins[MAGIC_ROTATE] = { &NSBInterpreter::Rotate, 7};
     Builtins[MAGIC_MESSAGE] = { &NSBInterpreter::Message, 4};
+    Builtins[MAGIC_INTEGER] = { &NSBInterpreter::Integer, 1};
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -1673,4 +1674,9 @@ void NSBInterpreter::Message()
     string Text = PopString();
     string Type = PopString();
     string Icon = PopString();
+}
+
+void NSBInterpreter::Integer()
+{
+    PushVar(PopVar());
 }
