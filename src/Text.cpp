@@ -26,6 +26,13 @@
 // For use in bison
 TextParser::Text* pText;
 
+string Text::dFont;
+int32_t Text::dSize;
+uint32_t Text::dInColor;
+uint32_t Text::dOutColor;
+int32_t Text::dWeight;
+string Text::dAlign;
+
 class VoiceMgr
 {
 public:
@@ -49,7 +56,7 @@ private:
     Playable* pVoice;
 } sVoiceMgr;
 
-Text::Text() : Index(0), LayoutWidth(-1), Size(0), Color(0xFFFFFFFF)
+Text::Text() : Index(0), LayoutWidth(-1), Size(0), Color(dInColor)
 {
 }
 

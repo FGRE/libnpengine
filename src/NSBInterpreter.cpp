@@ -1543,12 +1543,12 @@ void NSBInterpreter::ClearBacklog()
 
 void NSBInterpreter::SetFont()
 {
-    string Font = PopString();
-    int32_t Size = PopInt();
-    uint32_t InColor = PopColor();
-    uint32_t OutColor = PopColor();
-    int32_t Weight = PopInt();
-    string Alignment = PopString();
+    Text::dFont = PopString();
+    Text::dSize = PopInt();
+    Text::dInColor = PopColor();
+    Text::dOutColor = PopColor();
+    Text::dWeight = PopInt();
+    Text::dAlign = PopString();
 }
 
 void NSBInterpreter::SetShortcut()

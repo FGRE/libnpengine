@@ -37,6 +37,13 @@ public:
     bool Advance();
 
     void Request(int32_t State);
+
+    static string dFont;
+    static int32_t dSize;
+    static uint32_t dInColor;
+    static uint32_t dOutColor;
+    static int32_t dWeight;
+    static string dAlign;
 private:
     void SetString(const string& String);
 
