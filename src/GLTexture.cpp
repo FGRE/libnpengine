@@ -50,7 +50,7 @@ void GLTexture::CreateFromScreen(Window* pWindow)
     Image Img;
     Img.LoadScreen(pWindow);
     this->Width = Img.GetWidth();
-    this->Height = Img.GetWidth();
+    this->Height = Img.GetHeight();
     Create(Img.GetPixels(), GL_RGBA);
 }
 
