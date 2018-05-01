@@ -652,9 +652,9 @@ int32_t NSBInterpreter::PopTempo()
 bool NSBInterpreter::PopBool()
 {
     Variable* pVar = PopVar();
-    int32_t Int = pVar->IsInt() ? pVar->ToInt() : Nsb::ConstantToValue<Nsb::Boolean>(pVar->ToString());
+    bool ret = ToBool(pVar);
     Variable::Destroy(pVar);
-    return static_cast<bool>(Int);
+    return ret;
 }
 
 string NSBInterpreter::PopSave()
@@ -771,11 +771,22 @@ int32_t NSBInterpreter::GetInt(const string& Name)
     return GetVar(Name)->ToInt();
 }
 
+bool NSBInterpreter::GetBool(const string& Name)
+{
+    return ToBool(GetVar(Name));
+}
+
 string NSBInterpreter::GetString(const string& Name)
 {
     if (Name[0] != '$' && Name[0] != '#')
         return Name;
     return GetVar(Name)->ToString();
+}
+
+bool NSBInterpreter::ToBool(Variable* pVar)
+{
+    int32_t Int = pVar->IsInt() ? pVar->ToInt() : Nsb::ConstantToValue<Nsb::Boolean>(pVar->ToString());
+    return static_cast<bool>(Int);
 }
 
 Variable* NSBInterpreter::GetVar(const string& Name)
@@ -811,6 +822,12 @@ ArrayVariable* NSBInterpreter::GetArr(const string& Name)
 Object* NSBInterpreter::GetObject(const string& Name)
 {
     return ObjectHolder.Read(Name);
+}
+
+void NSBInterpreter::OnVariableChanged(const string& Name)
+{
+    if (Name == "#SYSTEM_window_full")
+        pWindow->SetFullscreen(GetBool("#SYSTEM_window_full") ? SDL_WINDOW_FULLSCREEN : 0);
 }
 
 void NSBInterpreter::SetVar(const string& Name, Variable* pVar)
@@ -1388,7 +1405,10 @@ void NSBInterpreter::Case()
 {
     bool Choose = false;
     if (Choice* pChoice = Get<Choice>(pContext->GetParam(0)))
+    {
         Choose = pChoice->IsSelected(Event);
+        pChoice->Reset();
+    }
 
     pContext->Jump(Choose ? pContext->GetParam(2) : pContext->GetParam(1));
 }

@@ -37,6 +37,7 @@ public:
 
     bool IsSelected(const SDL_Event& Event);
     void SetNextFocus(Choice* pNext, const string& Key);
+    void Reset() { ButtonUp = false; }
 
 private:
     void Cursor(int x, int y, bool& Flag);

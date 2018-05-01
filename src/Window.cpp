@@ -139,3 +139,8 @@ X11::SDL_SysWMinfo Window::GetWindowInfo()
         cout << "Failed to detect X11!" << endl;
     return Info;
 }
+
+void Window::SetFullscreen(Uint32 Flags)
+{
+    SDL_SetWindowFullscreen(SDLWindow, Flags);
+}

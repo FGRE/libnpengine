@@ -46,6 +46,7 @@ public:
     void MoveCursor(int32_t X, int32_t Y);
     X11::SDL_SysWMinfo GetWindowInfo();
     bool IsRunning_() { return IsRunning; }
+    void SetFullscreen(Uint32 flags);
 
     const int WIDTH;
     const int HEIGHT;
