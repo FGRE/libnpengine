@@ -1,22 +1,24 @@
-/* 
+/*
  * libnpengine: Nitroplus script interpreter
  * Copyright (C) 2014-2016 Mislav Blažević <krofnica996@gmail.com>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
+#include <GL/glew.h>
 #include "Image.hpp"
 #include "ResourceMgr.hpp"
+#include "Window.hpp"
 #include <jpeglib.h>
 #include <png.h>
 #include <new>
@@ -62,6 +64,21 @@ GLenum Image::LoadImage(const string& Filename, bool Mask)
 
     delete[] pData;
     return Format;
+}
+
+void Image::LoadScreen(Window* pWindow)
+{
+    Width = pWindow->WIDTH;
+    Height = pWindow->HEIGHT;
+    pPixels = new uint8_t[Width * Height * 4];
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, Width, 0, Height, -1, 1);
+    pWindow->DrawTextures(0);
+    glReadBuffer(GL_BACK);
+    glReadPixels(0, 0, Width, Height, GL_RGBA, GL_UNSIGNED_BYTE, pPixels);
+    glPopMatrix();
 }
 
 uint8_t* Image::LoadPNG(uint8_t* pMem, uint32_t Size, uint8_t Format)

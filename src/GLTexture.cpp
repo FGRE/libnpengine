@@ -45,6 +45,15 @@ void GLTexture::Draw(float X, float Y, float Width, float Height)
     glEnd();
 }
 
+void GLTexture::CreateFromScreen(Window* pWindow)
+{
+    Image Img;
+    Img.LoadScreen(pWindow);
+    this->Width = Img.GetWidth();
+    this->Height = Img.GetWidth();
+    Create(Img.GetPixels(), GL_RGBA);
+}
+
 void GLTexture::CreateFromColor(int Width, int Height, uint32_t Color)
 {
     Image Img;

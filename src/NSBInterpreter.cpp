@@ -895,9 +895,10 @@ void NSBInterpreter::CreateTexture()
     string Source = PopString();
 
     Texture* pTexture = new Texture;
-    // TODO: LoadImage too
-    if (Source == "VIDEO" || Source == "SCREEN")
+    if (Source == "VIDEO")
         ;
+    else if (Source == "SCREEN")
+        pTexture->CreateFromScreen(pWindow);
     else if (Source.size() < 4 || Source[Source.size() - 4] != '.')
         pTexture->CreateFromImage(Get<Image>(Source));
     else
@@ -1219,7 +1220,10 @@ void NSBInterpreter::LoadImage()
     string Filename = PopString();
 
     Image* pImage = new Image;
-    pImage->LoadImage(Filename);
+    if (Filename == "SCREEN")
+        pImage->LoadScreen(pWindow);
+    else
+        pImage->LoadImage(Filename);
     ObjectHolder.Write(Handle, pImage);
 }
 
