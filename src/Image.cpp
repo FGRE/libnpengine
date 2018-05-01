@@ -23,7 +23,7 @@
 #include <png.h>
 #include <new>
 
-Image::Image() : Width(0), Height(0), pPixels(0)
+Image::Image() : Format(-1), Width(0), Height(0), pPixels(0)
 {
 }
 
@@ -39,16 +39,16 @@ void Image::LoadColor(int Width, int Height, uint32_t Color)
     pPixels = new uint8_t[Width * Height * 4];
     for (int i = 0; i < Width * Height; ++i)
         memcpy(pPixels + i * 4, &Color, 4);
+    Format = GL_BGRA;
 }
 
-GLenum Image::LoadImage(const string& Filename, bool Mask)
+void Image::LoadImage(const string& Filename, bool Mask)
 {
     uint32_t Size;
     uint8_t* pData = (uint8_t*)sResourceMgr->Read(Filename, Size);
     if (!pData)
-        return 0;
+        return;
 
-    GLenum Format = 0;
     if (Filename.substr(Filename.size() - 3) == "jpg")
     {
         pPixels = LoadJPEG(pData, Size);
@@ -63,11 +63,11 @@ GLenum Image::LoadImage(const string& Filename, bool Mask)
         cout << Filename << " is neither .jpg nor .png!" << endl;
 
     delete[] pData;
-    return Format;
 }
 
 void Image::LoadScreen(Window* pWindow)
 {
+    Format = GL_BGRA;
     Width = pWindow->WIDTH;
     Height = pWindow->HEIGHT;
     pPixels = new uint8_t[Width * Height * 4];
@@ -77,7 +77,7 @@ void Image::LoadScreen(Window* pWindow)
     glOrtho(0, Width, 0, Height, -1, 1);
     pWindow->DrawTextures(0);
     glReadBuffer(GL_BACK);
-    glReadPixels(0, 0, Width, Height, GL_RGBA, GL_UNSIGNED_BYTE, pPixels);
+    glReadPixels(0, 0, Width, Height, GL_BGRA, GL_UNSIGNED_BYTE, pPixels);
     glPopMatrix();
 }
 
