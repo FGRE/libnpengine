@@ -27,17 +27,19 @@ public:
     Image();
     ~Image();
 
+    GLenum GetFormat() const { return Format; }
     int GetWidth() const { return Width; }
     int GetHeight() const { return Height; }
     uint8_t* GetPixels() const { return pPixels; }
     void LoadColor(int Width, int Height, uint32_t Color);
-    GLenum LoadImage(const string& Filename, bool Mask = false);
+    void LoadImage(const string& Filename, bool Mask = false);
     void LoadScreen(Window* pWindow);
 
 private:
     uint8_t* LoadPNG(uint8_t* pMem, uint32_t Size, uint8_t Format);
     uint8_t* LoadJPEG(uint8_t* pMem, uint32_t Size);
 
+    GLenum Format;
     int Width, Height;
     uint8_t* pPixels;
 };

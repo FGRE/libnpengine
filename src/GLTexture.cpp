@@ -19,6 +19,22 @@
 #include "Image.hpp"
 #include <cstring>
 
+size_t GLFormatToVals(GLenum Format)
+{
+    switch (Format)
+    {
+        case GL_RGBA:
+        case GL_BGRA:
+            return 4;
+        case GL_RGB:
+        case GL_BGR:
+            return 3;
+        case GL_LUMINANCE:
+            return 1;
+    }
+    assert(false);
+}
+
 GLTexture::GLTexture() :
 Width(0), Height(0),
 GLTextureID(GL_INVALID_VALUE)
@@ -49,45 +65,40 @@ void GLTexture::CreateFromScreen(Window* pWindow)
 {
     Image Img;
     Img.LoadScreen(pWindow);
-    this->Width = Img.GetWidth();
-    this->Height = Img.GetHeight();
-    Create(Img.GetPixels(), GL_RGBA);
+    CreateFromImage(&Img);
 }
 
 void GLTexture::CreateFromColor(int Width, int Height, uint32_t Color)
 {
     Image Img;
     Img.LoadColor(Width, Height, Color);
-    this->Width = Width;
-    this->Height = Height;
-    Create(Img.GetPixels(), GL_BGRA);
+    CreateFromImage(&Img);
 }
 
 void GLTexture::CreateFromFile(const string& Filename, bool Mask)
 {
     Image Img;
-    GLenum Format = Img.LoadImage(Filename, Mask);
-    Width = Img.GetWidth();
-    Height = Img.GetHeight();
-    Create(Img.GetPixels(), Format);
+    Img.LoadImage(Filename, Mask);
+    CreateFromImage(&Img);
 }
 
 void GLTexture::CreateFromImage(Image* pImage)
 {
     Width = pImage->GetWidth();
     Height = pImage->GetHeight();
-    Create(pImage->GetPixels(), GL_RGBA);
+    Create(pImage->GetPixels(), pImage->GetFormat());
 }
 
 void GLTexture::CreateFromImageClip(Image* pImage, int ClipX, int ClipY, int ClipWidth, int ClipHeight)
 {
-    uint8_t* pClipped = new uint8_t[ClipWidth * ClipHeight * 4];
+    size_t NumVals = GLFormatToVals(pImage->GetFormat());
+    uint8_t* pClipped = new uint8_t[ClipWidth * ClipHeight * NumVals];
     for (int i = 0; i < ClipHeight; ++i)
-        memcpy(pClipped + i * ClipWidth * 4, pImage->GetPixels() + (pImage->GetWidth() * (ClipY + i) + ClipX) * 4, ClipWidth * 4);
+        memcpy(pClipped + i * ClipWidth * NumVals, pImage->GetPixels() + (pImage->GetWidth() * (ClipY + i) + ClipX) * NumVals, ClipWidth * NumVals);
 
     Width = ClipWidth;
     Height = ClipHeight;
-    Create(pClipped, GL_RGBA);
+    Create(pClipped, pImage->GetFormat());
     delete[] pClipped;
 }
 
