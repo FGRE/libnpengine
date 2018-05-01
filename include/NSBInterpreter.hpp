@@ -255,9 +255,11 @@ protected:
     void SetInt(const string& Name, int32_t Val);
     void SetString(const string& Name, const string& Val);
     void SetVar(const string& Name, Variable* pVar);
-    virtual void OnVariableChanged(const string& Identifier) {}
+    virtual void OnVariableChanged(const string& Name);
     int32_t GetInt(const string& Name);
     string GetString(const string& Name);
+    bool GetBool(const string& Name);
+    bool ToBool(Variable* pVar);
     Variable* GetVar(const string& Name);
     ArrayVariable* GetArrSafe(const string& Name);
     ArrayVariable* GetArr(const string& Name);
