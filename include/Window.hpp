@@ -47,6 +47,7 @@ public:
     X11::SDL_SysWMinfo GetWindowInfo();
     bool IsRunning_() { return IsRunning; }
     void SetFullscreen(Uint32 flags);
+    void DrawTextures(uint32_t Diff);
 
     const int WIDTH;
     const int HEIGHT;

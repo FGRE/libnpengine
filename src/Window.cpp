@@ -102,11 +102,16 @@ void Window::HandleEvent(SDL_Event& Event)
 void Window::Draw()
 {
     uint32_t Diff = SDL_GetTicks() - LastDrawTime;
+    DrawTextures(Diff);
+    SDL_GL_SwapWindow(SDLWindow);
+    LastDrawTime = SDL_GetTicks();
+}
+
+void Window::DrawTextures(uint32_t Diff)
+{
     glClear(GL_COLOR_BUFFER_BIT);
     for (Texture* pTex : Textures)
         pTex->Draw(Diff);
-    SDL_GL_SwapWindow(SDLWindow);
-    LastDrawTime = SDL_GetTicks();
 }
 
 void Window::AddTexture(Texture* pTexture)
