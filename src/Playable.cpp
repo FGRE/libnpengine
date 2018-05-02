@@ -1,17 +1,17 @@
-/* 
+/*
  * libnpengine: Nitroplus script interpreter
  * Copyright (C) 2013-2016,2018 Mislav Blažević <krofnica996@gmail.com>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
@@ -46,16 +46,18 @@ void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data)
     else
         SinkPad = nullptr;
 
-    if (SinkPad && !GST_PAD_IS_LINKED(SinkPad))
+    if (SinkPad && !gst_pad_is_linked(SinkPad))
         gst_pad_link(SourcePad, SinkPad);
 
-    g_object_unref(SinkPad);
+    if (SinkPad)
+        g_object_unref(SinkPad);
     gst_caps_unref(Caps);
 }
 
-static void SeekData(GstAppSrc* Appsrc, guint64 Offset, AppSrc* pAppsrc)
+static bool SeekData(GstAppSrc* Appsrc, guint64 Offset, AppSrc* pAppsrc)
 {
     pAppsrc->Offset = Offset;
+    return true;
 }
 
 static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
@@ -79,6 +81,9 @@ static void FeedData(GstElement* Pipeline, guint size, AppSrc* pAppsrc)
 AppSrc::AppSrc(Resource& Res) : Offset(0), File(Res)
 {
     Appsrc = (GstAppSrc*)gst_element_factory_make("appsrc", nullptr);
+    if (!Appsrc)
+        cerr << "Failed to create appsrc" << endl;
+
     gst_app_src_set_stream_type(Appsrc, GST_APP_STREAM_TYPE_RANDOM_ACCESS);
     gst_app_src_set_size(Appsrc, Res.GetSize());
     g_signal_connect(Appsrc, "need-data", G_CALLBACK(FeedData), this);
@@ -93,6 +98,9 @@ Begin(0),
 End(0)
 {
     GstElement* Filesrc = gst_element_factory_make("filesrc", nullptr);
+    if (!Filesrc)
+        cerr << "Failed to create filesrc" << endl;
+
     g_object_set(G_OBJECT(Filesrc), "location", FileName.c_str(), nullptr);
     InitPipeline(Filesrc);
 }
@@ -116,9 +124,14 @@ void Playable::InitPipeline(GstElement* Source)
 {
     Pipeline = gst_pipeline_new("pipeline");
     GstElement* Decodebin = gst_element_factory_make("decodebin", nullptr);
+    if (!Decodebin)
+        cerr << "Failed to create decodebin" << endl;
+
     g_signal_connect(Decodebin, "pad-added", G_CALLBACK(LinkPad), this);
     gst_bin_add_many(GST_BIN(Pipeline), Source, Decodebin, nullptr);
-    gst_element_link(Source, Decodebin);
+
+    if (!gst_element_link(Source, Decodebin))
+        cerr << "Failed to link file/appsrc | decodebin" << endl;
 
     // Set sync handler
     GstBus* Bus = gst_pipeline_get_bus(GST_PIPELINE(Pipeline));
@@ -130,12 +143,28 @@ void Playable::InitAudio()
 {
     AudioBin = gst_bin_new("audiobin");
     GstElement* AudioConv = gst_element_factory_make("audioconvert", nullptr);
-    GstPad* AudioPad = gst_element_get_static_pad(AudioConv, "sink");
+    if (!AudioConv)
+        cerr << "Failed to create audioconvert" << endl;
+
     GstElement* AudioSink = gst_element_factory_make("autoaudiosink", nullptr);
+    if (!AudioSink)
+        cerr << "Failed to create autoaudiosink" << endl;
+
     VolumeFilter = gst_element_factory_make("volume", nullptr);
+    if (!VolumeFilter)
+        cerr << "Failed to create volume" << endl;
+
     gst_bin_add_many(GST_BIN(AudioBin), AudioConv, VolumeFilter, AudioSink, nullptr);
-    gst_element_link_many(AudioConv, VolumeFilter, AudioSink, nullptr);
-    gst_element_add_pad(AudioBin, gst_ghost_pad_new("sink", AudioPad));
+    if (!gst_element_link_many(AudioConv, VolumeFilter, AudioSink, nullptr))
+        cerr << "Failed to link audioconvert | volume | autoaudiosink" << endl;
+
+    GstPad* AudioPad = gst_element_get_static_pad(AudioConv, "sink");
+    if (!AudioPad)
+        cerr << "Failed to get pad" << endl;
+
+    if (!gst_element_add_pad(AudioBin, gst_ghost_pad_new("sink", AudioPad)))
+        cerr << "Failed to add ghost sink pad" << endl;
+
     gst_object_unref(AudioPad);
     gst_bin_add(GST_BIN(Pipeline), AudioBin);
 }
@@ -171,9 +200,12 @@ void Playable::Stop()
 
 void Playable::Play()
 {
-    gst_element_set_state(Pipeline, GST_STATE_PLAYING);
-    if (gst_element_get_state(Pipeline, nullptr, nullptr, GST_SECOND) == GST_STATE_CHANGE_SUCCESS)
-        gst_element_seek_simple(Pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, Begin);
+    GstStateChangeReturn ret = gst_element_set_state(Pipeline, GST_STATE_PLAYING);
+    if (ret == GST_STATE_CHANGE_ASYNC)
+        ret = gst_element_get_state(Pipeline, nullptr, nullptr, GST_SECOND);
+    if (ret == GST_STATE_CHANGE_FAILURE)
+        cerr << "Failed to set pipline state to PLAYING" << endl;
+    gst_element_seek_simple(Pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, Begin);
 }
 
 void Playable::SetVolume(int32_t Time, int32_t Volume)
