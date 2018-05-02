@@ -1448,6 +1448,7 @@ void NSBInterpreter::ParseText()
     ObjectHolder.Delete(GetVar("$SYSTEM_present_text")->ToString());
 
     Text* pText = new Text;
+    pText->SetColor(Nsb::Color::WHITE);
     pText->CreateFromXML(XML);
     pText->Move(0, 0);
     Handle = Box + "/" + Handle;

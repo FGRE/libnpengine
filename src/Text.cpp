@@ -56,7 +56,7 @@ private:
     Playable* pVoice;
 } sVoiceMgr;
 
-Text::Text() : Index(0), LayoutWidth(-1), Size(0), Color(dInColor)
+Text::Text() : Index(0), LayoutWidth(-1), Size(dSize), Color(dInColor)
 {
 }
 
