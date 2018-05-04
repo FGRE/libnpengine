@@ -22,7 +22,7 @@
 %define api.prefix xml
 
 %token <string> TSTRING THEX
-%token <token> TPRE TFONT TRUBY TVOICE TLBRACE TRBRACE TLABRACE TRABRACE TQUOTE TEQUAL TSLASH TAT TNEWLINE
+%token <token> TPRE TFONT TRUBY TVOICE TLBRACE TRBRACE TLABRACE TRABRACE TQUOTE TEQUAL TSLASH TNEWLINE
 
 %type <text> start text
 %type <line> line string
@@ -34,7 +34,7 @@
 
 %%
 
-start : TLBRACE TPRE TAT TSTRING TRBRACE TLABRACE TSTRING TRABRACE text TLBRACE TSLASH TPRE TRBRACE { delete $4; delete $7; }
+start : TLBRACE TPRE TSTRING TRBRACE TLABRACE TSTRING TRABRACE text TLBRACE TSLASH TPRE TRBRACE { delete $3; delete $6; }
       ;
 
 text : line { $$ = pText; $$->Lines.push_back(*$1); delete $1; }
