@@ -245,7 +245,7 @@ public:
         glDeleteFramebuffers(1, &Framebuffer);
     }
 
-    bool Create(int Width, int Height)
+    bool Create(int Width, int Height, float Sigma)
     {
         CompileShader(BlurShader.c_str());
 
@@ -253,7 +253,7 @@ public:
             return false;
 
         glUseProgramObjectARB(Program);
-        glUniform1fARB(glGetUniformLocationARB(Program, "Sigma"), 3.0f); // Guess for SEMIHEAVY
+        glUniform1fARB(glGetUniformLocationARB(Program, "Sigma"), Sigma);
         glUniform1iARB(glGetUniformLocationARB(Program, "Texture"), 0);
 
         glGenFramebuffers(1, &Framebuffer);

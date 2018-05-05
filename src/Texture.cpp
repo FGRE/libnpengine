@@ -105,13 +105,14 @@ void Texture::DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t B
 
 void Texture::SetShade(int32_t Shade)
 {
-    // Error message probably won't cut it: assert is more effective way to make sure user reports a bug
-    // TODO: Support for other shaders as well
-    assert(Shade == Nsb::SEMIHEAVY);
-
+    /* TODO: These are wrong */
+    static const float Sigma[] =
+    {
+        0.5, 1, 1.5, 2, 2.5, 3, 3.5
+    };
     delete pBlur;
     pBlur = new BlurEffect;
-    if (!pBlur->Create(Width, Height))
+    if (!pBlur->Create(Width, Height, Sigma[Shade]))
     {
         delete pBlur;
         pBlur = nullptr;
