@@ -217,7 +217,7 @@ class BlurEffect : public Effect, GLTexture
         "uniform sampler2D Texture;"
         "uniform vec2 Pass;"
         "uniform float BlurSize;"
-        "const float NumSamples = 4.0f;"
+        "const float NumSamples = 11.0f;"
         "const float PI = 3.14159265f;"
         "void main()"
         "{"
