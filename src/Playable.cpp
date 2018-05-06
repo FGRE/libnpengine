@@ -170,10 +170,10 @@ void Playable::InitAudio()
 }
 
 // TODO: Should this->End rather than Length be taken into consideration?
+// TODO: Maybe DurationTime() - PassageTime() ?
 int32_t Playable::RemainTime()
 {
     gint64 Length, Position;
-    gst_element_get_state(Pipeline, nullptr, nullptr, GST_CLOCK_TIME_NONE);
     gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length);
     gst_element_query_position(Pipeline, GST_FORMAT_TIME, &Position);
     return (Length - Position) / GST_MSECOND;
@@ -183,9 +183,15 @@ int32_t Playable::RemainTime()
 int32_t Playable::DurationTime()
 {
     gint64 Length;
-    gst_element_get_state(Pipeline, nullptr, nullptr, GST_CLOCK_TIME_NONE);
     gst_element_query_duration(Pipeline, GST_FORMAT_TIME, &Length);
     return Length / GST_MSECOND;
+}
+
+int32_t Playable::PassageTime()
+{
+    gint64 Position;
+    gst_element_query_position(Pipeline, GST_FORMAT_TIME, &Position);
+    return Position / GST_MSECOND;
 }
 
 void Playable::SetLoop(bool Loop)

@@ -48,6 +48,7 @@ public:
     void Play();
     int32_t RemainTime();
     int32_t DurationTime();
+    int32_t PassageTime();
     void OnEOS();
     void Request(int32_t State);
     bool Action();

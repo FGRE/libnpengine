@@ -1433,10 +1433,8 @@ void NSBInterpreter::SetNextFocus()
 
 void NSBInterpreter::PassageTime()
 {
-    /*string Handle = */PopString();
-
-    // [HACK]
-    PushInt(0);
+    Playable* pPlayable = PopPlayable();
+    PushInt(pPlayable ? pPlayable->PassageTime() : 0);
 }
 
 void NSBInterpreter::ParseText()
