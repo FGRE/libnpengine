@@ -78,9 +78,19 @@ class Tone : public Effect
         "void main()"
         "{"
         "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
-        "   float Intensity = Pixel.r * (27.0 / 255.0) + Pixel.g * (150.0 / 255.0) + Pixel.b * (75.0 / 255.0);"
+        "   float Intensity = Pixel.r * (27.0 / 255.0) + Pixel.g * (150.0 / 255.0) + Pixel.b * (76.0 / 255.0);"
         "   vec4 Color = vec4(vec3(Intensity), Pixel.a);"
         "   Color.gb = clamp(Color.gb + vec2(20.0 / 255.0, 80.0 / 255.0), vec2(0.0, 0.0), vec2(1.0, 1.0));"
+        "   gl_FragColor = Color;"
+        "}";
+    const string SepiaShader = \
+        "uniform sampler2D Texture;"
+        "void main()"
+        "{"
+        "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
+        "   float Intensity = Pixel.r * (27.0 / 255.0) + Pixel.g * (150.0 / 255.0) + Pixel.b * (76.0 / 255.0);"
+        "   vec4 Color = vec4(vec3(Intensity), Pixel.a);"
+        "   Color.rg = clamp(Color.rg + vec2(30.0 / 255.0, 30.0 / 255.0), vec2(0.0, 0.0), vec2(1.0, 1.0));"
         "   gl_FragColor = Color;"
         "}";
 public:
@@ -95,6 +105,7 @@ public:
                 CompileShader(MonochromeShader.c_str());
                 break;
             case Nsb::SEPIA:
+                CompileShader(SepiaShader.c_str());
                 break;
             case Nsb::KITANO_BLUE:
                 CompileShader(KitanoBlueShader.c_str());
