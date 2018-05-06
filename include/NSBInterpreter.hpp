@@ -234,6 +234,7 @@ protected:
     uint32_t PopColor();
     int32_t PopRequest();
     int32_t PopTone();
+    int32_t PopEffect();
     int32_t PopShade();
     int32_t PopTempo();
     bool PopBool();

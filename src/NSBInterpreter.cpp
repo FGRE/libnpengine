@@ -639,6 +639,11 @@ int32_t NSBInterpreter::PopTone()
     return Nsb::ConstantToValue<Nsb::Tone>(PopString());
 }
 
+int32_t NSBInterpreter::PopEffect()
+{
+    return Nsb::ConstantToValue<Nsb::Effect>(PopString());
+}
+
 int32_t NSBInterpreter::PopShade()
 {
     return Nsb::ConstantToValue<Nsb::Shade>(PopString());
@@ -1676,7 +1681,7 @@ void NSBInterpreter::CreateEffect()
     NSBPosition Y = PopPos();
     /*int32_t Width = */PopInt();
     /*int32_t Height = */PopInt();
-    string Type = PopString();
+    /*int32_t Effect = */PopEffect();
 }
 
 void NSBInterpreter::SetTone()
