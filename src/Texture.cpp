@@ -26,6 +26,7 @@ pZoom(nullptr),
 pFade(nullptr),
 pMask(nullptr),
 pBlur(nullptr),
+pTone(nullptr),
 X(0), Y(0), OX(0), OY(0)
 {
 }
@@ -121,6 +122,22 @@ void Texture::SetShade(int32_t Shade)
 
 void Texture::SetTone(int32_t Tone)
 {
+    delete pTone;
+    switch (Tone)
+    {
+        case Nsb::NEGA_POSI:
+            pTone = nullptr;
+            break;
+        case Nsb::MONOCHROME:
+            pTone = new Monochrome;
+            break;
+        case Nsb::SEPIA:
+            pTone = nullptr;
+            break;
+        case Nsb::KITANO_BLUE:
+            pTone = nullptr;
+            break;
+    }
 }
 
 void Texture::Draw(uint32_t Diff)
@@ -132,6 +149,7 @@ void Texture::Draw(uint32_t Diff)
     if (pZoom) pZoom->OnDraw(this, Diff, OffsetX, OffsetY, ScaleX, ScaleY);
     if (pFade) pFade->OnDraw(Diff);
     if (pMask) pMask->OnDraw(Diff);
+    if (pTone) pTone->OnDraw();
 
     if (pBlur) pBlur->OnDraw(this, X + OffsetX, Y + OffsetY, Width * ScaleX, Height * ScaleY);
     else GLTexture::Draw(X + OffsetX, Y + OffsetY, Width * ScaleX, Height * ScaleY);

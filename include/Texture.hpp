@@ -26,6 +26,7 @@ class ZoomEffect;
 class FadeEffect;
 class MaskEffect;
 class BlurEffect;
+class Tone;
 class Texture : public Object, public GLTexture
 {
 public:
@@ -61,6 +62,7 @@ private:
     FadeEffect* pFade;
     MaskEffect* pMask;
     BlurEffect* pBlur;
+    Tone* pTone;
     int Priority;
     int X, Y;
     int OX, OY;
