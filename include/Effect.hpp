@@ -60,7 +60,15 @@ class Tone : public Effect
 {
 public:
     virtual ~Tone() { }
-    virtual void OnDraw() = 0;
+
+    void OnDraw()
+    {
+        if (!Program)
+            return;
+
+        glUseProgramObjectARB(Program);
+        glUniform1iARB(glGetUniformLocationARB(Program, "Texture"), 0);
+    }
 };
 
 class Monochrome : public Tone
@@ -77,15 +85,23 @@ public:
     {
         CompileShader(MonochromeShader.c_str());
     }
+};
 
-    void OnDraw()
+class NegaPosi : public Tone
+{
+    const string NegaPosiShader = \
+        "uniform sampler2D Texture;"
+        "void main()"
+        "{"
+        "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
+        "   gl_FragColor = vec4(vec3(1.0) - Pixel.rgb, Pixel.a);"
+        "}";
+public:
+    NegaPosi()
     {
-        if (!Program)
-            return;
-
-        glUseProgramObjectARB(Program);
-        glUniform1iARB(glGetUniformLocationARB(Program, "Texture"), 0);
+        CompileShader(NegaPosiShader.c_str());
     }
+
 };
 
 class LerpEffect : public Effect

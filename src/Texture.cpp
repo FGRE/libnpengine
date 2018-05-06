@@ -126,7 +126,7 @@ void Texture::SetTone(int32_t Tone)
     switch (Tone)
     {
         case Nsb::NEGA_POSI:
-            pTone = nullptr;
+            pTone = new NegaPosi;
             break;
         case Nsb::MONOCHROME:
             pTone = new Monochrome;
