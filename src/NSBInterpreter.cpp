@@ -1751,11 +1751,12 @@ void NSBInterpreter::SoundAmplitude()
 void NSBInterpreter::Rotate()
 {
     string Handle = PopString();
+    /*int32_t Time = */PopInt();
     /*int32_t unk1 = */PopInt();
     /*int32_t unk2 = */PopInt();
-    /*int32_t unk3 = */PopInt();
+    /*int32_t Angle = */PopInt();
     /*int32_t Tempo = */PopTempo();
-    /*bool unk4 = */PopBool();
+    /*bool Wait = */PopBool();
 }
 
 void NSBInterpreter::Message()
