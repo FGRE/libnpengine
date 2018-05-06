@@ -18,7 +18,6 @@
 #include "Effect.hpp"
 #include "Window.hpp"
 #include "Image.hpp"
-#include "nsbconstants.hpp"
 
 Texture::Texture() :
 pMove(nullptr),
@@ -120,24 +119,10 @@ void Texture::SetShade(int32_t Shade)
     }
 }
 
-void Texture::SetTone(int32_t Tone)
+void Texture::SetTone(int32_t Tonei)
 {
     delete pTone;
-    switch (Tone)
-    {
-        case Nsb::NEGA_POSI:
-            pTone = new NegaPosi;
-            break;
-        case Nsb::MONOCHROME:
-            pTone = new Monochrome;
-            break;
-        case Nsb::SEPIA:
-            pTone = nullptr;
-            break;
-        case Nsb::KITANO_BLUE:
-            pTone = nullptr;
-            break;
-    }
+    pTone = new Tone(Tonei);
 }
 
 void Texture::Draw(uint32_t Diff)

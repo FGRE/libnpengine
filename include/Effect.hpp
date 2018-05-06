@@ -21,6 +21,7 @@
 #include <GL/glew.h>
 #include <png.h>
 #include "Texture.hpp"
+#include "nsbconstants.hpp"
 
 class Effect
 {
@@ -58,8 +59,48 @@ protected:
 
 class Tone : public Effect
 {
+    const string MonochromeShader = \
+        "uniform sampler2D Texture;"
+        "void main()"
+        "{"
+        "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
+        "   gl_FragColor = vec4(vec3(Pixel.r + Pixel.g + Pixel.b) / 3.0, Pixel.a);"
+        "}";
+    const string NegaPosiShader = \
+        "uniform sampler2D Texture;"
+        "void main()"
+        "{"
+        "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
+        "   gl_FragColor = vec4(vec3(1.0) - Pixel.rgb, Pixel.a);"
+        "}";
+    const string KitanoBlueShader = \
+        "uniform sampler2D Texture;"
+        "void main()"
+        "{"
+        "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
+        "   float Intensity = Pixel.r * (27.0 / 255.0) + Pixel.g * (150.0 / 255.0) + Pixel.b * (75.0 / 255.0);"
+        "   vec4 Color = vec4(vec3(Intensity), Pixel.a);"
+        "   Color.gb = clamp(Color.gb + vec2(20.0 / 255.0, 80.0 / 255.0), vec2(0.0, 0.0), vec2(1.0, 1.0));"
+        "   gl_FragColor = Color;"
+        "}";
 public:
-    virtual ~Tone() { }
+    Tone(int32_t Tone)
+    {
+        switch (Tone)
+        {
+            case Nsb::NEGA_POSI:
+                CompileShader(NegaPosiShader.c_str());
+                break;
+            case Nsb::MONOCHROME:
+                CompileShader(MonochromeShader.c_str());
+                break;
+            case Nsb::SEPIA:
+                break;
+            case Nsb::KITANO_BLUE:
+                CompileShader(KitanoBlueShader.c_str());
+                break;
+        }
+    }
 
     void OnDraw()
     {
@@ -69,39 +110,6 @@ public:
         glUseProgramObjectARB(Program);
         glUniform1iARB(glGetUniformLocationARB(Program, "Texture"), 0);
     }
-};
-
-class Monochrome : public Tone
-{
-    const string MonochromeShader = \
-        "uniform sampler2D Texture;"
-        "void main()"
-        "{"
-        "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
-        "   gl_FragColor = vec4(vec3(Pixel.r + Pixel.g + Pixel.b) / 3.0, Pixel.a);"
-        "}";
-public:
-    Monochrome()
-    {
-        CompileShader(MonochromeShader.c_str());
-    }
-};
-
-class NegaPosi : public Tone
-{
-    const string NegaPosiShader = \
-        "uniform sampler2D Texture;"
-        "void main()"
-        "{"
-        "   vec4 Pixel = texture2D(Texture, gl_TexCoord[0].xy);"
-        "   gl_FragColor = vec4(vec3(1.0) - Pixel.rgb, Pixel.a);"
-        "}";
-public:
-    NegaPosi()
-    {
-        CompileShader(NegaPosiShader.c_str());
-    }
-
 };
 
 class LerpEffect : public Effect
