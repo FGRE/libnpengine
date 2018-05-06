@@ -90,7 +90,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_ADD_ASSIGN] = { &NSBInterpreter::AddAssign, 1 };
     Builtins[MAGIC_SUB_ASSIGN] = { &NSBInterpreter::SubAssign, 1 };
     Builtins[MAGIC_WRITE_FILE] = { &NSBInterpreter::WriteFile, 2 };
-    Builtins[MAGIC_READ_FILE] = { &NSBInterpreter::ReadFile, 2 };
+    Builtins[MAGIC_READ_FILE] = { &NSBInterpreter::ReadFile, 1 };
     Builtins[MAGIC_CREATE_TEXTURE] = { &NSBInterpreter::CreateTexture, 5 };
     Builtins[MAGIC_IMAGE_HORIZON] = { &NSBInterpreter::ImageHorizon, 1 };
     Builtins[MAGIC_IMAGE_VERTICAL] = { &NSBInterpreter::ImageVertical, 1 };
