@@ -103,6 +103,7 @@ public:
 
     void PushEvent(const SDL_Event& Event);
     virtual void HandleEvent(const SDL_Event& Event);
+    void Update(uint32_t Diff);
     void Run(int NumCommands);
     void RunCommand();
 
@@ -231,6 +232,7 @@ protected:
     int32_t PopInt();
     string PopString();
     NSBPosition PopPos();
+    NSBPosition PopRelative();
     uint32_t PopColor();
     int32_t PopRequest();
     int32_t PopTone();

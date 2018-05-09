@@ -31,6 +31,7 @@ public:
     virtual ~GLTexture();
 
     void Draw(float X, float Y, float Width, float Height);
+    void Draw(float* xa, float* ya);
 
     void CreateFromScreen(Window* pWindow);
     void CreateFromImage(Image* pImage);

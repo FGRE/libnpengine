@@ -103,6 +103,7 @@ void Window::Draw()
 {
     uint32_t Diff = SDL_GetTicks() - LastDrawTime;
     DrawTextures(Diff);
+    pInterpreter->Update(Diff);
     SDL_GL_SwapWindow(SDLWindow);
     LastDrawTime = SDL_GetTicks();
 }

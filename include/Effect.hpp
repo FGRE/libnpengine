@@ -164,6 +164,22 @@ public:
     int32_t Time;
 };
 
+class RotateEffect : public LerpEffect
+{
+public:
+    RotateEffect(int32_t EndA, int32_t Time) : LerpEffect(0, 0)
+    {
+        Reset(EndA, 0, Time);
+    }
+
+    void OnDraw(Texture* pTexture, int32_t diff)
+    {
+        int32_t ax, ay;
+        Update(diff, ax, ay);
+        pTexture->SetAngle(ax);
+    }
+};
+
 class MoveEffect : public LerpEffect
 {
 public:
@@ -188,16 +204,11 @@ public:
         Reset(EndX, EndY, Time);
     }
 
-    void OnDraw(Texture* pTexture, int32_t diff, int32_t& OffsetX, int32_t& OffsetY, float& ScaleX, float& ScaleY)
+    void OnDraw(Texture* pTexture, int32_t diff)
     {
         int32_t x, y;
         Update(diff, x, y);
-        ScaleX = x / 1000.f;
-        ScaleY = y / 1000.f;
-        OffsetX = pTexture->GetWidth() * ScaleX - pTexture->GetWidth();
-        OffsetX /= -(float(pTexture->GetWidth()) / float(pTexture->GetOX()));
-        OffsetY = pTexture->GetHeight() * ScaleY - pTexture->GetHeight();
-        OffsetY /= -(float(pTexture->GetHeight()) / float(pTexture->GetOY()));
+        pTexture->SetScale(x, y);
     }
 };
 
@@ -338,7 +349,7 @@ public:
         return true;
     }
 
-    void OnDraw(GLTexture* pTexture, float X, float Y, float Width, float Height)
+    void OnDraw(GLTexture* pTexture, float* xa, float* ya, float Width, float Height)
     {
         glUseProgramObjectARB(Program);
 
@@ -366,7 +377,7 @@ public:
         // Second pass to window
         glUniform1fARB(glGetUniformLocationARB(Program, "BlurSize"), 1.0f / Height);
         glUniform2fARB(glGetUniformLocationARB(Program, "Pass"), 0.0f, 1.0f);
-        Draw(X, Y, Width, Height);
+        Draw(xa, ya);
     }
 
     GLuint Framebuffer;

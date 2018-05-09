@@ -65,6 +65,7 @@ public:
     void Request(int32_t State);
     const string& GetName();
     void WriteTrace(ostream& Stream);
+    void Update(uint32_t Diff);
 
 private:
     StackFrame* GetFrame();
@@ -73,7 +74,7 @@ private:
     Object* pObject;
     const string Name;
     uint64_t WaitTime;
-    uint64_t WaitStart;
+    uint64_t Elapsed;
     bool WaitInterrupt;
     bool Active;
     stack<StackFrame> CallStack;

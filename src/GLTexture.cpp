@@ -61,6 +61,19 @@ void GLTexture::Draw(float X, float Y, float Width, float Height)
     glEnd();
 }
 
+void GLTexture::Draw(float* xa, float* ya)
+{
+    static const float x[4] = {0, 1, 1, 0}, y[4] = {0, 0, 1, 1};
+    glBindTexture(GL_TEXTURE_2D, GLTextureID);
+    glBegin(GL_QUADS);
+    for (int i = 0; i < 4; ++i)
+    {
+        glTexCoord2f(x[i], y[i]);
+        glVertex2f(xa[i], ya[i]);
+    }
+    glEnd();
+}
+
 void GLTexture::CreateFromScreen(Window* pWindow)
 {
     Image Img;

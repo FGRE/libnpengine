@@ -240,6 +240,12 @@ void NSBInterpreter::RunCommand()
     }
 }
 
+void NSBInterpreter::Update(uint32_t Diff)
+{
+    for (NSBContext* pContext : Threads)
+        pContext->Update(Diff);
+}
+
 void NSBInterpreter::PushEvent(const SDL_Event& Event)
 {
     Events.push(Event);
@@ -612,6 +618,16 @@ NSBPosition NSBInterpreter::PopPos()
                 Position.Func = SpecialPosTable[i];
     }
     Variable::Destroy(pVar);
+    return Position;
+}
+
+NSBPosition NSBInterpreter::PopRelative()
+{
+    NSBPosition Position;
+    Variable* pVar = PopVar();
+    Position.Relative = pVar->Relative;
+    int32_t Val = pVar->ToInt();
+    Position.Func = [Val] (int32_t) { return Val; };
     return Position;
 }
 
@@ -1118,15 +1134,15 @@ void NSBInterpreter::Zoom()
 {
     string Handle = PopString();
     int32_t Time = PopInt();
-    int32_t X = PopInt();
-    int32_t Y = PopInt();
+    NSBPosition XScale = PopRelative();
+    NSBPosition YScale = PopRelative();
     /*int32_t Tempo = */PopTempo();
     bool Wait = PopBool();
 
-    ObjectHolder.Execute(Handle, [Time, X, Y] (Object** ppObject)
+    ObjectHolder.Execute(Handle, [&] (Object** ppObject)
     {
         if (Texture* pTexture = dynamic_cast<Texture*>(*ppObject))
-            pTexture->Zoom(Time, X, Y);
+            pTexture->Zoom(Time, XScale(0, pTexture->GetXScale()), YScale(0, pTexture->GetYScale()));
     });
 
     if (Wait)
@@ -1750,13 +1766,17 @@ void NSBInterpreter::SoundAmplitude()
 
 void NSBInterpreter::Rotate()
 {
-    string Handle = PopString();
-    /*int32_t Time = */PopInt();
+    Texture* pTexture = PopTexture();
+    int32_t Time = PopInt();
     /*int32_t unk1 = */PopInt();
     /*int32_t unk2 = */PopInt();
-    /*int32_t Angle = */PopInt();
+    NSBPosition Angle = PopRelative();
     /*int32_t Tempo = */PopTempo();
-    /*bool Wait = */PopBool();
+    bool Wait = PopBool();
+
+    pTexture->Rotate(Angle(0, pTexture->GetAngle()), Time);
+    if (Wait)
+        pContext->Wait(Time);
 }
 
 void NSBInterpreter::Message()

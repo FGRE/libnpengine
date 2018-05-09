@@ -19,10 +19,8 @@
 #include "Text.hpp"
 #include "scriptfile.hpp"
 #include "nsbconstants.hpp"
-#include <chrono>
-using namespace std::chrono;
 
-NSBContext::NSBContext(const string& Name) : pText(nullptr), pObject(nullptr), Name(Name), WaitTime(0), WaitStart(0), WaitInterrupt(false), Active(false)
+NSBContext::NSBContext(const string& Name) : pText(nullptr), pObject(nullptr), Name(Name), WaitTime(0), Elapsed(0), WaitInterrupt(false), Active(false)
 {
 }
 
@@ -139,7 +137,7 @@ void NSBContext::Wait(int32_t Time, bool Interrupt)
 {
     WaitInterrupt = Interrupt;
     WaitTime = Time;
-    WaitStart = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    Elapsed = 0;
 }
 
 void NSBContext::Wake()
@@ -169,8 +167,7 @@ bool NSBContext::IsStarving()
 
 bool NSBContext::IsSleeping()
 {
-    uint64_t Now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    return (Now - WaitStart) < WaitTime;
+    return Elapsed < WaitTime;
 }
 
 bool NSBContext::IsActive()
@@ -205,4 +202,9 @@ void NSBContext::WriteTrace(ostream& Stream)
         Stream << Returns.top().pScript->GetName() << " at " << Returns.top().SourceLine << endl;
         Returns.pop();
     }
+}
+
+void NSBContext::Update(uint32_t Diff)
+{
+    Elapsed += Diff;
 }
