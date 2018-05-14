@@ -48,20 +48,11 @@ GLTexture::~GLTexture()
 
 void GLTexture::Draw(float X, float Y, float Width, float Height)
 {
-    glBindTexture(GL_TEXTURE_2D, GLTextureID);
-    glBegin(GL_QUADS);
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2f(X, Y);
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2f(X + Width, Y);
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2f(X + Width, Y + Height);
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex2f(X, Y + Height);
-    glEnd();
+    static const float x[4] = {0, X, X, 0}, y[4] = {0, 0, Y, Y};
+    Draw(x, y);
 }
 
-void GLTexture::Draw(float* xa, float* ya)
+void GLTexture::Draw(const float* xa, const float* ya)
 {
     static const float x[4] = {0, 1, 1, 0}, y[4] = {0, 0, 1, 1};
     glBindTexture(GL_TEXTURE_2D, GLTextureID);
