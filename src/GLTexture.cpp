@@ -46,6 +46,14 @@ GLTexture::~GLTexture()
     glDeleteTextures(1, &GLTextureID);
 }
 
+void GLTexture::Draw(int X, int Y, const string& Filename)
+{
+    Image Img;
+    Img.LoadImage(Filename);
+    glBindTexture(GL_TEXTURE_2D, GLTextureID);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, X, Y, Img.GetWidth(), Img.GetHeight(), Img.GetFormat(), GL_UNSIGNED_BYTE, Img.GetPixels());
+}
+
 void GLTexture::Draw(float X, float Y, float Width, float Height)
 {
     static const float x[4] = {0, X, X, 0}, y[4] = {0, 0, Y, Y};

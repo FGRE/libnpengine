@@ -52,7 +52,6 @@ void Image::LoadImage(const string& Filename, bool Mask)
     if (Filename.substr(Filename.size() - 3) == "jpg")
     {
         pPixels = LoadJPEG(pData, Size);
-        Format = GL_RGB;
     }
     else if (Filename.substr(Filename.size() - 3) == "png")
     {
@@ -122,11 +121,13 @@ uint8_t* Image::LoadJPEG(uint8_t* pMem, uint32_t Size)
 
     Width = jpeg.output_width;
     Height = jpeg.output_height;
+    jpeg.out_color_space = JCS_EXT_RGBX;
+    Format = GL_RGBA;
 
-    uint8_t* data = new uint8_t[Width * Height * 3];
+    uint8_t* data = new uint8_t[Width * Height * 4];
     for (int y = 0; y < Height; ++y)
     {
-        uint8_t* ptr = data + Width * 3 * y;
+        uint8_t* ptr = data + Width * 4 * y;
         jpeg_read_scanlines(&jpeg, &ptr, 1);
     }
 

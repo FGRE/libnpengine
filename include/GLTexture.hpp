@@ -19,17 +19,19 @@
 #define GL_TEXTURE_HPP
 
 #include <SDL2/SDL_opengl.h>
-#include <string>
-using namespace std;
+#include "Object.hpp"
 
 class Image;
 class Window;
-class GLTexture
+class Texture;
+class GLTexture : public Object
 {
+    friend class Texture;
 public:
     GLTexture();
     virtual ~GLTexture();
 
+    void Draw(int X, int Y, const string& Filename);
     void Draw(float X, float Y, float Width, float Height);
     void Draw(const float* xa, const float* ya);
 

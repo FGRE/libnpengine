@@ -539,6 +539,11 @@ Texture* NSBInterpreter::PopTexture()
     return Get<Texture>(PopString());
 }
 
+GLTexture* NSBInterpreter::PopGLTexture()
+{
+    return Get<GLTexture>(PopString());
+}
+
 Playable* NSBInterpreter::PopPlayable()
 {
     return Get<Playable>(PopString());
@@ -921,7 +926,12 @@ void NSBInterpreter::CreateTexture()
     else if (Source == "SCREEN")
         pTexture->CreateFromScreen(pWindow);
     else if (Source.size() < 4 || Source[Source.size() - 4] != '.')
-        pTexture->CreateFromImage(Get<Image>(Source));
+    {
+        if (GLTexture* pSource = Get<GLTexture>(Source))
+            pTexture->CreateFromGLTexture(pSource);
+        else if (Image* pSource = Get<Image>(Source))
+            pTexture->CreateFromImage(pSource);
+    }
     else
         pTexture->CreateFromFile(Source);
 
@@ -1176,7 +1186,7 @@ void NSBInterpreter::SetShade()
 
 void NSBInterpreter::DrawToTexture()
 {
-    Texture* pTexture = PopTexture();
+    GLTexture* pTexture = PopGLTexture();
     int32_t X = PopInt();
     int32_t Y = PopInt();
     string Filename = PopString();
@@ -1192,7 +1202,7 @@ void NSBInterpreter::CreateRenderTexture()
     int32_t Height = PopInt();
     uint32_t Color = PopColor();
 
-    Texture* pTexture = new Texture;
+    GLTexture* pTexture = new GLTexture;
     pTexture->CreateFromColor(Width, Height, Color);
     ObjectHolder.Write(Handle, pTexture);
 }

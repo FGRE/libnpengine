@@ -28,14 +28,15 @@ class MaskEffect;
 class BlurEffect;
 class RotateEffect;
 class Tone;
-class Texture : public Object, public GLTexture
+class Texture : public GLTexture
 {
 public:
     Texture();
     virtual ~Texture();
 
+    void CreateFromGLTexture(GLTexture* pTexture);
+
     void Request(int32_t State);
-    void Draw(int X, int Y, const string& Filename);
     void SetPosition(int X, int Y);
     void SetAngle(int Angle);
     void SetScale(int XScale, int YScale);

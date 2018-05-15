@@ -49,12 +49,11 @@ void Texture::Request(int32_t State)
         SetSmoothing(true);
 }
 
-void Texture::Draw(int X, int Y, const string& Filename)
+void Texture::CreateFromGLTexture(GLTexture* pTexture)
 {
-    Image Img;
-    Img.LoadImage(Filename);
-    glBindTexture(GL_TEXTURE_2D, GLTextureID);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, X, Y, Img.GetWidth(), Img.GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Img.GetPixels());
+    GLTextureID = pTexture->GLTextureID;
+    Width = pTexture->Width;
+    Height = pTexture->Height;
 }
 
 void Texture::SetPosition(int X, int Y)

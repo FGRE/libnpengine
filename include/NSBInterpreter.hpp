@@ -244,6 +244,7 @@ protected:
     Variable* PopVar();
     ArrayVariable* PopArr();
     Texture* PopTexture();
+    GLTexture* PopGLTexture();
     Playable* PopPlayable();
 
     void PushInt(int32_t Int);
