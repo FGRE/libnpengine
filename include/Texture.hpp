@@ -50,6 +50,7 @@ public:
     void SetShade(int32_t Shade);
     void SetTone(int32_t Tone);
     void Rotate(int32_t Angle, int32_t Time);
+    void Shake(int32_t XWidth, int32_t YWidth, int32_t Time);
 
     int GetXScale() { return XScale; }
     int GetYScale() { return YScale; }
@@ -77,6 +78,8 @@ private:
     int OX, OY;
     int Angle;
     int XScale, YScale;
+    int XShake, YShake, ShakeTime;
+    bool ShakeTick;
 };
 
 #endif

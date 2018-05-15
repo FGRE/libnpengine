@@ -29,7 +29,8 @@ pRotate(nullptr),
 pTone(nullptr),
 X(0), Y(0), OX(0), OY(0),
 Angle(0),
-XScale(1000), YScale(1000)
+XScale(1000), YScale(1000),
+XShake(0), YShake(0), ShakeTime(0), ShakeTick(false)
 {
 }
 
@@ -146,6 +147,13 @@ void Texture::Rotate(int32_t Angle, int32_t Time)
         pRotate->Reset(Angle, 0, Time);
 }
 
+void Texture::Shake(int32_t XWidth, int32_t YWidth, int32_t Time)
+{
+    XShake = XWidth;
+    YShake = YWidth;
+    ShakeTime = Time;
+}
+
 void Texture::Draw(uint32_t Diff)
 {
     if (pMove) pMove->OnDraw(this, Diff);
@@ -154,6 +162,8 @@ void Texture::Draw(uint32_t Diff)
     if (pFade) pFade->OnDraw(Diff);
     if (pMask) pMask->OnDraw(Diff);
     if (pTone) pTone->OnDraw();
+    ShakeTime = max(0, ShakeTime - (int32_t)Diff);
+    ShakeTick = ShakeTime ? !ShakeTick : false;
 
     float sx = XScale / 1000.f;
     float sy = YScale / 1000.f;
@@ -171,6 +181,8 @@ void Texture::Draw(uint32_t Diff)
         float yn = XA[i] * s + YA[i] * c;
         XA[i] = xn + X + OX * sx + ox;
         YA[i] = yn + Y + OY * sy + oy;
+        XA[i] += ShakeTick * XShake;
+        YA[i] += ShakeTick * YShake;
     }
 
     if (pBlur) pBlur->OnDraw(this, XA, YA, Width * sx, Height * sy);

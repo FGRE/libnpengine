@@ -1731,14 +1731,23 @@ void NSBInterpreter::DateTime()
 void NSBInterpreter::Shake()
 {
     string Handle = PopString();
-    /*int32_t Priority = */PopInt();
-    /*int32_t XWidth = */PopInt();
-    /*int32_t YWidth = */PopInt();
+    int32_t Time = PopInt();
+    int32_t XWidth = PopInt();
+    int32_t YWidth = PopInt();
     /*int32_t unk1 = */PopInt();
     /*int32_t unk2 = */PopInt();
     /*int32_t unk3 = */PopInt();
     /*int32_t Tempo = */PopTempo();
-    /*bool Wait = */PopBool();
+    bool Wait = PopBool();
+
+    ObjectHolder.Execute(Handle, [Time, XWidth, YWidth] (Object** ppObject)
+    {
+        if (Texture* pTexture = dynamic_cast<Texture*>(*ppObject))
+            pTexture->Shake(XWidth, YWidth, Time);
+    });
+
+    if (Wait)
+        pContext->Wait(Time);
 }
 
 void NSBInterpreter::MoviePlay()
