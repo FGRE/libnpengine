@@ -64,6 +64,7 @@ public:
     int GetOY() { return OY; }
     int32_t GetMX();
     int32_t GetMY();
+    int32_t RemainFade();
 
 private:
     MoveEffect* pMove;

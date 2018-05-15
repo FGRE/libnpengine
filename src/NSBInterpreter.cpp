@@ -1772,8 +1772,10 @@ void NSBInterpreter::WaitPlay()
 
 void NSBInterpreter::WaitFade()
 {
-    string Handle = PopString();
+    Texture* pTexture = PopTexture();
     /*string unk = */PopString();
+
+    pContext->Wait(pTexture->RemainFade());
 }
 
 void NSBInterpreter::SoundAmplitude()

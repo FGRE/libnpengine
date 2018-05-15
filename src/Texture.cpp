@@ -201,3 +201,8 @@ int32_t Texture::GetMY()
 {
     return pMove->EndY;
 }
+
+int32_t Texture::RemainFade()
+{
+    return max(0, pFade->Time - pFade->ElapsedTime);
+}
