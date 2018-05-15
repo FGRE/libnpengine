@@ -1764,8 +1764,10 @@ void NSBInterpreter::SetStream()
 
 void NSBInterpreter::WaitPlay()
 {
-    string Handle = PopString();
+    Playable* pPlayable = PopPlayable();
     /*string unk = */PopString();
+
+    pContext->Wait(pPlayable->RemainTime());
 }
 
 void NSBInterpreter::WaitFade()

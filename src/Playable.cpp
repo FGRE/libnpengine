@@ -208,10 +208,13 @@ void Playable::Play()
 {
     GstStateChangeReturn ret = gst_element_set_state(Pipeline, GST_STATE_PLAYING);
     if (ret == GST_STATE_CHANGE_ASYNC)
-        ret = gst_element_get_state(Pipeline, nullptr, nullptr, GST_SECOND);
+        ret = gst_element_get_state(Pipeline, nullptr, nullptr, GST_CLOCK_TIME_NONE);
     if (ret == GST_STATE_CHANGE_FAILURE)
         cerr << "Failed to set pipline state to PLAYING" << endl;
     gst_element_seek_simple(Pipeline, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, Begin);
+    ret = gst_element_get_state(Pipeline, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+    if (ret == GST_STATE_CHANGE_FAILURE)
+        cerr << "Failed to seek" << endl;
 }
 
 void Playable::SetVolume(int32_t Time, int32_t Volume)
