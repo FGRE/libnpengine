@@ -51,7 +51,7 @@ public:
     int32_t PassageTime();
     void OnEOS();
     void Request(int32_t State);
-    bool Action();
+    virtual bool Action();
 
     std::unique_ptr<AppSrc> Appsrc;
 protected:

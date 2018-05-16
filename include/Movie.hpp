@@ -21,7 +21,6 @@
 #include "Playable.hpp"
 #include "Texture.hpp"
 #include <gst/app/gstappsink.h>
-#include <SDL2/SDL_opengl.h>
 
 class Movie : public Playable, public Texture
 {
@@ -31,6 +30,7 @@ public:
     ~Movie();
 
     virtual void Request(int32_t State) { Playable::Request(State); }
+    bool Action() { return true; }
     void Draw(uint32_t Diff);
 private:
     void InitVideo(Window* pWindow);
@@ -39,7 +39,6 @@ private:
     bool Alpha;
     GstElement* VideoBin;
     GstAppSink* Appsink;
-    GLuint GLTextureID;
 };
 
 #endif
