@@ -182,8 +182,16 @@ void NSBContext::Start()
 
 void NSBContext::Request(int32_t State)
 {
-    if (State == Nsb::START)
-        Start();
+    switch (State)
+    {
+        case Nsb::START:
+            Start();
+            break;
+        case Nsb::PAUSE:
+            break;
+        case Nsb::RESUME:
+            break;
+    }
 }
 
 const string& NSBContext::GetName()

@@ -24,8 +24,6 @@ GstBusSyncReply SyncHandler(GstBus* bus, GstMessage* msg, gpointer Handle)
 {
     if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_EOS)
         ((Playable*)Handle)->OnEOS();
-    else if (gst_is_video_overlay_prepare_window_handle_message(msg))
-        gst_video_overlay_set_window_handle(GST_VIDEO_OVERLAY(GST_MESSAGE_SRC(msg)), (guintptr)((Movie*)Handle)->XWin);
     else
         return GST_BUS_PASS;
 

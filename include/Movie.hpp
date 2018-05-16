@@ -19,22 +19,27 @@
 #define MOVIE_HPP
 
 #include "Playable.hpp"
+#include "Texture.hpp"
+#include <gst/app/gstappsink.h>
+#include <SDL2/SDL_opengl.h>
 
-class Movie : public Playable
+class Movie : public Playable, public Texture
 {
     friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
-    friend GstBusSyncReply SyncHandler(GstBus* bus, GstMessage* msg, gpointer Handle);
 public:
     Movie(const string& FileName, Window* pWindow, int32_t Priority, bool Alpha, bool Audio);
     ~Movie();
 
-    int32_t GetPriority() { return Priority; }
+    virtual void Request(int32_t State) { Playable::Request(State); }
+    void Draw(uint32_t Diff);
 private:
     void InitVideo(Window* pWindow);
+    void UpdateSample();
 
-    int32_t Priority;
+    bool Alpha;
     GstElement* VideoBin;
-    unsigned long XWin;
+    GstAppSink* Appsink;
+    GLuint GLTextureID;
 };
 
 #endif

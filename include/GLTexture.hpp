@@ -24,7 +24,7 @@
 class Image;
 class Window;
 class Texture;
-class GLTexture : public Object
+class GLTexture : virtual public Object
 {
     friend class Texture;
 public:
@@ -42,9 +42,9 @@ public:
     void CreateFromFile(const string& Filename, bool Mask = false);
     void CreateFromFileClip(const string& Filename, int ClipX, int ClipY, int ClipWidth, int ClipHeight);
     void CreateEmpty(int Width, int Height);
+    void Create(uint8_t* Pixels, GLenum Format, int W, int H);
 
 protected:
-    void Create(uint8_t* Pixels, GLenum Format);
     void SetSmoothing(bool Set);
 
     int Width, Height;

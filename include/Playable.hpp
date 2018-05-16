@@ -31,7 +31,7 @@ struct AppSrc
     Resource File;
 };
 
-class Playable : public Object
+class Playable : virtual public Object
 {
     friend void LinkPad(GstElement* DecodeBin, GstPad* SourcePad, gpointer Data);
 public:

@@ -96,9 +96,7 @@ void GLTexture::CreateFromFile(const string& Filename, bool Mask)
 
 void GLTexture::CreateFromImage(Image* pImage)
 {
-    Width = pImage->GetWidth();
-    Height = pImage->GetHeight();
-    Create(pImage->GetPixels(), pImage->GetFormat());
+    Create(pImage->GetPixels(), pImage->GetFormat(), pImage->GetWidth(), pImage->GetHeight());
 }
 
 void GLTexture::CreateFromImageClip(Image* pImage, int ClipX, int ClipY, int ClipWidth, int ClipHeight)
@@ -108,9 +106,7 @@ void GLTexture::CreateFromImageClip(Image* pImage, int ClipX, int ClipY, int Cli
     for (int i = 0; i < ClipHeight; ++i)
         memcpy(pClipped + i * ClipWidth * NumVals, pImage->GetPixels() + (pImage->GetWidth() * (ClipY + i) + ClipX) * NumVals, ClipWidth * NumVals);
 
-    Width = ClipWidth;
-    Height = ClipHeight;
-    Create(pClipped, pImage->GetFormat());
+    Create(pClipped, pImage->GetFormat(), ClipWidth, ClipHeight);
     delete[] pClipped;
 }
 
@@ -123,13 +119,13 @@ void GLTexture::CreateFromFileClip(const string& Filename, int ClipX, int ClipY,
 
 void GLTexture::CreateEmpty(int Width, int Height)
 {
-    this->Width = Width;
-    this->Height = Height;
-    Create(0, GL_RGB);
+    Create(0, GL_RGB, Width, Height);
 }
 
-void GLTexture::Create(uint8_t* Pixels, GLenum Format)
+void GLTexture::Create(uint8_t* Pixels, GLenum Format, int W, int H)
 {
+    Width = W;
+    Height = H;
     glDeleteTextures(1, &GLTextureID);
     glGenTextures(1, &GLTextureID);
     glBindTexture(GL_TEXTURE_2D, GLTextureID);

@@ -23,11 +23,6 @@
 #include <list>
 using namespace std;
 
-namespace X11
-{
-    #include <SDL2/SDL_syswm.h>
-}
-
 class Texture;
 class NSBInterpreter;
 class Window
@@ -44,7 +39,6 @@ public:
     void AddTexture(Texture* pTexture);
     void RemoveTexture(Texture* pTexture);
     void MoveCursor(int32_t X, int32_t Y);
-    X11::SDL_SysWMinfo GetWindowInfo();
     bool IsRunning_() { return IsRunning; }
     void SetFullscreen(Uint32 flags);
     void DrawTextures(uint32_t Diff);

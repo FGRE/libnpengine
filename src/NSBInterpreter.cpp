@@ -130,7 +130,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_LOOP_POINT] = { &NSBInterpreter::SetLoopPoint, 3 };
     Builtins[MAGIC_CREATE_SOUND] = { &NSBInterpreter::CreateSound, 3 };
     Builtins[MAGIC_REMAIN_TIME] = { &NSBInterpreter::RemainTime, 1 };
-    //Builtins[MAGIC_CREATE_MOVIE] = { &NSBInterpreter::CreateMovie, 8 };
+    Builtins[MAGIC_CREATE_MOVIE] = { &NSBInterpreter::CreateMovie, 8 };
     Builtins[MAGIC_DURATION_TIME] = { &NSBInterpreter::DurationTime, 1 };
     Builtins[MAGIC_SET_FREQUENCY] = { &NSBInterpreter::SetFrequency, 4 };
     Builtins[MAGIC_SET_PAN] = { &NSBInterpreter::SetPan, 4 };
@@ -1361,6 +1361,7 @@ void NSBInterpreter::CreateMovie()
 
     Movie* pMovie = new Movie(File, pWindow, Priority, Alpha, Audio);
     pMovie->SetLoop(Loop);
+    pWindow->AddTexture(pMovie);
     ObjectHolder.Write(Handle, pMovie);
 }
 
@@ -1478,7 +1479,6 @@ void NSBInterpreter::ParseText()
 
     Text* pText = new Text;
     pText->CreateFromXML(XML);
-    pText->Move(0, 0);
     Handle = Box + "/" + Handle;
     SetString("$SYSTEM_present_text", Handle);
     ObjectHolder.Write(Handle, pText);

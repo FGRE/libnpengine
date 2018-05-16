@@ -194,12 +194,12 @@ void Texture::Draw(uint32_t Diff)
 
 int32_t Texture::GetMX()
 {
-    return pMove->EndX;
+    return pMove ? pMove->EndX : 0;
 }
 
 int32_t Texture::GetMY()
 {
-    return pMove->EndY;
+    return pMove ? pMove->EndY : 0;
 }
 
 int32_t Texture::RemainFade()
