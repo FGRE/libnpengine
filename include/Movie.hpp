@@ -30,7 +30,6 @@ public:
     ~Movie();
 
     virtual void Request(int32_t State) { Playable::Request(State); }
-    bool Action() { return true; }
     void Draw(uint32_t Diff);
 private:
     void InitVideo(Window* pWindow);

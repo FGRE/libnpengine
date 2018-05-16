@@ -718,14 +718,16 @@ void NSBInterpreter::IntUnaryOp(function<int32_t(int32_t)> Func)
 
 void NSBInterpreter::IntBinaryOp(function<int32_t(int32_t, int32_t)> Func)
 {
-    int32_t Val = PopInt();
-    PushInt(Func(Val, PopInt()));
+    int32_t lhs = PopInt();
+    int32_t rhs = PopInt();
+    PushInt(Func(lhs, rhs));
 }
 
 void NSBInterpreter::BoolBinaryOp(function<bool(bool, bool)> Func)
 {
-    bool Val = PopBool();
-    PushInt(Func(Val, PopBool()));
+    bool lhs = PopBool();
+    bool rhs = PopBool();
+    PushInt(Func(lhs, rhs));
 }
 
 void NSBInterpreter::CallFunction_(NSBContext* pThread, const string& Symbol)

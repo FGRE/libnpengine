@@ -75,7 +75,7 @@ void Window::Run()
 
         Draw();
         pInterpreter->Run(100);
-        SDL_Delay(16);
+        SDL_Delay(10);
     }
 }
 
