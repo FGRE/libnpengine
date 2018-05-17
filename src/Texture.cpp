@@ -164,7 +164,7 @@ void Texture::Shake(int32_t XWidth, int32_t YWidth, int32_t Time)
     ShakeTime = Time;
 }
 
-void Texture::Draw(uint32_t Diff)
+void Texture::UpdateEffects(uint32_t Diff)
 {
     if (pMove) pMove->OnDraw(this, Diff);
     if (pRotate) pRotate->OnDraw(this, Diff);
@@ -172,6 +172,11 @@ void Texture::Draw(uint32_t Diff)
     if (pFade) pFade->OnDraw(Diff);
     if (pMask) pMask->OnDraw(Diff);
     if (pTone) pTone->OnDraw();
+}
+
+void Texture::Draw(uint32_t Diff)
+{
+    UpdateEffects(Diff);
     ShakeTime = max(0, ShakeTime - (int32_t)Diff);
     ShakeTick = ShakeTime ? !ShakeTick : false;
 

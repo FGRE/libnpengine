@@ -41,6 +41,7 @@ public:
     void SetAngle(int Angle);
     void SetScale(int XScale, int YScale);
     void SetVertex(int X, int Y);
+    void UpdateEffects(uint32_t Diff);
     virtual void Draw(uint32_t Diff);
     void SetPriority(int Priority);
     void Move(int X, int Y, int32_t Time = 0);

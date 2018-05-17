@@ -130,6 +130,7 @@ void Window::AddTexture(Texture* pTexture)
 
 void Window::RemoveTexture(Texture* pTexture)
 {
+    pTexture->UpdateEffects(0);
     Textures.remove(pTexture);
 }
 
