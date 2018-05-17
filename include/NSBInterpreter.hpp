@@ -99,6 +99,7 @@ public:
 
     void ExecuteLocalScript(const string& Filename);
     void ExecuteScript(const string& Filename);
+    void ExecuteScriptThread(const string& Filename);
     void StartDebugger();
 
     void PushEvent(const SDL_Event& Event);
@@ -272,6 +273,7 @@ protected:
     void CallFunction_(NSBContext* pThread, const string& Symbol);
     void CallScriptSymbol(const string& Prefix);
     void CallScript(const string& Filename, const string& Symbol);
+    void CallScriptThread(const string& Filename, const string& Symbol);
     void Call(uint16_t Magic);
     bool SelectEvent();
     void AddThread(NSBContext* pThread);

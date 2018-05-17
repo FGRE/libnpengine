@@ -199,6 +199,14 @@ void NSBInterpreter::ExecuteScript(const string& Filename)
     CallScript(Filename, "chapter.main");
 }
 
+void NSBInterpreter::ExecuteScriptThread(const string& Filename)
+{
+    NSBContext* pThread = new NSBContext("UNK");
+    AddThread(pThread);
+    if (ScriptFile* pScript = sResourceMgr->GetScriptFile(Filename))
+        pThread->Call(pScript, "chapter.main");
+}
+
 void NSBInterpreter::Run(int NumCommands)
 {
     for (int i = 0; i < NumCommands; ++i)
@@ -273,7 +281,7 @@ void NSBInterpreter::HandleEvent(const SDL_Event& Event)
         ProcessKey(Event.key.keysym.sym, "true");
         for (NSBShortcut& Shortcut : Shortcuts)
             if (Shortcut.Key == Event.key.keysym.sym)
-                CallScript(Shortcut.Script, "chapter.main");
+                CallScriptThread(Shortcut.Script, "chapter.main");
         break;
     case SDL_KEYUP:
         ProcessKey(Event.key.keysym.sym, "false");
@@ -754,6 +762,14 @@ void NSBInterpreter::CallScript(const string& Filename, const string& Symbol)
 {
     if (ScriptFile* pScript = sResourceMgr->GetScriptFile(Filename))
         pContext->Call(pScript, Symbol);
+}
+
+void NSBInterpreter::CallScriptThread(const string& Filename, const string& Symbol)
+{
+    NSBContext* pThread = new NSBContext("UNK");
+    AddThread(pThread);
+    if (ScriptFile* pScript = sResourceMgr->GetScriptFile(Filename))
+        pThread->Call(pScript, Symbol);
 }
 
 void NSBInterpreter::Call(uint16_t Magic)
