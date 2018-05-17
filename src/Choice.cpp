@@ -1,17 +1,17 @@
-/* 
+/*
  * libnpengine: Nitroplus script interpreter
  * Copyright (C) 2014-2016,2018 Mislav Blažević <krofnica996@gmail.com>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
@@ -37,6 +37,19 @@ bool Choice::IsSelected(const SDL_Event& Event)
         case SDL_MOUSEWHEEL: Wheel(Event.wheel.x, Event.wheel.y); break;
         case SDL_KEYDOWN: Arrow(Event.key.keysym.sym); break;
     }
+
+    Texture* pMouseOver = dynamic_cast<Texture*>(Read("MouseOver/img"));
+    Texture* pMouseClick = dynamic_cast<Texture*>(Read("MouseClick/img"));
+    Texture* pMouseUsual = dynamic_cast<Texture*>(Read("MouseUsual/img"));
+
+    if (pMouseOver) pMouseOver->Fade(0, 0);
+    if (pMouseClick) pMouseClick->Fade(0, 0);
+    if (pMouseUsual) pMouseUsual->Fade(0, 0);
+
+    if (MouseOver && pMouseOver) pMouseOver->Fade(0, 1000);
+    else if (ButtonDown && pMouseClick) pMouseClick->Fade(0, 1000);
+    else if (pMouseUsual) pMouseUsual->Fade(0, 1000);
+
     return ButtonUp;
 }
 
