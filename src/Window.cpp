@@ -101,11 +101,12 @@ void Window::HandleEvent(SDL_Event& Event)
 
 void Window::Draw()
 {
-    uint32_t Diff = SDL_GetTicks() - LastDrawTime;
+    uint32_t CurrTime = SDL_GetTicks();
+    uint32_t Diff = CurrTime - LastDrawTime;
     DrawTextures(Diff);
     pInterpreter->Update(Diff);
     SDL_GL_SwapWindow(SDLWindow);
-    LastDrawTime = SDL_GetTicks();
+    LastDrawTime = CurrTime;
 }
 
 void Window::DrawTextures(uint32_t Diff)
