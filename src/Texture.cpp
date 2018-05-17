@@ -46,8 +46,18 @@ Texture::~Texture()
 
 void Texture::Request(int32_t State)
 {
-    if (State == Nsb::SMOOTHING)
-        SetSmoothing(true);
+    switch (State)
+    {
+        case Nsb::SMOOTHING:
+            SetSmoothing(true);
+            break;
+        case Nsb::ERASE:
+            pWindow->RemoveTexture(this);
+            break;
+        case Nsb::ENTER:
+            pWindow->AddTexture(this);
+            break;
+    }
 }
 
 void Texture::CreateFromGLTexture(GLTexture* pTexture)
