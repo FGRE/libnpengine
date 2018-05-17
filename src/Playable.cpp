@@ -90,6 +90,7 @@ AppSrc::AppSrc(Resource& Res) : Offset(0), File(Res)
 
 Playable::Playable(const string& FileName) :
 Appsrc(nullptr),
+Playing(false),
 Loop(false),
 AudioBin(nullptr),
 Begin(0),
@@ -245,12 +246,15 @@ void Playable::Request(int32_t State)
     switch (State)
     {
         case Nsb::RESUME:
+            Playing = true;
             gst_element_set_state(Pipeline, GST_STATE_PLAYING);
             break;
         case Nsb::PLAY:
+            Playing = true;
             Play();
             break;
         case Nsb::PAUSE:
+            Playing = false;
             gst_element_set_state(Pipeline, GST_STATE_PAUSED);
             break;
     }

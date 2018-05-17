@@ -59,6 +59,7 @@ protected:
     void InitPipeline(GstElement* Source);
 
     GstElement* Pipeline;
+    bool Playing;
 private:
     bool Loop;
     GstElement* AudioBin;

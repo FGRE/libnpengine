@@ -58,7 +58,7 @@ void Movie::UpdateSample()
 
 void Movie::Draw(uint32_t Diff)
 {
-    UpdateSample();
+    if (Playing) UpdateSample();
     Texture::Draw(Diff);
 }
 
