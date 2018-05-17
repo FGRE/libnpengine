@@ -121,7 +121,7 @@ void Window::AddTexture(Texture* pTexture)
     auto Spot = Textures.begin();
     while (Spot != Textures.end())
     {
-        if ((*Spot)->GetPriority() >= pTexture->GetPriority())
+        if ((*Spot)->GetPriority() > pTexture->GetPriority())
             break;
         ++Spot;
     }
