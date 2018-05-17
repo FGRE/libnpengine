@@ -45,7 +45,8 @@ DbgStepping(false),
 RunInterpreter(true),
 pWindow(pWindow),
 pContext(nullptr),
-Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
+Builtins(MAGIC_UNK119 + 1, {nullptr, 0}),
+SkipHack(false)
 {
     gst_init(nullptr, nullptr);
     srand(time(0));
@@ -278,6 +279,9 @@ void NSBInterpreter::HandleEvent(const SDL_Event& Event)
         ProcessButton(Event.button.button, "false");
         break;
     case SDL_KEYDOWN:
+        if (Event.key.keysym.sym == SDLK_F1)
+            SkipHack = !SkipHack;
+
         ProcessKey(Event.key.keysym.sym, "true");
         for (NSBShortcut& Shortcut : Shortcuts)
             if (Shortcut.Key == Event.key.keysym.sym)
@@ -1529,7 +1533,8 @@ void NSBInterpreter::WaitText()
     int32_t Time = PopInt();
 
     if (Text* pText = Get<Text>(Handle))
-        pContext->WaitText(pText, Time);
+        if (!SkipHack)
+            pContext->WaitText(pText, Time);
 }
 
 void NSBInterpreter::LockVideo()

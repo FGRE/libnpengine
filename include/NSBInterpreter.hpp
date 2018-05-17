@@ -295,6 +295,7 @@ protected:
     bool RunInterpreter;
     list<pair<string, uint32_t>> Breakpoints;
 
+    bool SkipHack;
     bool ThreadsModified;
     SDL_Event Event;
     queue<SDL_Event> Events;
