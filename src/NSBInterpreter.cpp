@@ -1552,9 +1552,9 @@ void NSBInterpreter::Save()
         SaveData.WriteStr32(NpaFile::FromUtf8(var.first));
         SaveData.Write<uint32_t>(var.second->IsInt() ? 1 : 3); // TODO: other values
         SaveData.Write<int32_t>(var.second->IsInt() ? var.second->ToInt() : 0);
-        SaveData.Write<uint32_t>(0); // unk
+        SaveData.Write<float>(0); // TODO
         SaveData.WriteStr32(NpaFile::FromUtf8(var.second->IsString() ? var.second->ToString() : ""));
-        SaveData.Write<bool>(0); // unk - maybe bool? 4? what is 2?
+        SaveData.Write<bool>(0); // unk - maybe bool? 4?
         SaveData.WriteStr32(NpaFile::FromUtf8("")); // TODO: arrayref?
     }
     // TODO: lower levels too
@@ -1664,7 +1664,7 @@ void NSBInterpreter::Load()
         string Name2 = NpaFile::ToUtf8(SaveData.ReadStr32());
         /*uint32_t Type = */SaveData.Read<uint32_t>();
         /*int32_t IntVal = */SaveData.Read<int32_t>();
-        /*int32_t unk = */SaveData.Read<int32_t>();
+        /*float FloatVal = */SaveData.Read<float>();
         string StrVal = NpaFile::ToUtf8(SaveData.ReadStr32());
         /*bool unk = */SaveData.Read<bool>();
         string ArrayRef = NpaFile::ToUtf8(SaveData.ReadStr32());
