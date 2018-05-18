@@ -22,6 +22,7 @@
 #include "Window.hpp"
 #include "Movie.hpp"
 #include "Text.hpp"
+#include "Scrollbar.hpp"
 #include "nsbmagic.hpp"
 #include "nsbconstants.hpp"
 #include "scriptfile.hpp"
@@ -174,6 +175,10 @@ SkipHack(false)
     Builtins[MAGIC_ROTATE] = { &NSBInterpreter::Rotate, 7};
     Builtins[MAGIC_MESSAGE] = { &NSBInterpreter::Message, 4};
     Builtins[MAGIC_INTEGER] = { &NSBInterpreter::Integer, 1};
+    Builtins[MAGIC_CREATE_SCROLLBAR] = { &NSBInterpreter::CreateScrollbar, 14};
+    Builtins[MAGIC_SET_SCROLLBAR_VALUE] = { &NSBInterpreter::SetScrollbarValue, 2};
+    Builtins[MAGIC_SET_SCROLLBAR_WHEEL_AREA] = { &NSBInterpreter::SetScrollbarWheelArea, 5};
+    Builtins[MAGIC_SCROLLBAR_VALUE] = { &NSBInterpreter::ScrollbarValue, 1};
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -559,6 +564,11 @@ GLTexture* NSBInterpreter::PopGLTexture()
 Playable* NSBInterpreter::PopPlayable()
 {
     return Get<Playable>(PopString());
+}
+
+Scrollbar* NSBInterpreter::PopScrollbar()
+{
+    return Get<Scrollbar>(PopString());
 }
 
 int32_t NSBInterpreter::PopInt()
@@ -1837,4 +1847,53 @@ void NSBInterpreter::Message()
 void NSBInterpreter::Integer()
 {
     PushVar(PopVar());
+}
+
+void NSBInterpreter::CreateScrollbar()
+{
+    string Handle = PopString();
+    int32_t Priority = PopInt();
+    int32_t X1 = PopInt();
+    int32_t Y1 = PopInt();
+    int32_t X2 = PopInt();
+    int32_t Y2 = PopInt();
+    int32_t unk1 = PopInt();
+    int32_t Min = PopInt();
+    int32_t Max = PopInt();
+    int32_t unk2 = PopInt();
+    int32_t unk3 = PopInt();
+    string Type = PopString();
+    string Filename = PopString();
+    string Callback = PopString();
+
+    Texture* pTexture = new Texture;
+    Scrollbar* pScrollbar = new Scrollbar(pTexture, X1, Y1, X2, Y2, Min, Max, Type, Callback);
+    pTexture->CreateFromFile(Filename);
+    pTexture->Move(X1, Y1);
+    pTexture->SetPriority(Priority);
+    pWindow->AddTexture(pTexture);
+    ObjectHolder.Write(Handle, pScrollbar);
+}
+
+void NSBInterpreter::SetScrollbarValue()
+{
+    Scrollbar* pScrollbar = PopScrollbar();
+    int32_t Value = PopInt();
+    pScrollbar->SetValue(Value);
+}
+
+void NSBInterpreter::SetScrollbarWheelArea()
+{
+    Scrollbar* pScrollbar = PopScrollbar();
+    int32_t X = PopInt();
+    int32_t Y = PopInt();
+    int32_t Width = PopInt();
+    int32_t Height = PopInt();
+    pScrollbar->SetWheelArea(X, Y, Width, Height);
+}
+
+void NSBInterpreter::ScrollbarValue()
+{
+    Scrollbar* pScrollbar = PopScrollbar();
+    PushInt(pScrollbar->GetValue());
 }

@@ -85,6 +85,7 @@ add_library(npengine SHARED
     src/Lexer.cpp
     src/Image.cpp
     src/NSBDebugger.cpp
+    src/Scrollbar.cpp
 )
 
 target_link_libraries(npengine
