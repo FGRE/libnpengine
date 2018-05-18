@@ -1106,6 +1106,7 @@ void NSBInterpreter::Array()
         ArrayHolder.Write(pContext->GetParam(0), pArr);
     }
 
+    pArr->Members.clear();
     for (int i = 1; i < pContext->GetNumParams(); ++i)
         pArr->Push(ArrayVariable::MakeCopy(PopVar()));
 }
