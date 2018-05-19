@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <string>
 #include <functional>
+#include <map>
 using namespace std;
 
 class Variable
@@ -28,29 +29,33 @@ class Variable
 protected:
     enum
     {
+        NSB_NULL = 0,
         NSB_INT = 1,
-        NSB_STRING = 2,
-        NSB_NULL = NSB_INT | NSB_STRING
+        NSB_FLOAT = 2,
+        NSB_STRING = 3,
+        NSB_BOOL = 4
     } Tag;
-    union
+
+    struct
     {
         int32_t Int;
-        string* Str;
+        float Float;
+        string Str;
+        bool Bool;
     } Val;
 
     Variable();
 
     void Initialize();
     void Initialize(Variable* pVar);
-    void Destroy();
 
 public:
     virtual ~Variable();
 
-    static Variable* MakeNull();
+    static Variable* MakeNull(const string& Name);
     static Variable* MakeInt(int32_t Int);
     static Variable* MakeString(const string& Str);
-    static Variable* MakeCopy(Variable* pVar);
+    static Variable* MakeCopy(Variable* pVar, const string& Name);
 
     int32_t ToInt();
     string ToString();
@@ -68,6 +73,8 @@ public:
 
     bool Literal;
     bool Relative;
+    map<string, int> Assoc;
+    string Name;
 };
 
 #endif

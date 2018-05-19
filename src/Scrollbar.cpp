@@ -17,6 +17,7 @@
  * */
 #include "Scrollbar.hpp"
 #include "Window.hpp"
+#include "Texture.hpp"
 
 Scrollbar::Scrollbar(Texture* pTexture, int32_t X1, int32_t Y1, int32_t X2, int32_t Y2, int32_t Min, int32_t Max, string Type, string Callback) :
 pTexture(pTexture), X1(X1), Y1(Y1), X2(X2), Y2(Y2), Min(Min), Max(Max), Type(Type), Callback(Callback)

@@ -541,14 +541,7 @@ void NSBInterpreter::Jump()
 
 Variable* NSBInterpreter::PopVar()
 {
-    if (Variable* pVar = Params.Pop())
-        return pVar;
-    return Variable::MakeNull();
-}
-
-ArrayVariable* NSBInterpreter::PopArr()
-{
-    return dynamic_cast<ArrayVariable*>(Params.Pop());
+    return Params.Pop();
 }
 
 Texture* NSBInterpreter::PopTexture()
@@ -849,32 +842,12 @@ bool NSBInterpreter::ToBool(Variable* pVar)
 
 Variable* NSBInterpreter::GetVar(const string& Name)
 {
-    // hacky
-    if (ArrayVariable* pArr = GetArr(Name))
-        return pArr;
-
     if (Variable* pVar = VariableHolder.Read(Name))
         return pVar;
 
-    Variable* pVar = Variable::MakeNull();
-    pVar->Literal = false;
+    Variable* pVar = Variable::MakeNull(Name);
     VariableHolder.Write(Name, pVar);
     return pVar;
-}
-
-ArrayVariable* NSBInterpreter::GetArrSafe(const string& Name)
-{
-    if (ArrayVariable* pArr = GetArr(Name))
-        return pArr;
-
-    ArrayVariable* pArr = ArrayVariable::MakeNull();
-    ArrayHolder.Write(Name, pArr);
-    return pArr;
-}
-
-ArrayVariable* NSBInterpreter::GetArr(const string& Name)
-{
-    return ArrayHolder.Read(Name);
 }
 
 Object* NSBInterpreter::GetObject(const string& Name)
@@ -1079,7 +1052,7 @@ void NSBInterpreter::VariableValue()
 
     // Check if it's array index. Not sure about this...
     if (Name.size() > 3 && Name[Name.size() - 3] == '[' && Name.back() == ']' && isdigit(Name[Name.size() - 2]))
-        PushVar(GetArrSafe(Name.substr(0, Name.size() - 3))->Find(Name[Name.size() - 2] - '0'));
+        PushVar(GetVar(Name.substr(0, Name.size() - 3) + "/" + to_string(Name[Name.size() - 2])));
     else if (pContext->GetNumParams() == 3)
         SetVar(Type + Name, PopVar());
     else if (pContext->GetNumParams() == 2)
@@ -1104,35 +1077,45 @@ void NSBInterpreter::CreateProcess()
 
 void NSBInterpreter::Count()
 {
-    PushInt(PopArr()->Members.size());
+    Variable* pArr = PopVar();
+    int SCount = count(pArr->Name.begin(), pArr->Name.end(), '/') + 1;
+    int32_t Size = 0;
+    for (auto& i : VariableHolder.Cache)
+    {
+        string Prefix = i.first.substr(0, pArr->Name.size());
+        int Count = count(i.first.begin(), i.first.end(), '/');
+        if (Prefix == pArr->Name && SCount == Count)
+            Size++;
+    }
+    PushInt(Size);
 }
 
 void NSBInterpreter::Array()
 {
-    ArrayVariable* pArr = PopArr();
+    Variable* pArr = PopVar();
     if (!pArr)
     {
-        pArr = ArrayVariable::MakeNull();
-        ArrayHolder.Write(pContext->GetParam(0), pArr);
+        pArr = Variable::MakeNull(pContext->GetParam(0));
+        VariableHolder.Write(pContext->GetParam(0), pArr);
     }
-
-    pArr->Members.clear();
     for (int i = 1; i < pContext->GetNumParams(); ++i)
-        pArr->Push(ArrayVariable::MakeCopy(PopVar()));
+    {
+        string Name = pArr->Name + "/" + to_string(i - 1);
+        Variable* pVar = Variable::MakeCopy(PopVar(), Name);
+        VariableHolder.Write(Name, pVar);
+    }
 }
 
 void NSBInterpreter::SubScript()
 {
-    ArrayVariable* pArr = GetArrSafe(pContext->GetParam(0));
+    Variable* pArr = GetVar(pContext->GetParam(0));
     int32_t Depth = stoi(pContext->GetParam(1));
     Params.Begin(Depth);
     while (Depth --> 0)
     {
         Variable* pVar = PopVar();
-        if (pVar->IsInt())
-            pArr = pArr->Find(pVar->ToInt());
-        else
-            pArr = pArr->Find(pVar->ToString());
+        int Index = pVar->IsInt() ? pVar->ToInt() : pArr->Assoc[pVar->ToString()];
+        pArr = GetVar(pArr->Name + "/" + to_string(Index));
         Variable::Destroy(pVar);
     }
     PushVar(pArr);
@@ -1140,9 +1123,9 @@ void NSBInterpreter::SubScript()
 
 void NSBInterpreter::AssocArray()
 {
-    ArrayVariable* pArr = PopArr();
-    for (auto& i : pArr->Members)
-        i.first = PopString();
+    Variable* pArr = PopVar();
+    for (int i = 1; i < pContext->GetNumParams(); ++i)
+        pArr->Assoc[PopString()] = i - 1;
 }
 
 void NSBInterpreter::ModuleFileName()
@@ -1429,7 +1412,8 @@ void NSBInterpreter::SetPan()
 void NSBInterpreter::SetAlias()
 {
     string Handle = PopString();
-    ObjectHolder.WriteAlias(Handle, PopString());
+    string Alias = PopString();
+    ObjectHolder.WriteAlias(Handle, Alias);
 }
 
 void NSBInterpreter::CreateName()
@@ -1557,6 +1541,7 @@ void NSBInterpreter::Save()
 {
     Npa::Buffer SaveData;
     SaveData.Write<uint32_t>(VariableHolder.Cache.size());
+    vector<pair<string, Variable*> > Arrays;
     for (auto& var : VariableHolder.Cache)
     {
         SaveData.WriteStr32(NpaFile::FromUtf8(var.first));
@@ -1567,15 +1552,16 @@ void NSBInterpreter::Save()
         SaveData.WriteStr32(NpaFile::FromUtf8(var.second->IsString() ? var.second->ToString() : ""));
         SaveData.Write<bool>(0); // unk - maybe bool? 4?
         SaveData.WriteStr32(NpaFile::FromUtf8("")); // TODO: arrayref?
+        if (!var.second->Assoc.empty())
+            Arrays.push_back(var);
     }
-    // TODO: lower levels too
-    SaveData.Write<uint32_t>(ArrayHolder.Cache.size());
-    for (auto& arr : ArrayHolder.Cache)
+    SaveData.Write<uint32_t>(Arrays.size());
+    for (auto& arr : Arrays)
     {
         SaveData.WriteStr32(NpaFile::FromUtf8(arr.first));
-        SaveData.Write<uint32_t>(arr.second->Members.size());
-        for (auto& i : arr.second->Members)
-            SaveData.WriteStr32(NpaFile::ToUtf8(i.first)); // TODO: these are keys; what about vals?
+        SaveData.Write<uint32_t>(arr.second->Assoc.size());
+        for (auto& i : arr.second->Assoc)
+            SaveData.WriteStr32(NpaFile::ToUtf8(i.first));
     }
     fs::WriteFile(PopSave(), NpaFile::Encrypt(SaveData.GetData(), SaveData.GetSize()), SaveData.GetSize());
 }
@@ -1687,7 +1673,7 @@ void NSBInterpreter::Load()
         string Name1 = NpaFile::ToUtf8(SaveData.ReadStr32());
         uint32_t NumElems = SaveData.Read<uint32_t>();
         for (uint32_t j = 0; j < NumElems; ++j)
-            string Value = NpaFile::ToUtf8(SaveData.ReadStr32());
+            string Key = NpaFile::ToUtf8(SaveData.ReadStr32());
     }
 }
 

@@ -74,7 +74,6 @@ add_library(npengine SHARED
     src/ResourceMgr.cpp
     src/Texture.cpp
     src/Variable.cpp
-    src/ArrayVariable.cpp
     src/NSBContext.cpp
     src/GLTexture.cpp
     src/Playable.cpp

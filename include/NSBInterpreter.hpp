@@ -18,12 +18,13 @@
 #ifndef NSB_INTERPRETER_HPP
 #define NSB_INTERPRETER_HPP
 
+#include "Variable.hpp"
 #include "Choice.hpp"
-#include "ArrayVariable.hpp"
 #include <SDL2/SDL.h>
 #include <functional>
 #include <queue>
 #include <thread>
+#include <list>
 using namespace std;
 
 class Stack
@@ -248,7 +249,6 @@ protected:
     bool PopBool();
     string PopSave();
     Variable* PopVar();
-    ArrayVariable* PopArr();
     Texture* PopTexture();
     GLTexture* PopGLTexture();
     Playable* PopPlayable();
@@ -272,8 +272,6 @@ protected:
     bool GetBool(const string& Name);
     bool ToBool(Variable* pVar);
     Variable* GetVar(const string& Name);
-    ArrayVariable* GetArrSafe(const string& Name);
-    ArrayVariable* GetArr(const string& Name);
     Object* GetObject(const string& Name);
     template <class T> T* Get(const string& Name);
     void CallFunction_(NSBContext* pThread, const string& Symbol);
@@ -291,8 +289,7 @@ protected:
     void Inspect(int32_t n);
     void DbgBreak(bool Break);
     void DebuggerTick();
-    void PrintArray(ArrayVariable* pArray, const string& Identifier, int Depth = 1);
-    void PrintVariable(Variable* pVar, const string& Identifier);
+    void PrintVariable(Variable* pVar);
     void SetBreakpoint(const string& Script, int32_t LineNumber);
     string Disassemble(Line* pLine);
     thread* pDebuggerThread;
@@ -313,7 +310,6 @@ protected:
     vector<ScriptFile*> Scripts;
     list<NSBContext*> Threads;
     Holder<Variable> VariableHolder;
-    Holder<ArrayVariable> ArrayHolder;
     ObjectHolder_t ObjectHolder;
 };
 

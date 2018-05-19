@@ -26,17 +26,13 @@ using namespace std;
 
 class ScriptFile;
 
-struct MapDeleter
-{
-    template <class T> void operator() (T Data) { delete Data.second; }
-};
-
 template <class T>
 struct Holder
 {
     virtual ~Holder()
     {
-        for_each(Cache.begin(), Cache.end(), MapDeleter());
+        for (auto& i : Cache)
+            delete i.second;
     }
 
     T** ReadPointer(const string& Path)
