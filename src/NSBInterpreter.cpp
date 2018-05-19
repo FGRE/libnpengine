@@ -44,10 +44,10 @@ pDebuggerThread(nullptr),
 LogCalls(false),
 DbgStepping(false),
 RunInterpreter(true),
+SkipHack(false),
 pWindow(pWindow),
 pContext(nullptr),
-Builtins(MAGIC_UNK119 + 1, {nullptr, 0}),
-SkipHack(false)
+Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
 {
     gst_init(nullptr, nullptr);
     srand(time(0));
@@ -179,6 +179,7 @@ SkipHack(false)
     Builtins[MAGIC_SET_SCROLLBAR_VALUE] = { &NSBInterpreter::SetScrollbarValue, 2};
     Builtins[MAGIC_SET_SCROLLBAR_WHEEL_AREA] = { &NSBInterpreter::SetScrollbarWheelArea, 5};
     Builtins[MAGIC_SCROLLBAR_VALUE] = { &NSBInterpreter::ScrollbarValue, 1};
+    Builtins[MAGIC_CREATE_STENCIL] = { &NSBInterpreter::CreateStencil, 7};
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -1843,11 +1844,11 @@ void NSBInterpreter::CreateScrollbar()
     int32_t Y1 = PopInt();
     int32_t X2 = PopInt();
     int32_t Y2 = PopInt();
-    int32_t unk1 = PopInt();
+    /*int32_t unk1 = */PopInt();
     int32_t Min = PopInt();
     int32_t Max = PopInt();
-    int32_t unk2 = PopInt();
-    int32_t unk3 = PopInt();
+    /*int32_t unk2 = */PopInt();
+    /*int32_t unk3 = */PopInt();
     string Type = PopString();
     string Filename = PopString();
     string Callback = PopString();
@@ -1882,4 +1883,15 @@ void NSBInterpreter::ScrollbarValue()
 {
     Scrollbar* pScrollbar = PopScrollbar();
     PushInt(pScrollbar->GetValue());
+}
+
+void NSBInterpreter::CreateStencil()
+{
+    string Handle = PopString();
+    /*int32_t unk = */PopInt();
+    NSBPosition X = PopPos();
+    NSBPosition Y = PopPos();
+    /*int32_t unk = */PopInt();
+    string Filename = PopString();
+    /*bool unk = */PopBool();
 }

@@ -235,6 +235,7 @@ protected:
     void SetScrollbarValue();
     void SetScrollbarWheelArea();
     void ScrollbarValue();
+    void CreateStencil();
 
     int32_t PopInt();
     string PopString();
