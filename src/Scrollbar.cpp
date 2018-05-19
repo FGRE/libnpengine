@@ -25,6 +25,7 @@ pTexture(pTexture), X1(X1), Y1(Y1), X2(X2), Y2(Y2), Min(Min), Max(Max), Type(Typ
 
 Scrollbar::~Scrollbar()
 {
+    delete pTexture;
     pWindow->RemoveTexture(pTexture);
 }
 
