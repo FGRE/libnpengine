@@ -982,6 +982,7 @@ void NSBInterpreter::StrStr()
 
 void NSBInterpreter::Exit()
 {
+    // TODO: save # variables in 0000.npf
     pWindow->Exit();
 }
 
@@ -1566,6 +1567,9 @@ void NSBInterpreter::Save()
     vector<pair<string, Variable*> > Arrays;
     for (auto& var : VariableHolder.Cache)
     {
+        if (var.first.front() == '#')
+            continue;
+
         SaveData.WriteStr32(NpaFile::FromUtf8(var.first));
         SaveData.WriteStr32(NpaFile::FromUtf8(var.first));
         SaveData.Write<uint32_t>(var.second->IsInt() ? 1 : 3); // TODO: other values
