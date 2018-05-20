@@ -26,8 +26,8 @@ pTexture(pTexture), X1(X1), Y1(Y1), X2(X2), Y2(Y2), Min(Min), Max(Max), Type(Typ
 
 Scrollbar::~Scrollbar()
 {
-    delete pTexture;
     pWindow->RemoveTexture(pTexture);
+    delete pTexture;
 }
 
 void Scrollbar::SetWheelArea(int32_t X, int32_t Y, int32_t Width, int32_t Height)
