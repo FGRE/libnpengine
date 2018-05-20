@@ -36,12 +36,12 @@ XShake(0), YShake(0), ShakeTime(0), ShakeTick(false)
 
 Texture::~Texture()
 {
+    pWindow->RemoveTexture(this);
     delete pMove;
     delete pZoom;
     delete pFade;
     delete pMask;
     delete pBlur;
-    pWindow->RemoveTexture(this);
 }
 
 void Texture::Request(int32_t State)

@@ -190,7 +190,11 @@ NSBInterpreter::~NSBInterpreter()
 {
     if (pDebuggerThread)
         pDebuggerThread->join();
+
     delete pDebuggerThread;
+    for (NSBContext* pContext : Threads)
+        if (pContext->GetName() == "__main__" || pContext->GetName() == "UNK")
+            delete pContext;
 }
 
 void NSBInterpreter::ExecuteLocalScript(const string& Filename)
@@ -393,7 +397,9 @@ void NSBInterpreter::LogicalLessEqual()
 
 void NSBInterpreter::CmpEqual()
 {
-    PushVar(Variable::Equal(PopVar(), PopVar()));
+    Variable* pLhs = PopVar();
+    Variable* pRhs = PopVar();
+    PushVar(Variable::Equal(pLhs, pRhs));
 }
 
 void NSBInterpreter::LogicalNotEqual()
@@ -409,8 +415,9 @@ void NSBInterpreter::LogicalNot()
 
 void NSBInterpreter::AddExpression()
 {
-    Variable* pVar = PopVar();
-    PushVar(Variable::Add(pVar, PopVar()));
+    Variable* pLhs = PopVar();
+    Variable* pRhs = PopVar();
+    PushVar(Variable::Add(pLhs, pRhs));
 }
 
 void NSBInterpreter::SubExpression()
@@ -649,13 +656,13 @@ NSBPosition NSBInterpreter::PopRelative()
     Position.Relative = pVar->Relative;
     int32_t Val = pVar->ToInt();
     Position.Func = [Val] (int32_t) { return Val; };
+    Variable::Destroy(pVar);
     return Position;
 }
 
 uint32_t NSBInterpreter::PopColor()
 {
     uint32_t Color;
-
     Variable* pVar = PopVar();
     if (pVar->IsString() && Nsb::IsValidConstant<Nsb::Color>(pVar->ToString()))
         Color = Nsb::ConstantToValue<Nsb::Color>(pVar->ToString());
