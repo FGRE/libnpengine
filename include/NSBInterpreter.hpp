@@ -297,7 +297,6 @@ protected:
     void DebuggerTick();
     void PrintVariable(Variable* pVar);
     void SetBreakpoint(const string& Script, int32_t LineNumber);
-    string Disassemble(Line* pLine);
     thread* pDebuggerThread;
     bool LogCalls;
     bool DbgStepping;

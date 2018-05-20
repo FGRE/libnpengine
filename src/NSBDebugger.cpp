@@ -22,19 +22,6 @@
 #include "scriptfile.hpp"
 #include <boost/algorithm/string.hpp>
 
-string NSBInterpreter::Disassemble(Line* pLine)
-{
-    string String = Nsb::StringifyMagic(pLine->Magic);
-    String += "(";
-    for (unsigned i = 0; i < pLine->Params.size(); ++i)
-    {
-        String += pLine->Params[i];
-        String += ((i == pLine->Params.size() - 1) ? "" : ", ");
-    }
-    String += ");\n";
-    return String;
-}
-
 void NSBInterpreter::StartDebugger()
 {
     if (!pDebuggerThread)
@@ -67,7 +54,7 @@ void NSBInterpreter::DebuggerTick()
     if (DbgStepping || LogCalls)
         cout << pContext->GetScriptName() << ":"
              << pContext->GetLineNumber() << " "
-             << Disassemble(pContext->GetLine());
+             << pContext->GetLine()->Stringify() << endl;
 
     if (DbgStepping)
     {
@@ -102,7 +89,7 @@ void NSBInterpreter::Inspect(int32_t n)
         ScriptFile* pScript = i->GetScript();
         uint32_t SourceIter = i->GetLineNumber();
         for (uint32_t i = SourceIter - n; i < SourceIter + n + 1; ++i)
-            cout << ((i == SourceIter) ? " > " : "   ") << Disassemble(pScript->GetLine(i));
+            cout << ((i == SourceIter) ? " > " : "   ") << pScript->GetLine(i)->Stringify() << endl;
     }
 }
 
