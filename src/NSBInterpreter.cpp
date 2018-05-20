@@ -1348,15 +1348,29 @@ void NSBInterpreter::SetLoopPoint()
 void NSBInterpreter::CreateSound()
 {
     string Handle = PopString();
-    /*string Type = */PopString();
+    string Type = PopString();
     string File = PopString();
 
     if (File.substr(File.size() - 4) != ".ogg")
         File += ".ogg";
 
     Resource Res = sResourceMgr->GetResource(File);
-    if (Res.IsValid())
-        ObjectHolder.Write(Handle, new Playable(Res));
+    if (!Res.IsValid())
+        return;
+
+    int32_t Volume = 0;
+    if (Type == "BGM")
+        Volume = GetInt("#SYSTEM_sound_volume_bgm");
+    else if (Type == "SE")
+        Volume = GetInt("#SYSTEM_sound_volume_se");
+    else if (Type == "VOICE")
+        Volume = GetInt("#SYSTEM_sound_volume_voice");
+    else
+        return;
+
+    Playable* pPlayable = new Playable(Res);
+    pPlayable->SetVolume(0, Volume);
+    ObjectHolder.Write(Handle, pPlayable);
 }
 
 void NSBInterpreter::RemainTime()
