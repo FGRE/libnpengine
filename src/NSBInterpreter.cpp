@@ -442,7 +442,15 @@ void NSBInterpreter::ModExpression()
 
 void NSBInterpreter::Increment()
 {
-    IntUnaryOp([](int32_t a) { return ++a; });
+    if (Params.Top()->Name == "$SW_PHONE_SENDMAILNO")
+    {
+        auto i = Nsb::ConstantHolder<Nsb::PhoneMail>::Constants.find(PopVar()->ToString());
+        Variable* pVar = PopVar();
+        pVar->Set((++i)->first);
+        PushVar(pVar);
+    }
+    else
+        IntUnaryOp([](int32_t a) { return ++a; });
 }
 
 void NSBInterpreter::Decrement()

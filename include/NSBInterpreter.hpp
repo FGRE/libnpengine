@@ -43,6 +43,11 @@ public:
         WriteIndex++;
     }
 
+    Variable* Top()
+    {
+        return Params[ReadIndex];
+    }
+
     Variable* Pop()
     {
         return Params[ReadIndex++];
