@@ -444,8 +444,8 @@ void NSBInterpreter::Increment()
 {
     if (Params.Top()->Name == "$SW_PHONE_SENDMAILNO")
     {
-        auto i = Nsb::ConstantHolder<Nsb::PhoneMail>::Constants.find(PopVar()->ToString());
         Variable* pVar = PopVar();
+        auto i = Nsb::ConstantHolder<Nsb::PhoneMail>::Constants.find(pVar->ToString());
         pVar->Set((++i)->first);
         PushVar(pVar);
     }
