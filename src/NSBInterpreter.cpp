@@ -1732,10 +1732,10 @@ void NSBInterpreter::CreateText()
     string String = PopString();
 
     Text* pText = new Text;
+    pText->SetWrap(Width(0));
     pText->CreateFromString(String);
     pText->SetPriority(Priority);
     pText->SetPosition(X(pText->GetWidth()), Y(pText->GetHeight()));
-    pText->SetWrap(Width(0));
 
     pWindow->AddTexture(pText);
     ObjectHolder.Write(Handle, pText);
