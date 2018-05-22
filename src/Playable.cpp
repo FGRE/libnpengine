@@ -243,6 +243,7 @@ void Playable::OnEOS()
 
 void Playable::Request(int32_t State)
 {
+    Object::Request(State);
     switch (State)
     {
         case Nsb::RESUME:
