@@ -19,6 +19,7 @@
 #define OBJECT_HPP
 
 #include "ResourceMgr.hpp"
+#include "nsbconstants.hpp"
 #include <regex>
 
 class Object;
@@ -142,9 +143,25 @@ private:
 class Window;
 struct Object : ObjectHolder_t
 {
-    virtual ~Object() {}
-    virtual void Request(int32_t State) { }
-    virtual bool Action() { return false; }
+    Object() : Lock(false)
+    {
+    }
+    virtual ~Object()
+    {
+    }
+    virtual void Request(int32_t State)
+    {
+        switch (State)
+        {
+            case Nsb::LOCK: Lock = true; break;
+            case Nsb::UN_LOCK: Lock = false; break;
+        }
+    }
+    virtual bool Action()
+    {
+        return false;
+    }
+    bool Lock;
     static Window* pWindow;
 };
 

@@ -46,6 +46,7 @@ Texture::~Texture()
 
 void Texture::Request(int32_t State)
 {
+    Object::Request(State);
     switch (State)
     {
         case Nsb::SMOOTHING:

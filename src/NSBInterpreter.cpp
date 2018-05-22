@@ -1343,6 +1343,9 @@ void NSBInterpreter::Delete()
     {
         if (Object* pObject = *ppObject)
         {
+            if (pObject->Lock)
+                return;
+
             if (NSBContext* pThread = dynamic_cast<NSBContext*>(pObject))
                 RemoveThread(pThread);
 
