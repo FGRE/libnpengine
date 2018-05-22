@@ -30,6 +30,7 @@
 #include "fscommon.hpp"
 #include "buffer.hpp"
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <memory>
 #include <algorithm>
@@ -399,7 +400,16 @@ void NSBInterpreter::CmpEqual()
 {
     Variable* pLhs = PopVar();
     Variable* pRhs = PopVar();
-    PushVar(Variable::Equal(pLhs, pRhs));
+
+    bool Equal = false;
+    if (pLhs->IsInt() && pRhs->IsInt())
+        Equal = pLhs->ToInt() == pRhs->ToInt();
+    else if (pLhs->IsString() && pRhs->IsString())
+        Equal = pLhs->ToString() == pRhs->ToString();
+
+    Variable::Destroy(pLhs);
+    Variable::Destroy(pRhs);
+    PushVar(Variable::MakeInt(Equal));
 }
 
 void NSBInterpreter::LogicalNotEqual()
@@ -445,8 +455,9 @@ void NSBInterpreter::Increment()
     if (Params.Top()->Name == "$SW_PHONE_SENDMAILNO")
     {
         Variable* pVar = PopVar();
-        auto i = Nsb::ConstantHolder<Nsb::PhoneMail>::Constants.find(pVar->ToString());
-        pVar->Set((++i)->first);
+        int32_t Index = Nsb::ConstantToValue<Nsb::PhoneMail>(pVar->ToString());
+        string Constant = Nsb::ValueToConstant<Nsb::PhoneMail>(Index + 1);
+        pVar->Set(Constant);
         PushVar(pVar);
     }
     else
@@ -583,7 +594,11 @@ Scrollbar* NSBInterpreter::PopScrollbar()
 int32_t NSBInterpreter::PopInt()
 {
     Variable* pVar = PopVar();
-    int32_t Val = pVar->IsInt() ? pVar->ToInt() : Nsb::ConstantToValue<Nsb::Null>(pVar->ToString());
+    int32_t Val = 0;
+    if (pVar->IsInt())
+        Val = pVar->ToInt();
+    else
+        Val = Nsb::ConstantToValue<Nsb::Null>(boost::algorithm::to_lower_copy(pVar->ToString()));
     Variable::Destroy(pVar);
     return Val;
 }
@@ -670,12 +685,22 @@ NSBPosition NSBInterpreter::PopRelative()
 
 uint32_t NSBInterpreter::PopColor()
 {
-    uint32_t Color;
+    uint32_t Color = 0;
     Variable* pVar = PopVar();
-    if (pVar->IsString() && Nsb::IsValidConstant<Nsb::Color>(pVar->ToString()))
-        Color = Nsb::ConstantToValue<Nsb::Color>(pVar->ToString());
+    if (pVar->IsString())
+    {
+        string Str = boost::algorithm::to_lower_copy(pVar->ToString());
+        if (Nsb::IsValidConstant<Nsb::Color>(Str))
+            Color = Nsb::ConstantToValue<Nsb::Color>(Str);
+        else
+        {
+            size_t i = Str.find_first_of("0123456789abcdef");
+            if (i != Str.npos && Str.size() - i >= 6)
+                Color = stoi(Str.substr(i, 6), nullptr, 16) | (0xFF << 24);
+        }
+    }
     else
-        Color = stoi(pVar->IsInt() ? to_string(pVar->ToInt()) : pVar->ToString().c_str() + 1, nullptr, 16) | (0xFF << 24);
+        Color = stoi(to_string(pVar->ToInt()), nullptr, 16) | (0xFF << 24);
 
     Variable::Destroy(pVar);
     return Color;
@@ -852,8 +877,14 @@ string NSBInterpreter::GetString(const string& Name)
 
 bool NSBInterpreter::ToBool(Variable* pVar)
 {
-    int32_t Int = pVar->IsInt() ? pVar->ToInt() : Nsb::ConstantToValue<Nsb::Boolean>(pVar->ToString());
-    return static_cast<bool>(Int);
+    if (pVar->IsString())
+    {
+        string Str = boost::algorithm::to_lower_copy(pVar->ToString());
+        int32_t Val = Nsb::ConstantToValue<Nsb::Boolean>(Str);
+        if (Val != -1)
+            return static_cast<bool>(Val);
+    }
+    return static_cast<bool>(pVar->ToInt());
 }
 
 Variable* NSBInterpreter::GetVar(const string& Name)
@@ -897,22 +928,17 @@ void NSBInterpreter::SetString(const string& Name, const string& Val)
 void NSBInterpreter::AddAssign()
 {
     Variable* pVar = GetVar(pContext->GetParam(0));
-    if (pVar)
-    {
-        Variable* pNew = Variable::Add(pVar, PopVar());
-        pVar->Set(pNew);
-        Variable::Destroy(pNew);
-    }
-    else
-        SetVar(pContext->GetParam(0), PopVar());
+    Variable* pTemp = Variable::Add(pVar, PopVar());
+    pVar->Set(pTemp);
+    Variable::Destroy(pTemp);
 }
 
 void NSBInterpreter::SubAssign()
 {
     Variable* pVar = GetVar(pContext->GetParam(0));
-    Variable* pNew = Variable::MakeInt(pVar->ToInt() - PopInt());
-    pVar->Set(pNew);
-    Variable::Destroy(pNew);
+    Variable* pTemp = Variable::MakeInt(pVar->ToInt() - PopInt());
+    pVar->Set(pTemp);
+    Variable::Destroy(pTemp);
 }
 
 void NSBInterpreter::WriteFile()
@@ -929,7 +955,7 @@ void NSBInterpreter::ReadFile()
     uint32_t Size;
     char* pData = fs::ReadFile(Filename, Size);
     NpaFile::Decrypt(pData, Size);
-    PushString(NpaFile::ToUtf8(pData));
+    PushString(NpaFile::ToUtf8(pData, Size));
     delete[] pData;
 }
 

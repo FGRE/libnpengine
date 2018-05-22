@@ -68,7 +68,6 @@ public:
     Variable* IntUnaryOp(function<int32_t(int32_t)> Func);
 
     static Variable* Add(Variable* pFirst, Variable* pSecond);
-    static Variable* Equal(Variable* pFirst, Variable* pSecond);
     static void Destroy(Variable* pVar);
 
     bool Literal;

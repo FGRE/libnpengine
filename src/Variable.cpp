@@ -30,6 +30,7 @@ Variable::~Variable()
 void Variable::Set(int32_t Int)
 {
     Val.Int = Int;
+    Val.Str = "";
     Tag = NSB_INT;
 }
 
@@ -102,9 +103,17 @@ Variable* Variable::MakeCopy(Variable* pVar, const string& Name)
 
 int32_t Variable::ToInt()
 {
-    if (Tag == NSB_NULL) return 0;
-    if (Tag == NSB_STRING && Relative) return stoi(Val.Str.c_str() + 1);
-    assert(IsInt());
+    if (Tag == NSB_NULL)
+        return 0;
+
+    if (Tag == NSB_STRING)
+    {
+        int32_t Value = Nsb::ConstantToValue<Nsb::Boolean>(ToString());
+        if (Value != -1)
+            return Value;
+        return Relative ? stoi(Val.Str.c_str() + 1) : 0;
+    }
+
     return Val.Int;
 }
 
@@ -121,12 +130,12 @@ string Variable::ToString()
 
 bool Variable::IsInt()
 {
-    return (Tag == NSB_INT || Tag == NSB_NULL) || Relative;
+    return Tag == NSB_INT || Tag == NSB_NULL || Relative || Nsb::ConstantToValue<Nsb::Boolean>(Val.Str) != -1;
 }
 
 bool Variable::IsString()
 {
-    return (Tag == NSB_STRING || Tag == NSB_NULL) || Relative;
+    return Tag == NSB_STRING || Tag == NSB_NULL || Relative;
 }
 
 bool Variable::IsNull()
@@ -148,25 +157,11 @@ Variable* Variable::IntUnaryOp(function<int32_t(int32_t)> Func)
 Variable* Variable::Add(Variable* pFirst, Variable* pSecond)
 {
     Variable* pThird = nullptr;
-    if (pFirst->IsInt() && pSecond->IsInt())
+    if (pFirst->IsInt())
         pThird = MakeInt(pFirst->ToInt() + pSecond->ToInt());
     else if (pFirst->IsString())
-        pThird = MakeString(pFirst->ToString() + (pSecond->IsString() ? pSecond->ToString() : to_string(pSecond->ToInt())));
-    else assert(false);
-    Destroy(pFirst);
-    Destroy(pSecond);
-    return pThird;
-}
+        pThird = MakeString(pFirst->ToString() + pSecond->ToString());
 
-Variable* Variable::Equal(Variable* pFirst, Variable* pSecond)
-{
-    Variable* pThird = nullptr;
-    if (pFirst->IsInt() && pFirst->Tag != NSB_NULL)
-        pThird = MakeInt(pFirst->ToInt() == (pSecond->IsInt() ? pSecond->ToInt() : Nsb::ConstantToValue<Nsb::Boolean>(pSecond->ToString())));
-    else if (pSecond->IsInt() && pSecond->Tag != NSB_NULL)
-        pThird = MakeInt(pSecond->ToInt() == (pFirst->IsInt() ? pFirst->ToInt() : Nsb::ConstantToValue<Nsb::Boolean>(pFirst->ToString())));
-    else
-        pThird = MakeInt(pFirst->ToString() == pSecond->ToString());
     Destroy(pFirst);
     Destroy(pSecond);
     return pThird;

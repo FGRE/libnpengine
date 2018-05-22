@@ -167,7 +167,7 @@ bool NSBContext::IsStarving()
 
 bool NSBContext::IsSleeping()
 {
-    return Elapsed < WaitTime;
+    return pText || Elapsed < WaitTime;
 }
 
 bool NSBContext::IsActive()
