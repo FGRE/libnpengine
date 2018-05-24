@@ -378,22 +378,34 @@ void NSBInterpreter::CmpLogicalOr()
 
 void NSBInterpreter::LogicalGreaterEqual()
 {
-    IntBinaryOp(greater_equal<int32_t>());
+    if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
+        FloatBinaryOp(greater_equal<float>());
+    else
+        IntBinaryOp(greater_equal<int32_t>());
 }
 
 void NSBInterpreter::CmpGreater()
 {
-    IntBinaryOp(greater<int32_t>());
+    if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
+        FloatBinaryOp(greater<float>());
+    else
+        IntBinaryOp(greater<int32_t>());
 }
 
 void NSBInterpreter::CmpLess()
 {
-    IntBinaryOp(less<int32_t>());
+    if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
+        FloatBinaryOp(less<float>());
+    else
+        IntBinaryOp(less<int32_t>());
 }
 
 void NSBInterpreter::LogicalLessEqual()
 {
-    IntBinaryOp(less_equal<int32_t>());
+    if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
+        FloatBinaryOp(less_equal<float>());
+    else
+        IntBinaryOp(less_equal<int32_t>());
 }
 
 void NSBInterpreter::CmpEqual()
@@ -406,6 +418,8 @@ void NSBInterpreter::CmpEqual()
         Equal = pLhs->ToInt() == pRhs->ToInt();
     else if (pLhs->IsString() && pRhs->IsString())
         Equal = pLhs->ToString() == pRhs->ToString();
+    else if (pLhs->ToFloat() && pRhs->ToFloat())
+        Equal = pLhs->ToFloat() == pRhs->ToFloat();
 
     Variable::Destroy(pLhs);
     Variable::Destroy(pRhs);
@@ -425,24 +439,38 @@ void NSBInterpreter::LogicalNot()
 
 void NSBInterpreter::AddExpression()
 {
-    Variable* pLhs = PopVar();
-    Variable* pRhs = PopVar();
-    PushVar(Variable::Add(pLhs, pRhs));
+    if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
+        FloatBinaryOp(plus<float>());
+    else
+    {
+        Variable* pLhs = PopVar();
+        Variable* pRhs = PopVar();
+        PushVar(Variable::Add(pLhs, pRhs));
+    }
 }
 
 void NSBInterpreter::SubExpression()
 {
-    IntBinaryOp(minus<int32_t>());
+    if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
+        FloatBinaryOp(minus<float>());
+    else
+        IntBinaryOp(minus<int32_t>());
 }
 
 void NSBInterpreter::MulExpression()
 {
-    IntBinaryOp(multiplies<int32_t>());
+    if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
+        FloatBinaryOp(multiplies<float>());
+    else
+        IntBinaryOp(multiplies<int32_t>());
 }
 
 void NSBInterpreter::DivExpression()
 {
-    IntBinaryOp(divides<int32_t>());
+    if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
+        FloatBinaryOp(divides<float>());
+    else
+        IntBinaryOp(divides<int32_t>());
 }
 
 void NSBInterpreter::ModExpression()
@@ -482,6 +510,8 @@ void NSBInterpreter::Literal()
     }
     else if (Type == "INT")
         PushInt(stoi(Val));
+    else if (Type == "FLOAT")
+        PushFloat(stof(Val));
 }
 
 void NSBInterpreter::Assign()
@@ -599,6 +629,14 @@ int32_t NSBInterpreter::PopInt()
         Val = pVar->ToInt();
     else
         Val = Nsb::ConstantToValue<Nsb::Null>(boost::algorithm::to_lower_copy(pVar->ToString()));
+    Variable::Destroy(pVar);
+    return Val;
+}
+
+float NSBInterpreter::PopFloat()
+{
+    Variable* pVar = PopVar();
+    float Val = pVar->ToFloat();
     Variable::Destroy(pVar);
     return Val;
 }
@@ -747,6 +785,11 @@ string NSBInterpreter::PopSave()
     return Fmt.str();
 }
 
+void NSBInterpreter::PushFloat(float Float)
+{
+    PushVar(Variable::MakeFloat(Float));
+}
+
 void NSBInterpreter::PushInt(int32_t Int)
 {
     PushVar(Variable::MakeInt(Int));
@@ -777,6 +820,13 @@ void NSBInterpreter::IntBinaryOp(function<int32_t(int32_t, int32_t)> Func)
     int32_t lhs = PopInt();
     int32_t rhs = PopInt();
     PushInt(Func(lhs, rhs));
+}
+
+void NSBInterpreter::FloatBinaryOp(function<float(float, float)> Func)
+{
+    float lhs = PopFloat();
+    float rhs = PopFloat();
+    PushFloat(Func(lhs, rhs));
 }
 
 void NSBInterpreter::BoolBinaryOp(function<bool(bool, bool)> Func)
@@ -879,8 +929,7 @@ bool NSBInterpreter::ToBool(Variable* pVar)
 {
     if (pVar->IsString())
     {
-        string Str = boost::algorithm::to_lower_copy(pVar->ToString());
-        int32_t Val = Nsb::ConstantToValue<Nsb::Boolean>(Str);
+        int32_t Val = Nsb::ConstantToValue<Nsb::Boolean>(pVar->ToString());
         if (Val != -1)
             return static_cast<bool>(Val);
     }
@@ -1083,6 +1132,8 @@ void NSBInterpreter::String()
             Fmt % pVar->ToInt();
         else if (pVar->IsString())
             Fmt % pVar->ToString();
+        else if (pVar->IsFloat())
+            Fmt % pVar->ToFloat();
         Variable::Destroy(pVar);
     }
     PushString(Fmt.str());

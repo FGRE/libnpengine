@@ -53,16 +53,20 @@ public:
     virtual ~Variable();
 
     static Variable* MakeNull(const string& Name);
+    static Variable* MakeFloat(float Float);
     static Variable* MakeInt(int32_t Int);
     static Variable* MakeString(const string& Str);
     static Variable* MakeCopy(Variable* pVar, const string& Name);
 
+    float ToFloat();
     int32_t ToInt();
     string ToString();
+    bool IsFloat();
     bool IsInt();
     bool IsString();
     bool IsNull();
     void Set(Variable* pVar);
+    void Set(float Float);
     void Set(int32_t Int);
     void Set(const string& Str);
     Variable* IntUnaryOp(function<int32_t(int32_t)> Func);

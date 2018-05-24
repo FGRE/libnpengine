@@ -34,6 +34,13 @@ void Variable::Set(int32_t Int)
     Tag = NSB_INT;
 }
 
+void Variable::Set(float Float)
+{
+    Val.Float = Float;
+    Val.Str = "";
+    Tag = NSB_FLOAT;
+}
+
 void Variable::Set(const string& Str)
 {
     Val.Str = Str;
@@ -66,6 +73,13 @@ void Variable::Initialize(Variable* pVar)
         Set(pVar->ToString());
     else
         Set(pVar->ToInt());
+}
+
+Variable* Variable::MakeFloat(float Float)
+{
+    Variable* pVar = new Variable;
+    pVar->Set(Float);
+    return pVar;
 }
 
 Variable* Variable::MakeInt(int32_t Int)
@@ -101,6 +115,11 @@ Variable* Variable::MakeCopy(Variable* pVar, const string& Name)
     return pNew;
 }
 
+float Variable::ToFloat()
+{
+    return Val.Float;
+}
+
 int32_t Variable::ToInt()
 {
     if (Tag == NSB_NULL)
@@ -126,6 +145,11 @@ string Variable::ToString()
         return Relative ? string("@") + to_string(Val.Int) : to_string(Val.Int);
 
     return Val.Str;
+}
+
+bool Variable::IsFloat()
+{
+    return Tag == NSB_FLOAT;
 }
 
 bool Variable::IsInt()

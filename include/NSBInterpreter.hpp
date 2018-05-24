@@ -48,6 +48,11 @@ public:
         return Params[ReadIndex];
     }
 
+    Variable* TTop()
+    {
+        return Params[ReadIndex + 1];
+    }
+
     Variable* Pop()
     {
         return Params[ReadIndex++];
@@ -242,6 +247,7 @@ protected:
     void ScrollbarValue();
     void CreateStencil();
 
+    float PopFloat();
     int32_t PopInt();
     string PopString();
     NSBPosition PopPos();
@@ -260,6 +266,7 @@ protected:
     Playable* PopPlayable();
     Scrollbar* PopScrollbar();
 
+    void PushFloat(float Float);
     void PushInt(int32_t Int);
     void PushString(const string& Str);
     void PushVar(Variable* pVar);
@@ -267,6 +274,7 @@ protected:
 
     void IntUnaryOp(function<int32_t(int32_t)> Func);
     void IntBinaryOp(function<int32_t(int32_t, int32_t)> Func);
+    void FloatBinaryOp(function<float(float, float)> Func);
     void BoolBinaryOp(function<bool(bool, bool)> Func);
 
     void SetInt(const string& Name, int32_t Val);
