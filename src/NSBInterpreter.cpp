@@ -181,6 +181,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_SET_SCROLLBAR_WHEEL_AREA] = { &NSBInterpreter::SetScrollbarWheelArea, 5};
     Builtins[MAGIC_SCROLLBAR_VALUE] = { &NSBInterpreter::ScrollbarValue, 1};
     Builtins[MAGIC_CREATE_STENCIL] = { &NSBInterpreter::CreateStencil, 7};
+    Builtins[MAGIC_CREATE_MASK] = { &NSBInterpreter::CreateMask, 6};
 
     pContext = new NSBContext("__main__");
     pContext->Start();
@@ -2006,5 +2007,21 @@ void NSBInterpreter::CreateStencil()
     NSBPosition Y = PopPos();
     /*int32_t unk = */PopInt();
     string Filename = PopString();
-    /*bool unk = */PopBool();
+    /*bool unk = */PopBool(); // Maybe Inheritance?
+
+    // Hack
+    ObjectHolder.Write(Handle, new Name);
+}
+
+void NSBInterpreter::CreateMask()
+{
+    string Handle = PopString();
+    /*int32_t Priority = */PopInt();
+    NSBPosition X = PopPos();
+    NSBPosition Y = PopPos();
+    string Filename = PopString();
+    /*bool Inheritance = */PopBool();
+
+    // Hack
+    ObjectHolder.Write(Handle, new Name);
 }

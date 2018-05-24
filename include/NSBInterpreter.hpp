@@ -246,6 +246,7 @@ protected:
     void SetScrollbarWheelArea();
     void ScrollbarValue();
     void CreateStencil();
+    void CreateMask();
 
     float PopFloat();
     int32_t PopInt();
