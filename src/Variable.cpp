@@ -115,6 +115,11 @@ Variable* Variable::MakeCopy(Variable* pVar, const string& Name)
     return pNew;
 }
 
+int Variable::GetTag()
+{
+    return Tag;
+}
+
 float Variable::ToFloat()
 {
     return Val.Float;

@@ -58,6 +58,7 @@ public:
     static Variable* MakeString(const string& Str);
     static Variable* MakeCopy(Variable* pVar, const string& Name);
 
+    int GetTag();
     float ToFloat();
     int32_t ToInt();
     string ToString();

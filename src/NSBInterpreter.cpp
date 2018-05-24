@@ -1661,9 +1661,9 @@ void NSBInterpreter::Save()
 
         SaveData.WriteStr32(NpaFile::FromUtf8(var.first));
         SaveData.WriteStr32(NpaFile::FromUtf8(var.first));
-        SaveData.Write<uint32_t>(var.second->IsInt() ? 1 : 3); // TODO: other values
+        SaveData.Write<uint32_t>(var.second->GetTag());
         SaveData.Write<int32_t>(var.second->IsInt() ? var.second->ToInt() : 0);
-        SaveData.Write<float>(0); // TODO
+        SaveData.Write<float>(var.second->IsFloat() ? var.second->ToFloat() : 0);
         SaveData.WriteStr32(NpaFile::FromUtf8(var.second->IsString() ? var.second->ToString() : ""));
         SaveData.Write<bool>(0); // unk - maybe bool? 4?
         SaveData.WriteStr32(NpaFile::FromUtf8("")); // TODO: arrayref?
