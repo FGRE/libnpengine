@@ -157,6 +157,7 @@ protected:
     void Jump();
     void AddAssign();
     void SubAssign();
+    void ModAssign();
     void WriteFile();
     void ReadFile();
     void CreateTexture();

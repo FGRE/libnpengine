@@ -92,6 +92,7 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_JUMP] = { &NSBInterpreter::Jump, 0 };
     Builtins[MAGIC_ADD_ASSIGN] = { &NSBInterpreter::AddAssign, 1 };
     Builtins[MAGIC_SUB_ASSIGN] = { &NSBInterpreter::SubAssign, 1 };
+    Builtins[MAGIC_MOD_ASSIGN] = { &NSBInterpreter::ModAssign, 1 };
     Builtins[MAGIC_WRITE_FILE] = { &NSBInterpreter::WriteFile, 2 };
     Builtins[MAGIC_READ_FILE] = { &NSBInterpreter::ReadFile, 1 };
     Builtins[MAGIC_CREATE_TEXTURE] = { &NSBInterpreter::CreateTexture, 5 };
@@ -983,6 +984,14 @@ void NSBInterpreter::SubAssign()
 {
     Variable* pVar = GetVar(pContext->GetParam(0));
     Variable* pTemp = Variable::MakeInt(pVar->ToInt() - PopInt());
+    pVar->Set(pTemp);
+    Variable::Destroy(pTemp);
+}
+
+void NSBInterpreter::ModAssign()
+{
+    Variable* pVar = GetVar(pContext->GetParam(0));
+    Variable* pTemp = Variable::MakeInt(pVar->ToInt() % PopInt());
     pVar->Set(pTemp);
     Variable::Destroy(pTemp);
 }
