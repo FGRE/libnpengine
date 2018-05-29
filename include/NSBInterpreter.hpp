@@ -129,11 +129,11 @@ protected:
     void CmpLogicalOr();
     void CmpGreater();
     void CmpLess();
-    void LogicalGreaterEqual();
-    void LogicalLessEqual();
+    void CmpGE();
+    void CmpLE();
     void CmpEqual();
-    void LogicalNotEqual();
-    void LogicalNot();
+    void CmpNE();
+    void NotExpression();
     void AddExpression();
     void SubExpression();
     void MulExpression();

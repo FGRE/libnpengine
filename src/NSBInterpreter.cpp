@@ -59,13 +59,13 @@ Builtins(MAGIC_UNK119 + 1, {nullptr, 0})
     Builtins[MAGIC_CALL_CHAPTER] = { &NSBInterpreter::CallChapter, 0 };
     Builtins[MAGIC_CMP_LOGICAL_AND] = { &NSBInterpreter::CmpLogicalAnd, 2 };
     Builtins[MAGIC_CMP_LOGICAL_OR] = { &NSBInterpreter::CmpLogicalOr, 2 };
-    Builtins[MAGIC_LOGICAL_GREATER_EQUAL] = { &NSBInterpreter::LogicalGreaterEqual, 2 };
-    Builtins[MAGIC_LOGICAL_LESS_EQUAL] = { &NSBInterpreter::LogicalLessEqual, 2 };
+    Builtins[MAGIC_CMP_GE] = { &NSBInterpreter::CmpGE, 2 };
+    Builtins[MAGIC_CMP_LE] = { &NSBInterpreter::CmpLE, 2 };
     Builtins[MAGIC_CMP_GREATER] = { &NSBInterpreter::CmpGreater, 2 };
     Builtins[MAGIC_CMP_LESS] = { &NSBInterpreter::CmpLess, 2 };
     Builtins[MAGIC_CMP_EQUAL] = { &NSBInterpreter::CmpEqual, 2 };
-    Builtins[MAGIC_LOGICAL_NOT_EQUAL] = { &NSBInterpreter::LogicalNotEqual, 2 };
-    Builtins[MAGIC_LOGICAL_NOT] = { &NSBInterpreter::LogicalNot, 1 };
+    Builtins[MAGIC_CMP_NE] = { &NSBInterpreter::CmpNE, 2 };
+    Builtins[MAGIC_NOT_EXPRESSION] = { &NSBInterpreter::NotExpression, 1 };
     Builtins[MAGIC_ADD_EXPRESSION] = { &NSBInterpreter::AddExpression, 2 };
     Builtins[MAGIC_SUB_EXPRESSION] = { &NSBInterpreter::SubExpression, 2 };
     Builtins[MAGIC_MUL_EXPRESSION] = { &NSBInterpreter::MulExpression, 2 };
@@ -377,7 +377,7 @@ void NSBInterpreter::CmpLogicalOr()
     BoolBinaryOp(logical_or<bool>());
 }
 
-void NSBInterpreter::LogicalGreaterEqual()
+void NSBInterpreter::CmpGE()
 {
     if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
         FloatBinaryOp(greater_equal<float>());
@@ -401,7 +401,7 @@ void NSBInterpreter::CmpLess()
         IntBinaryOp(less<int32_t>());
 }
 
-void NSBInterpreter::LogicalLessEqual()
+void NSBInterpreter::CmpLE()
 {
     if (Params.Top()->IsFloat() || Params.TTop()->IsFloat())
         FloatBinaryOp(less_equal<float>());
@@ -427,13 +427,13 @@ void NSBInterpreter::CmpEqual()
     PushVar(Variable::MakeInt(Equal));
 }
 
-void NSBInterpreter::LogicalNotEqual()
+void NSBInterpreter::CmpNE()
 {
     CmpEqual();
-    Call(MAGIC_LOGICAL_NOT);
+    Call(MAGIC_CMP_NE);
 }
 
-void NSBInterpreter::LogicalNot()
+void NSBInterpreter::NotExpression()
 {
     PushVar(Variable::MakeInt(!PopBool()));
 }
@@ -625,11 +625,7 @@ Scrollbar* NSBInterpreter::PopScrollbar()
 int32_t NSBInterpreter::PopInt()
 {
     Variable* pVar = PopVar();
-    int32_t Val = 0;
-    if (pVar->IsInt())
-        Val = pVar->ToInt();
-    else
-        Val = Nsb::ConstantToValue<Nsb::Null>(boost::algorithm::to_lower_copy(pVar->ToString()));
+    int32_t Val = pVar->ToInt();
     Variable::Destroy(pVar);
     return Val;
 }
