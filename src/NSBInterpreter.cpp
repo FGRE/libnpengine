@@ -1944,10 +1944,64 @@ void NSBInterpreter::Rotate()
 
 void NSBInterpreter::Message()
 {
+    static const map<string, int> buttonret =
+    {
+        {"CANCEL", 0},
+        {"OK", 1},
+        {"YES", 2},
+        {"NO", 3},
+        {"ABORT", 4},
+        {"RETRY", 5},
+        {"IGNORE", 6}
+    };
+
+    static const string buttonstr[] =
+    {
+        "Cancel", "OK", "Yes", "No", "Abort", "Retry", "Ignore"
+    };
+
+    static const map<string, vector<string> > type
+    {
+        {"OKCANCEL", {"OK", "CANCEL"}},
+        {"YESNO", {"YES", "NO"}},
+        {"YESNOCANCEL", {"YES", "NO", "CANCEL"}},
+        {"RETRYCANCEL", {"RETRY", "CANCEL"}},
+        {"ABORTRETRYIGNORE", {"ABORT", "RETRY", "IGNORE"}}
+    };
+
+    static const map<string, Uint32> icon =
+    {
+        {"STOP", SDL_MESSAGEBOX_ERROR},
+        {"INFORMATION", SDL_MESSAGEBOX_INFORMATION},
+        {"EXCLAMATION", SDL_MESSAGEBOX_WARNING},
+        {"QUESTION", SDL_MESSAGEBOX_INFORMATION}
+    };
+
     string Title = PopString();
     string Text = PopString();
     string Type = PopString();
     string Icon = PopString();
+
+    vector<SDL_MessageBoxButtonData> Buttons;
+    for (const string& btnstr : type.at(Type))
+    {
+        int ButtonRet = buttonret.at(btnstr);
+        Buttons.push_back({0, ButtonRet, buttonstr[ButtonRet].c_str()});
+    }
+
+    SDL_MessageBoxData Data =
+    {
+        icon.at(Icon),
+        NULL,
+        Title.c_str(),
+        Text.c_str(),
+        (int)Buttons.size(),
+        &Buttons[0],
+        NULL
+    };
+    int RetVal;
+    SDL_ShowMessageBox(&Data, &RetVal);
+    PushInt(RetVal);
 }
 
 void NSBInterpreter::Integer()
