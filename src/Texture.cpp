@@ -187,8 +187,8 @@ void Texture::Draw(uint32_t Diff)
     float oy = OY * (1.f - sy);
     float s = sin(Angle * M_PI / 180.);
     float c = cos(Angle * M_PI / 180.);
-    float XA[4] = {X, X + Width * sx, X + Width * sx, X};
-    float YA[4] = {Y, Y, Y + Height * sy, Y + Height * sy};
+    float XA[4] = {(float)X, X + Width * sx, X + Width * sx, (float)X};
+    float YA[4] = {(float)Y, (float)Y, Y + Height * sy, Y + Height * sy};
     for (int i = 0; i < 4; ++i)
     {
         XA[i] -= X + OX * sx;

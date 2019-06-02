@@ -22,7 +22,7 @@
 #include "nsbconstants.hpp"
 #include <regex>
 
-class Object;
+struct Object;
 class ObjectHolder_t : private Holder<Object>
 {
 public:
