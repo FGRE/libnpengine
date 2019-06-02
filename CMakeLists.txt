@@ -36,7 +36,6 @@ find_package(JPEG REQUIRED)
 find_package(GStreamer REQUIRED)
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
-find_package(X11 REQUIRED)
 find_package(PNG REQUIRED)
 find_package(Threads REQUIRED)
 include(FindPkgConfig)
@@ -97,7 +96,6 @@ target_link_libraries(npengine
 	${PANGOCAIRO_LIBRARIES} 
 	${JPEG_LIBRARY} 
 	${GLEW_LIBRARY} 
-	${X11_LIBRARIES} 
 	${PNG_LIBRARIES}
 	-lGL)
 
