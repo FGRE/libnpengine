@@ -431,7 +431,7 @@ void NSBInterpreter::CmpEqual()
 void NSBInterpreter::CmpNE()
 {
     CmpEqual();
-    Call(MAGIC_CMP_NE);
+    Call(MAGIC_NOT_EXPRESSION);
 }
 
 void NSBInterpreter::NotExpression()
