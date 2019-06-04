@@ -1262,13 +1262,13 @@ void NSBInterpreter::Zoom()
     int32_t Time = PopInt();
     NSBPosition XScale = PopRelative();
     NSBPosition YScale = PopRelative();
-    /*int32_t Tempo = */PopTempo();
+    int32_t Tempo = PopTempo();
     bool Wait = PopBool();
 
     ObjectHolder.Execute(Handle, [&] (Object** ppObject)
     {
         if (Texture* pTexture = dynamic_cast<Texture*>(*ppObject))
-            pTexture->Zoom(Time, XScale(0, pTexture->GetXScale()), YScale(0, pTexture->GetYScale()));
+            pTexture->Zoom(Time, XScale(0, pTexture->GetXScale()), YScale(0, pTexture->GetYScale()), Tempo);
     });
 
     if (Wait)
@@ -1281,13 +1281,13 @@ void NSBInterpreter::Move()
     int32_t Time = PopInt();
     NSBPosition X = PopPos();
     NSBPosition Y = PopPos();
-    /*int32_t Tempo = */PopTempo();
+    int32_t Tempo = PopTempo();
     bool Wait = PopBool();
 
     ObjectHolder.Execute(Handle, [&] (Object** ppObject)
     {
         if (Texture* pTexture = dynamic_cast<Texture*>(*ppObject))
-            pTexture->Move(X(pTexture->GetWidth(), pTexture->GetMX()), Y(pTexture->GetHeight(), pTexture->GetMY()), Time);
+            pTexture->Move(X(pTexture->GetWidth(), pTexture->GetMX()), Y(pTexture->GetHeight(), pTexture->GetMY()), Time, Tempo);
     });
 
     if (Wait)
@@ -1330,12 +1330,12 @@ void NSBInterpreter::DrawTransition()
     int32_t Start = PopInt();
     int32_t End = PopInt();
     int32_t Boundary = PopInt();
-    /*int32_t Tempo = */PopTempo();
+    int32_t Tempo = PopTempo();
     string Filename = PopString();
     bool Wait = PopBool();
 
     if (pTexture)
-        pTexture->DrawTransition(Time, Start, End, Boundary, Filename);
+        pTexture->DrawTransition(Time, Start, End, Boundary, Tempo, Filename);
 
     if (Wait)
         pContext->Wait(Time);
@@ -1379,13 +1379,13 @@ void NSBInterpreter::Fade()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Opacity = PopInt();
-    /*int32_t Tempo = */PopTempo();
+    int32_t Tempo = PopTempo();
     bool Wait = PopBool();
 
-    ObjectHolder.Execute(Handle, [Time, Opacity] (Object** ppObject)
+    ObjectHolder.Execute(Handle, [Time, Opacity, Tempo] (Object** ppObject)
     {
         if (Texture* pTexture = dynamic_cast<Texture*>(*ppObject))
-            pTexture->Fade(Time, Opacity);
+            pTexture->Fade(Time, Opacity, Tempo);
     });
 
     if (Wait)
@@ -1428,12 +1428,12 @@ void NSBInterpreter::SetVolume()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Volume = PopInt();
-    /*int32_t Tempo = */PopTempo();
+    int32_t Tempo = PopTempo();
 
-    ObjectHolder.Execute(Handle, [Time, Volume] (Object** ppObject)
+    ObjectHolder.Execute(Handle, [Time, Volume, Tempo] (Object** ppObject)
     {
         if (Playable* pPlayable = dynamic_cast<Playable*>(*ppObject))
-            pPlayable->SetVolume(Time, Volume);
+            pPlayable->SetVolume(Time, Volume, Tempo);
     });
 }
 
@@ -1471,7 +1471,7 @@ void NSBInterpreter::CreateSound()
         return;
 
     Playable* pPlayable = new Playable(Res);
-    pPlayable->SetVolume(0, Volume);
+    pPlayable->SetVolume(0, Volume, -1);
     ObjectHolder.Write(Handle, pPlayable);
 }
 
@@ -1509,10 +1509,10 @@ void NSBInterpreter::SetFrequency()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Frequency = PopInt();
-    /*int32_t Tempo = */PopTempo();
+    int32_t Tempo = PopTempo();
 
     if (Playable* pPlayable = Get<Playable>(Handle))
-        pPlayable->SetFrequency(Time, Frequency);
+        pPlayable->SetFrequency(Time, Frequency, Tempo);
 }
 
 void NSBInterpreter::SetPan()
@@ -1520,10 +1520,10 @@ void NSBInterpreter::SetPan()
     string Handle = PopString();
     int32_t Time = PopInt();
     int32_t Pan = PopInt();
-    /*int32_t Tempo = */PopTempo();
+    int32_t Tempo = PopTempo();
 
     if (Playable* pPlayable = Get<Playable>(Handle))
-        pPlayable->SetPan(Time, Pan);
+        pPlayable->SetPan(Time, Pan, Tempo);
 }
 
 void NSBInterpreter::SetAlias()
@@ -1621,12 +1621,12 @@ void NSBInterpreter::ParseText()
 void NSBInterpreter::LoadText()
 {
     /*string unk = */PopString();
-    /*string unk = */PopString();
+    /*string BoxHandle = */PopString();
     string TextHandle = PopString();
     int32_t Width = PopInt();
     /*int32_t Height = */PopInt();
-    /*int32_t unk = */PopInt();
-    /*int32_t unk = */PopInt();
+    /*int32_t LetterSpacing = */PopInt();
+    /*int32_t LineSpacing = */PopInt();
 
     if (Text* pText = Get<Text>(TextHandle))
     {
@@ -1931,13 +1931,13 @@ void NSBInterpreter::Rotate()
 {
     Texture* pTexture = PopTexture();
     int32_t Time = PopInt();
-    /*int32_t unk1 = */PopInt();
-    /*int32_t unk2 = */PopInt();
-    NSBPosition Angle = PopRelative();
-    /*int32_t Tempo = */PopTempo();
+    /*NSBPosition X = */PopRelative();
+    /*NSBPosition Y = */PopRelative();
+    NSBPosition Z = PopRelative();
+    int32_t Tempo = PopTempo();
     bool Wait = PopBool();
 
-    pTexture->Rotate(Angle(0, pTexture->GetAngle()), Time);
+    pTexture->Rotate(Z(0, pTexture->GetAngle()), Time, Tempo);
     if (Wait)
         pContext->Wait(Time);
 }

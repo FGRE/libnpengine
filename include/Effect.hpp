@@ -26,16 +26,44 @@
 class Effect
 {
 public:
-    Effect() : Program(0) { }
+    Effect() : Tempo(-1), Program(0) { }
     ~Effect() { glDeleteObjectARB(Program); }
 
 protected:
+    float ApplyTempo(float Progress)
+    {
+        switch (Tempo)
+        {
+            case Nsb::AXL_1:
+                return pow(Progress, 2);
+            case Nsb::AXL_2:
+                return pow(Progress, 3);
+            case Nsb::AXL_3:
+                return pow(Progress, 4);
+            case Nsb::DXL_1:
+                return 1.0f - pow(1.0f - Progress, 2);
+            case Nsb::DXL_2:
+                return 1.0f - pow(1.0f - Progress, 3);
+            case Nsb::DXL_3:
+                return 1.0f - pow(1.0f - Progress, 4);
+            case Nsb::AXL_AUTO:
+                return 1.0f - cos(Progress * M_PI * 0.5f);
+            case Nsb::DXL_AUTO:
+                return sin(Progress * M_PI * 0.5f);
+            case Nsb::AXL_DXL:
+                return 0.5f * (1.0f - cos(Progress * M_PI));
+            case Nsb::DXL_AXL:
+                return acos(1.0f - Progress * 2.0f) / M_PI;
+        }
+        return Progress;
+    }
+
     int32_t Lerp(int32_t Old, int32_t New, float Progress)
     {
         if (New > Old)
-            return Old + (New - Old) * Progress;
+            return Old + (New - Old) * ApplyTempo(Progress);
         else
-            return Old - (Old - New) * Progress;
+            return Old - (Old - New) * ApplyTempo(Progress);
     }
 
     void CompileShader(const char* String)
@@ -54,6 +82,7 @@ protected:
         glDeleteObjectARB(Shader);
     }
 
+    int32_t Tempo;
     GLuint Program;
 };
 
@@ -129,7 +158,7 @@ public:
     LerpEffect() { }
     LerpEffect(int32_t StartX, int32_t StartY) : EndX(StartX), EndY(StartY) { }
 
-    void Reset(int32_t StartX, int32_t EndX, int32_t StartY, int32_t EndY, int32_t Time)
+    void Reset(int32_t StartX, int32_t EndX, int32_t StartY, int32_t EndY, int32_t Time, int32_t Tempo)
     {
         this->StartX = StartX;
         this->StartY = StartY;
@@ -137,11 +166,12 @@ public:
         this->EndY = EndY;
         this->Time = Time;
         this->ElapsedTime = 0;
+        this->Tempo = Tempo;
     }
 
-    void Reset(int32_t EndX, int32_t EndY, int32_t Time)
+    void Reset(int32_t EndX, int32_t EndY, int32_t Time, int32_t Tempo)
     {
-        Reset(this->EndX, EndX, this->EndY, EndY, Time);
+        Reset(this->EndX, EndX, this->EndY, EndY, Time, Tempo);
     }
 
     float GetProgress()
@@ -167,9 +197,9 @@ public:
 class RotateEffect : public LerpEffect
 {
 public:
-    RotateEffect(int32_t EndA, int32_t Time) : LerpEffect(0, 0)
+    RotateEffect(int32_t EndA, int32_t Time, int32_t Tempo) : LerpEffect(0, 0)
     {
-        Reset(EndA, 0, Time);
+        Reset(EndA, 0, Time, Tempo);
     }
 
     void OnDraw(Texture* pTexture, int32_t diff)
@@ -183,9 +213,9 @@ public:
 class MoveEffect : public LerpEffect
 {
 public:
-    MoveEffect(int32_t EndX, int32_t EndY, int32_t Time) : LerpEffect(0, 0)
+    MoveEffect(int32_t EndX, int32_t EndY, int32_t Time, int32_t Tempo) : LerpEffect(0, 0)
     {
-        Reset(EndX, EndY, Time);
+        Reset(EndX, EndY, Time, Tempo);
     }
 
     void OnDraw(Texture* pTexture, int32_t diff)
@@ -199,9 +229,9 @@ public:
 class ZoomEffect : public LerpEffect
 {
 public:
-    ZoomEffect(int32_t EndX, int32_t EndY, int32_t Time) : LerpEffect(1000, 1000)
+    ZoomEffect(int32_t EndX, int32_t EndY, int32_t Time, int32_t Tempo) : LerpEffect(1000, 1000)
     {
-        Reset(EndX, EndY, Time);
+        Reset(EndX, EndY, Time, Tempo);
     }
 
     void OnDraw(Texture* pTexture, int32_t diff)
@@ -228,10 +258,10 @@ public:
     {
     }
 
-    FadeEffect(int32_t EndOpacity, int32_t Time) : LerpEffect(1000, 0)
+    FadeEffect(int32_t EndOpacity, int32_t Time, int32_t Tempo) : LerpEffect(1000, 0)
     {
         CompileShader(MaskShader.c_str());
-        Reset(EndOpacity, 0, Time);
+        Reset(EndOpacity, 0, Time, Tempo);
     }
 
     void OnDraw(int32_t diff)
@@ -265,16 +295,16 @@ class MaskEffect : public FadeEffect, GLTexture
         "   gl_FragColor = Pixel;"
         "}";
 public:
-    MaskEffect(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time, int32_t Boundary)
+    MaskEffect(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time, int32_t Boundary, int32_t Tempo)
     {
         CompileShader(MaskShader.c_str());
-        Reset(Filename, StartOpacity, EndOpacity, Time, Boundary);
+        Reset(Filename, StartOpacity, EndOpacity, Time, Boundary, Tempo);
     }
 
-    void Reset(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time, int32_t Boundary)
+    void Reset(const string& Filename, int32_t StartOpacity, int32_t EndOpacity, int32_t Time, int32_t Boundary, int32_t Tempo)
     {
         CreateFromFile(Filename, true);
-        LerpEffect::Reset(StartOpacity, EndOpacity, 0, 0, Time);
+        LerpEffect::Reset(StartOpacity, EndOpacity, 0, 0, Time, Tempo);
 
         if (!Program)
             return;

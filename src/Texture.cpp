@@ -96,36 +96,36 @@ void Texture::SetPriority(int Priority)
     this->Priority = Priority;
 }
 
-void Texture::Move(int X, int Y, int32_t Time)
+void Texture::Move(int X, int Y, int32_t Time, int32_t Tempo)
 {
     if (!pMove)
-        pMove = new MoveEffect(X, Y, Time);
+        pMove = new MoveEffect(X, Y, Time, Tempo);
     else
-        pMove->Reset(X, Y, Time);
+        pMove->Reset(X, Y, Time, Tempo);
 }
 
-void Texture::Zoom(int32_t Time, int X, int Y)
+void Texture::Zoom(int32_t Time, int X, int Y, int32_t Tempo)
 {
     if (!pZoom)
-        pZoom = new ZoomEffect(X, Y, Time);
+        pZoom = new ZoomEffect(X, Y, Time, Tempo);
     else
-        pZoom->Reset(X, Y, Time);
+        pZoom->Reset(X, Y, Time, Tempo);
 }
 
-void Texture::Fade(int32_t Time, int Opacity)
+void Texture::Fade(int32_t Time, int Opacity, int32_t Tempo)
 {
     if (!pFade)
-        pFade = new FadeEffect(Opacity, Time);
+        pFade = new FadeEffect(Opacity, Time, Tempo);
     else
-        pFade->Reset(Opacity, 0, Time);
+        pFade->Reset(Opacity, 0, Time, Tempo);
 }
 
-void Texture::DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t Boundary, const string& Filename)
+void Texture::DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t Boundary, int32_t Tempo, const string& Filename)
 {
     if (!pMask)
-        pMask = new MaskEffect(Filename, Start, End, Time, Boundary);
+        pMask = new MaskEffect(Filename, Start, End, Time, Boundary, Tempo);
     else
-        pMask->Reset(Filename, Start, End, Time, Boundary);
+        pMask->Reset(Filename, Start, End, Time, Boundary, Tempo);
 }
 
 void Texture::SetShade(int32_t Shade)
@@ -150,12 +150,12 @@ void Texture::SetTone(int32_t Tonei)
     pTone = new Tone(Tonei);
 }
 
-void Texture::Rotate(int32_t Angle, int32_t Time)
+void Texture::Rotate(int32_t Angle, int32_t Time, int32_t Tempo)
 {
     if (!pRotate)
-        pRotate = new RotateEffect(Angle, Time);
+        pRotate = new RotateEffect(Angle, Time, Tempo);
     else
-        pRotate->Reset(Angle, 0, Time);
+        pRotate->Reset(Angle, 0, Time, Tempo);
 }
 
 void Texture::Shake(int32_t XWidth, int32_t YWidth, int32_t Time)

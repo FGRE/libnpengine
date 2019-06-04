@@ -39,9 +39,9 @@ public:
     Playable(Resource Res);
     virtual ~Playable();
 
-    void SetVolume(int32_t Time, int32_t Volume);
-    void SetFrequency(int32_t Time, int32_t Frequency);
-    void SetPan(int32_t Time, int32_t Pan);
+    void SetVolume(int32_t Time, int32_t Volume, int32_t Tempo);
+    void SetFrequency(int32_t Time, int32_t Frequency, int32_t Tempo);
+    void SetPan(int32_t Time, int32_t Pan, int32_t Tempo);
     void SetLoopPoint(int32_t Begin, int32_t End);
     void SetLoop(bool Loop);
     void Stop();

@@ -216,16 +216,16 @@ void Playable::Play()
         cerr << "Failed to seek" << endl;
 }
 
-void Playable::SetVolume(int32_t Time, int32_t Volume)
+void Playable::SetVolume(int32_t Time, int32_t Volume, int32_t Tempo)
 {
     g_object_set(G_OBJECT(VolumeFilter), "volume", Volume / 1000.0, NULL);
 }
 
-void Playable::SetFrequency(int32_t Time, int32_t Frequency)
+void Playable::SetFrequency(int32_t Time, int32_t Frequency, int32_t Tempo)
 {
 }
 
-void Playable::SetPan(int32_t Time, int32_t Pan)
+void Playable::SetPan(int32_t Time, int32_t Pan, int32_t Tempo)
 {
 }
 

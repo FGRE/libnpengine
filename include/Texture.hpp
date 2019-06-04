@@ -44,13 +44,13 @@ public:
     void UpdateEffects(uint32_t Diff);
     virtual void Draw(uint32_t Diff);
     void SetPriority(int Priority);
-    void Move(int X, int Y, int32_t Time = 0);
-    void Zoom(int32_t Time, int X, int Y);
-    void Fade(int32_t Time, int Opacity);
-    void DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t Boundary, const string& Filename);
+    void Move(int X, int Y, int32_t Time = 0, int32_t Tempo = -1);
+    void Zoom(int32_t Time, int X, int Y, int32_t Tempo);
+    void Fade(int32_t Time, int Opacity, int32_t Tempo = -1);
+    void DrawTransition(int32_t Time, int32_t Start, int32_t End, int32_t Boundary, int32_t Tempo, const string& Filename);
     void SetShade(int32_t Shade);
     void SetTone(int32_t Tone);
-    void Rotate(int32_t Angle, int32_t Time);
+    void Rotate(int32_t Angle, int32_t Time, int32_t Tempo);
     void Shake(int32_t XWidth, int32_t YWidth, int32_t Time);
 
     int GetXScale() { return XScale; }
